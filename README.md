@@ -1,1 +1,1 @@
-# Artificial neural networks core modules
+# An attempt at a machine learning framework in Go
