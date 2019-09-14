@@ -1,11 +1,14 @@
 package node
 
-import "math/rand"
+import (
+	"math/rand"
+)
 
 type connection struct {
 	nextNode *Node
 	weight   float64
 	gradient float64
+	gradientCounter int
 }
 
 func newConnection(nextNode *Node) *connection {
@@ -32,10 +35,7 @@ func (c *connection) NextNode() *Node {
 
 func (c *connection) AddGradient(value float64) {
 	c.gradient += value
-}
-
-func (c *connection) ResetGradient() {
-	c.gradient = 0.0
+	c.gradientCounter++
 }
 
 func (c *connection) Gradient() float64 {
@@ -43,5 +43,7 @@ func (c *connection) Gradient() float64 {
 }
 
 func (c *connection) UpdateWeight(learningRate float64) {
-	c.weight -= learningRate * c.gradient
+	c.weight -= learningRate * c.gradient / float64(c.gradientCounter)
+	c.gradient = 0.0
+	c.gradientCounter = 0
 }

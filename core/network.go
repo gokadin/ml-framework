@@ -1,8 +1,11 @@
 package core
 
 import (
-	"github.com/gokadin/ann-core/layer"
+	"github.com/gokadin/ml-framework/layer"
+	"github.com/gokadin/ml-framework/tensor"
 	"log"
+	"math/rand"
+	"time"
 )
 
 type Network struct {
@@ -11,6 +14,8 @@ type Network struct {
 }
 
 func NewNetwork() *Network {
+	rand.Seed(time.Now().UTC().UnixNano())
+
 	n := &Network{
 		layers: make([]*layer.Layer, 0),
 	}
@@ -57,8 +62,6 @@ func (n *Network) OutputLayer() *layer.Layer {
 	return n.layers[n.LayerCount() - 1]
 }
 
-func (n *Network) Activate(input []float64) {
-	n.InputLayer().ResetInputs()
-	n.InputLayer().SetInputs(input)
-	n.InputLayer().Activate()
+func (n *Network) Forward(input *tensor.Tensor) *tensor.Tensor {
+	return n.InputLayer().Forward(input)
 }

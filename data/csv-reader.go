@@ -7,8 +7,7 @@ import (
 	"strconv"
 )
 
-func readCsv(filename string, startIndex, endIndex, limit int) [][]float64 {
-	data := make([][]float64, 0)
+func readCsv(filename string, startIndex, endIndex, limit int) *math.Tensor {
     file := readFile(filename)
     defer file.Close()
     reader := csv.NewReader(file)
@@ -17,14 +16,28 @@ func readCsv(filename string, startIndex, endIndex, limit int) [][]float64 {
     	log.Fatal("Could not read CSV file", filename)
 	}
 
+    if startIndex == -1 {
+    	startIndex = 0
+	}
+
+    if limit == -1 {
+    	limit = len(records)
+	}
+
+	data := make([][]float64, limit)
     for i, row := range records {
-    	if limit != -1 && i > limit {
+    	if i >= limit {
     		break
 		}
 
-    	colIndex := 0
+		if endIndex == -1 {
+			endIndex = len(row) - 1
+		}
+
+    	data[i] = make([]float64, endIndex - startIndex + 1)
+    	associationIndex := 0
     	for j, value := range row {
-    		if (startIndex > -1 && j < startIndex) || (endIndex != -1 && j > endIndex) {
+    		if j < startIndex || j > endIndex {
     			continue
 			}
 
@@ -32,12 +45,12 @@ func readCsv(filename string, startIndex, endIndex, limit int) [][]float64 {
             if err != nil {
             	log.Fatal("Could not parse one of the values in the CSV file", filename)
 			}
-            data[i][colIndex] = convertedValue
-            colIndex++
+            data[i][associationIndex] = convertedValue
+            associationIndex++
 		}
 	}
 
-	return data
+	return math.NewTensor(data)
 }
 
 func readFile(filename string) *os.File {

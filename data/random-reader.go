@@ -2,7 +2,7 @@ package data
 
 import "math/rand"
 
-func readRandom(associations, size int) [][]float64 {
+func readRandom(associations, size int) *math.Tensor {
 	data := make([][]float64, associations)
     for i := 0; i < associations; i++ {
 		association := make([]float64, size)
@@ -11,6 +11,6 @@ func readRandom(associations, size int) [][]float64 {
 		}
         data[i] = association
 	}
-    return data
+    return math.NewTensor(data)
 }
 

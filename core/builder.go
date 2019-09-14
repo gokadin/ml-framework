@@ -1,7 +1,8 @@
 package core
 
 import (
-	"github.com/gokadin/ann-core/layer"
+	"github.com/gokadin/ml-framework/layer"
+	"github.com/gokadin/ml-framework/tensor"
 	"log"
 )
 
@@ -20,7 +21,7 @@ func (b *builder) addInputLayer(size int) {
 		log.Fatal("You cannot add an input layer after adding other layers.")
 	}
 
-	b.network.layers = append(b.network.layers, layer.NewLayer(size, layer.FunctionIdentity))
+	b.network.layers = append(b.network.layers, layer.NewLayer(size, tensor.ActivationFunctionIdentity))
 }
 
 func (b *builder) AddHiddenLayer(size int, activationFunctionName string) *builder {
@@ -32,13 +33,13 @@ func (b *builder) AddHiddenLayer(size int, activationFunctionName string) *build
 	return b
 }
 
-func (b *builder) AddOutputLayer(size int) *builder {
-	if len(b.network.layers) < 2 {
-		log.Fatal("You must add an input layer and at least one hidden layer before adding an output layer.")
+func (b *builder) AddOutputLayer(size int, activationFunctionName string) *Network {
+	if len(b.network.layers) < 1 {
+		log.Fatal("You must add an input layer before adding an output layer.")
 	}
 
-	b.addLayer(layer.NewOutputLayer(size, layer.FunctionIdentity))
-	return b
+	b.addLayer(layer.NewOutputLayer(size, activationFunctionName))
+	return b.network
 }
 
 func (b *builder) addLayer(l *layer.Layer) {

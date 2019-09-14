@@ -1,15 +1,16 @@
 package data
 
+import (
+	"github.com/gokadin/ml-framework/tensor"
+)
+
 type Dataset struct {
 	builder *builder
-    data [][]float64
+    data *tensor.Tensor
 }
 
 func NewDataset() *Dataset {
-	dataset := &Dataset{
-        data: make([][]float64, 0),
-	}
-
+	dataset := &Dataset{}
 	dataset.builder = newBuilder(dataset)
 	return dataset
 }
@@ -22,10 +23,10 @@ func (d *Dataset) FromRandom(associations, size int) *builder {
 	return d.builder.readRandom(associations, size)
 }
 
-func (d *Dataset) Data() [][]float64 {
+func (d *Dataset) Data() *tensor.Tensor {
 	return d.data
 }
 
 func (d *Dataset) Size() int {
-	return len(d.data)
+	return len(d.data.Data())
 }

@@ -1,104 +1,84 @@
 package layer
 
 import (
-	"github.com/gokadin/ann-core/node"
+	"github.com/gokadin/ml-framework/tensor"
 	"log"
+	"math/rand"
 )
 
 type Layer struct {
-	nodes     []*node.Node
-	nextLayer *Layer
-    activationFunction func(x float64) float64
-	activationFunctionDerivative func(x float64) float64
+	activationFunctionName string
 	isOutputLayer bool
+	weights *tensor.Tensor
+    bias *tensor.Tensor
+	inputSize int
+	nextLayer *Layer
 }
 
-func NewLayer(size int, activationFunctionName string) *Layer {
-	nodes := make([]*node.Node, size + 1) // +1 for bias
-	for i := range nodes {
-		nodes[i] = node.NewNode()
-	}
+func NewLayer(inputSize int, activationFunctionName string) *Layer {
+	return newLayer(inputSize, activationFunctionName, false)
+}
+
+func NewOutputLayer(inputSize int, activationFunctionName string) *Layer {
+	return newLayer(inputSize, activationFunctionName, true)
+}
+
+func newLayer(inputSize int, activationFunctionName string, isOutputLayer bool) *Layer {
 	return &Layer{
-		nodes: nodes,
-        activationFunction: getActivationFunction(activationFunctionName),
-		activationFunctionDerivative: getActivationFunctionDerivative(activationFunctionName),
-		isOutputLayer: false,
+		activationFunctionName: 	  activationFunctionName,
+		isOutputLayer:                isOutputLayer,
+		inputSize: inputSize,
 	}
 }
 
-func NewOutputLayer(size int, activationFunctionName string) *Layer {
-	nodes := make([]*node.Node, size)
-	for i := range nodes {
-		nodes[i] = node.NewNode()
-	}
-	return &Layer{
-		nodes: nodes,
-		activationFunction: getActivationFunction(activationFunctionName),
-		activationFunctionDerivative: getActivationFunctionDerivative(activationFunctionName),
-		isOutputLayer: true,
-	}
+func (l *Layer) ConnectTo(nextLayer *Layer) {
+    l.nextLayer = nextLayer
+    l.initializeWeightsAndBias()
 }
 
-func (l *Layer) Size() int {
-	return len(l.nodes)
+func (l *Layer) initializeWeightsAndBias() {
+    weightsMat := make([][]float64, l.inputSize)
+    biasMat := make([][]float64, 1)
+    biasMat[0] = make([]float64, l.nextLayer.inputSize)
+    for i := range weightsMat {
+    	weightsMat[i] = make([]float64, l.nextLayer.inputSize)
+    	for j := range weightsMat[i] {
+    		if i == 0 {
+    			biasMat[0][j] = 0
+			}
+    		weightsMat[i][j] = rand.Float64()
+		}
+	}
+    l.weights = tensor.NewTensor(weightsMat)
+    l.bias = tensor.NewTensor(biasMat)
+}
+
+func (l *Layer) Forward(input *tensor.Tensor) *tensor.Tensor {
+	pred := tensor.Dot(l.activate(input), l.weights)
+	//pred := l.activate(tensor.Add(tensor.Dot(input, l.weights), tensor.ExpandX(l.bias, len(input.Data()))))
+	if l.nextLayer != nil && !l.nextLayer.isOutputLayer {
+		return l.nextLayer.Forward(pred)
+	}
+	return pred
+}
+
+func (l *Layer) activate(in *tensor.Tensor) *tensor.Tensor {
+	switch l.activationFunctionName {
+	case tensor.ActivationFunctionIdentity:
+		return in
+	case tensor.ActivationFunctionSigmoid:
+		return in.Sigmoid()
+	default:
+		log.Fatal("activation function is unknown:", l.activationFunctionName)
+		return nil
+	}
 }
 
 func (l *Layer) IsOutputLayer() bool {
 	return l.isOutputLayer
 }
 
-func (l *Layer) ConnectTo(nextLayer *Layer) {
-	l.nextLayer = nextLayer
-
-	for _, n := range l.nodes {
-		for _, nextNode := range nextLayer.nodes {
-			n.ConnectTo(nextNode)
-		}
-	}
-}
-
-func (l *Layer) Nodes() []*node.Node {
-	return l.nodes
-}
-
-func (l *Layer) Node(index int) *node.Node {
-	return l.nodes[index]
-}
-
-func (l *Layer) SetInputs(values []float64) {
-	if len(values) != l.Size() - 1 {
-		log.Fatal("Cannot set values, size mismatch:", len(values), "!=", l.Size())
-	}
-
-	for i, value := range values {
-		l.nodes[i].SetInput(value)
-	}
-
-	if !l.isOutputLayer {
-		l.nodes[len(values)].SetInput(1.0)
-	}
-}
-
-func (l *Layer) ResetInputs() {
-	for _, n := range l.nodes {
-		n.ResetInput()
-	}
-
-	if l.nextLayer != nil {
-		l.nextLayer.ResetInputs()
-	}
-}
-
-func (l *Layer) Activate() {
-	for _, n := range l.nodes {
-		n.Activate(l.activationFunction)
-	}
-
-	if l.nextLayer != nil {
-		l.nextLayer.Activate()
-	}
-}
-
-func (l *Layer) ActivationDerivative() func (x float64) float64 {
-	return l.activationFunctionDerivative
+func (l *Layer) GetParameters() []*tensor.Tensor {
+    return []*tensor.Tensor{l.weights}
+	//return []*tensor.Tensor{l.weights, l.bias}
 }
