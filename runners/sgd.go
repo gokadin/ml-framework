@@ -12,13 +12,13 @@ func NewSGD(network *core.Network) *SGD {
 	}
 }
 
-func (sgd *SGD) Step(learningRate float64) {
+func (sgd *SGD) Step(learningRate float64, count int) {
 	for _, layer := range sgd.network.GetLayers() {
 		if layer.IsOutputLayer() {
 			continue
 		}
 		for _, parameter := range layer.GetParameters() {
-			parameter.ReduceFromGradient(learningRate)
+			parameter.ReduceFromGradient(learningRate, count)
 			parameter.ResetGradient()
 		}
 	}

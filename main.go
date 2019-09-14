@@ -1,12 +1,12 @@
-package runners
+package main
 
 import (
 	"github.com/gokadin/ml-framework/core"
+	"github.com/gokadin/ml-framework/runners"
 	"github.com/gokadin/ml-framework/tensor"
-	"testing"
 )
 
-func TestNewNetworkRunner(t *testing.T) {
+func main() {
 	net := core.NewNetwork().
 		AddInputLayer(2).
 		AddHiddenLayer(2, tensor.ActivationFunctionSigmoid).
@@ -17,6 +17,6 @@ func TestNewNetworkRunner(t *testing.T) {
 	//target := tensor.NewTensor([][]float64{{0.5}})
 	target := tensor.NewTensor([][]float64{{1}, {0}, {1}, {0}})
 
-	runner := NewNetworkRunner()
+	runner := runners.NewNetworkRunner()
 	runner.Train(net, data, target)
 }

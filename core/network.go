@@ -5,6 +5,7 @@ import (
 	"github.com/gokadin/ml-framework/tensor"
 	"log"
 	"math/rand"
+	"runtime"
 	"time"
 )
 
@@ -14,6 +15,7 @@ type Network struct {
 }
 
 func NewNetwork() *Network {
+	runtime.GOMAXPROCS(runtime.NumCPU())
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	n := &Network{

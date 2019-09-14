@@ -54,8 +54,8 @@ func (l *Layer) initializeWeightsAndBias() {
 }
 
 func (l *Layer) Forward(input *tensor.Tensor) *tensor.Tensor {
-	pred := tensor.Dot(l.activate(input), l.weights)
-	//pred := l.activate(tensor.Add(tensor.Dot(input, l.weights), tensor.ExpandX(l.bias, len(input.Data()))))
+	//pred := tensor.Dot(l.activate(input), l.weights)
+	pred := tensor.Add(tensor.Dot(l.activate(input), l.weights), tensor.ExpandX(l.bias, len(input.Data())))
 	if l.nextLayer != nil && !l.nextLayer.isOutputLayer {
 		return l.nextLayer.Forward(pred)
 	}
@@ -79,6 +79,6 @@ func (l *Layer) IsOutputLayer() bool {
 }
 
 func (l *Layer) GetParameters() []*tensor.Tensor {
-    return []*tensor.Tensor{l.weights}
-	//return []*tensor.Tensor{l.weights, l.bias}
+    //return []*tensor.Tensor{l.weights}
+	return []*tensor.Tensor{l.weights, l.bias}
 }

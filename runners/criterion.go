@@ -32,6 +32,5 @@ func (c *Criterion) Forward(pred *tensor.Tensor) *tensor.Tensor {
 }
 
 func (c *Criterion) forwardMeanSquared(pred *tensor.Tensor) *tensor.Tensor {
-	return tensor.SumX(tensor.Pow(tensor.Sub(pred, c.target), 2))
-	//return tensor.DivScalar(tensor.SumX(tensor.Pow(tensor.Sub(pred, c.target), 2)), 2 * float64(len(pred.Data())))
+	return tensor.DivScalar(tensor.SumX(tensor.Pow(tensor.Sub(pred, c.target), 2)), 2)
 }

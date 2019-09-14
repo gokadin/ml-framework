@@ -5,6 +5,7 @@ const (
 	creationOperatorNeg = "neg"
 	creationOperatorSub = "sub"
 	creationOperatorMul = "mul"
+	creationOperatorMulScalar = "mulScalar"
 	creationOperatorDiv = "div"
 	creationOperatorDivScalar = "divScalar"
 	creationOperatorPow = "pow"
@@ -28,6 +29,9 @@ func (t *Tensor) backpropagate() {
 	switch t.creationOperator {
 	case creationOperatorMul:
 		t.backpropagateMul()
+		break
+	case creationOperatorMulScalar:
+		t.backpropagateMulScalar()
 		break
 	case creationOperatorDiv:
 		t.backpropagateDiv()
@@ -89,6 +93,10 @@ func (t *Tensor) backpropagateMul() {
 	t.creators[1].grad = mul(t.grad, t.creators[0].mat)
 }
 
+func (t *Tensor) backpropagateMulScalar() {
+	t.creators[0].grad = mulScalar(t.grad, t.creationMetadataFloat64)
+}
+
 func (t *Tensor) backpropagateDiv() {
 	t.creators[0].grad = mul(t.grad, divideScalarBy(t.creators[1].mat, 1))
 	t.creators[1].grad = mul(t.grad, divideScalarBy(pow(t.creators[1].mat, 2), 1))
@@ -104,11 +112,11 @@ func (t *Tensor) backpropagateDot() {
 }
 
 func (t *Tensor) backpropagateSumX() {
-	t.creators[0].grad = expand(t.mat, 0, len(t.creators[0].mat))
+	t.creators[0].grad = expand(t.grad, 0, len(t.creators[0].mat))
 }
 
 func (t *Tensor) backpropagateExpandX() {
-	t.creators[0].grad = sum(t.mat, 0)
+	t.creators[0].grad = sum(t.grad, 0)
 }
 
 func (t *Tensor) backpropagateSigmoid() {

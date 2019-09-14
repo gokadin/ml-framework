@@ -27,21 +27,22 @@ func NewNetworkRunner() *NetworkRunner {
 func (nr *NetworkRunner) Train(network *core.Network, inputs, target *tensor.Tensor) {
     sgd := NewSGD(network)
     criterion := NewCriterion(lossFunctionMeanSquared, target)
-    loss := tensor.NewTensor([][]float64{{1}})
+    lossMean := 1.0
     iterations := 0
-    for loss.Data()[0][0] > nr.maxError {
+    for lossMean > nr.maxError {
         //for i := 0; i < 10; i++ {
         pred := network.Forward(inputs)
-        loss = criterion.Forward(pred)
+        loss := criterion.Forward(pred)
         loss.Backward()
-        sgd.Step(nr.learningRate)
+        sgd.Step(nr.learningRate, len(inputs.Data()))
+        lossMean = loss.Data()[0][0] / 4.0
         if iterations % 10000 == 0 {
-            fmt.Println(loss.Data()[0][0])
+            fmt.Println("Epoch", iterations, "finished with error", lossMean)
         }
         iterations++
     }
 
-    fmt.Println("Finished in", iterations, "loss:", loss.Data()[0][0])
+    fmt.Println("Finished in", iterations, "loss:", lossMean)
 }
 
 func (nr *NetworkRunner) SetBatchSize(batchSize int) {

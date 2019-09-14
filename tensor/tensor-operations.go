@@ -24,6 +24,13 @@ func Mul(a, b *Tensor) *Tensor {
 	return t
 }
 
+func MulScalar(a *Tensor, scalar float64) *Tensor {
+	t := NewTensor(mulScalar(a.mat, scalar))
+	t.addCreator(creationOperatorMulScalar, a)
+	t.creationMetadataFloat64 = scalar
+	return t
+}
+
 func DivScalar(a *Tensor, scalar float64) *Tensor {
 	t := NewTensor(divScalar(a.mat, scalar))
 	t.addCreator(creationOperatorDivScalar, a)
