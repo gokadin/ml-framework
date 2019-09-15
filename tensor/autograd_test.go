@@ -203,13 +203,13 @@ func Test_autograd_BackwardFullWithOneAssociationAndAutograd(t *testing.T) {
 
     loss.Backward()
 
-    expectedW0Grad := [][]float64{{0.125, 0.125}, {0.125, 0.125}}
-    expectedW1Grad := [][]float64{{0.25}, {0.25}}
+    expectedW0Grad := [][]float64{{0.5, 0.5}, {0.5, 0.5}}
+    expectedW1Grad := [][]float64{{1}, {1}}
     if !equals(w[0].grad, expectedW0Grad) {
-        t.Fatalf("gradients are not equal")
+        t.Fatal("gradients are not equal", expectedW0Grad, w[0].grad)
     }
     if !equals(w[1].grad, expectedW1Grad) {
-        t.Fatalf("gradients are not equal")
+        t.Fatal("gradients are not equal", expectedW1Grad, w[1].grad)
     }
 }
 

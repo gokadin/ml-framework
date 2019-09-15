@@ -6,6 +6,10 @@ import (
 	"math/rand"
 )
 
+const (
+	initialBias = 0.0
+)
+
 type Layer struct {
 	activationFunctionName string
 	isOutputLayer bool
@@ -44,7 +48,7 @@ func (l *Layer) initializeWeightsAndBias() {
     	weightsMat[i] = make([]float64, l.nextLayer.inputSize)
     	for j := range weightsMat[i] {
     		if i == 0 {
-    			biasMat[0][j] = 0
+    			biasMat[0][j] = initialBias
 			}
     		weightsMat[i][j] = rand.Float64()
 		}
@@ -54,7 +58,6 @@ func (l *Layer) initializeWeightsAndBias() {
 }
 
 func (l *Layer) Forward(input *tensor.Tensor) *tensor.Tensor {
-	//pred := tensor.Dot(l.activate(input), l.weights)
 	pred := tensor.Add(tensor.Dot(l.activate(input), l.weights), tensor.ExpandX(l.bias, len(input.Data())))
 	if l.nextLayer != nil && !l.nextLayer.isOutputLayer {
 		return l.nextLayer.Forward(pred)
@@ -79,6 +82,5 @@ func (l *Layer) IsOutputLayer() bool {
 }
 
 func (l *Layer) GetParameters() []*tensor.Tensor {
-    //return []*tensor.Tensor{l.weights}
 	return []*tensor.Tensor{l.weights, l.bias}
 }
