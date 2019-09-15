@@ -50,9 +50,9 @@ func (t *Tensor) Equals(other *Tensor) bool {
 }
 
 func (t *Tensor) ResetGradient() {
-	t.grad = mulScalar(t.grad, 0)
+	t.grad = nil
 }
 
-func (t *Tensor) ReduceFromGradient(coefficient float64, count int) {
-	t.mat = sub(t.mat, divScalar(mulScalar(t.grad, coefficient), float64(count)))
+func (t *Tensor) Reduce(coefficient float64) {
+	t.mat = sub(t.mat, mulScalar(t.grad, coefficient))
 }
