@@ -1,0 +1,15 @@
+stages:
+  - test
+
+test:
+  stage: test
+  image: iron/go:dev
+  before_script:
+    - cd $GOPATH/src
+    - mkdir -p gitlab.com/$CI_PROJECT_NAMESPACE
+    - cd gitlab.com/$CI_PROJECT_NAMESPACE
+    - ln -s $CI_PROJECT_DIR
+    - cd $CI_PROJECT_NAME
+    - go get ./...
+  script:
+    - go test -cover ./... 
