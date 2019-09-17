@@ -9,16 +9,14 @@ type Tensor struct {
 	id uuid.UUID
 	mat [][]float64
 	grad [][]float64
-	creators []*Tensor
-	creationOperator string
-    creationMetadataFloat64 float64
+	operations []*operation
 }
 
 func NewTensor(mat [][]float64) *Tensor {
 	return &Tensor{
 		id: uuid.New(),
         mat: mat,
-        creators: make([]*Tensor, 0),
+        operations: make([]*operation, 0),
 	}
 }
 
@@ -32,13 +30,6 @@ func NewRandomTensor(x, y int) *Tensor {
 	}
 
     return NewTensor(mat)
-}
-
-func (t *Tensor) addCreator(creationOperation string, creators ...*Tensor) {
-	t.creationOperator = creationOperation
-	for _, creator := range creators {
-		t.creators = append(t.creators, creator)
-	}
 }
 
 func (t *Tensor) Data() [][]float64 {
