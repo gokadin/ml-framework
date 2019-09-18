@@ -12,6 +12,12 @@ func Sub(a, b *Tensor) *Tensor {
 	return t
 }
 
+func (t *Tensor) Sub(b *Tensor) *Tensor {
+	t2 := NewTensor(sub(t.mat, b.mat))
+	t2.addOperation(newOperationSub(t2, []*Tensor{t, b}))
+	return t2
+}
+
 func Mul(a, b *Tensor) *Tensor {
 	t := NewTensor(mul(a.mat, b.mat))
 	t.addOperation(newOperationMul(t, []*Tensor{a, b}))
@@ -39,6 +45,12 @@ func Div(a, b *Tensor) *Tensor {
 func Pow(a *Tensor, power float64) *Tensor {
 	t := NewTensor(pow(a.mat, power))
 	t.addOperation(newOperationPow(t, []*Tensor{a}, power))
+	return t
+}
+
+func (t *Tensor) Pow(power float64) *Tensor {
+	t.mat = pow(t.mat, power)
+	t.addOperation(newOperationPowSelf(t, power))
 	return t
 }
 

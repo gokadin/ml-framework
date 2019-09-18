@@ -1,6 +1,9 @@
 package tensor
 
-import "math"
+import (
+    "log"
+    "math"
+)
 
 type operation struct {
     tensor *Tensor
@@ -59,6 +62,12 @@ func newOperationPow(tensor *Tensor, creators []*Tensor, power float64) *operati
     return o
 }
 
+func newOperationPowSelf(tensor *Tensor, power float64) *operation {
+    o := newOperation(tensor, nil, power)
+    o.function = o.backpropagatePowSelf
+    return o
+}
+
 func newOperationSum(tensor *Tensor, creators []*Tensor, axis float64) *operation {
     o := newOperation(tensor, creators, axis)
     o.function = o.backpropagateSum
@@ -110,6 +119,24 @@ func (o *operation) backpropagatePow() {
                 o.creators[0].grad[i][j] *= math.Pow(o.creators[0].mat[i][j], exponent) * o.metadata[0]
             }
         }
+    }
+}
+
+func (o *operation) backpropagatePowSelf() {
+    if o.metadata[0] == 2 {
+        for i := range o.tensor.grad {
+            for j := range o.tensor.grad[i] {
+                o.tensor.grad[i][j] *= math.Pow(o.tensor.mat[i][j], 0.5) * 2
+            }
+        }
+    } else {
+    	log.Fatal("get out of here")
+        //exponent := o.metadata[0] - 1
+        //for i := range o.creators[0].grad {
+        //    for j := range o.creators[0].grad[i] {
+        //        o.creators[0].grad[i][j] *= math.Pow(o.creators[0].mat[i][j], exponent) * o.metadata[0]
+        //    }
+        //}
     }
 }
 
