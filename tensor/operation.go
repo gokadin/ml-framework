@@ -4,6 +4,10 @@ const (
 	operationNone = "operationNone"
 	operationAdd = "operationAdd"
 	operationSub = "operationSub"
+
+	operationDifferentiateNone = "operationDifferentiateNone"
+	operationDifferentiateSub = "operationDifferentiateSub"
+	operationDifferentiateAdd = "operationDifferentiateAdd"
 )
 
 type operation struct {
