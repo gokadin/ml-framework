@@ -8,16 +8,16 @@ import (
 type Tensor struct {
 	id string
 	mat [][]float64
-	grad [][]float64
-	operations []*operation
+	operation *operation
 }
 
 func NewTensor(mat [][]float64) *Tensor {
-	return &Tensor{
+	t := &Tensor{
 		id: uuid.New().String(),
         mat: mat,
-        operations: make([]*operation, 0),
 	}
+	t.operation = newOperation(operationNone, t, []*operation{})
+	return t
 }
 
 func NewRandomTensor(x, y int) *Tensor {
@@ -36,14 +36,10 @@ func (t *Tensor) Data() [][]float64 {
 	return t.mat
 }
 
+func (t *Tensor) Reduce(grad [][]float64, coefficient float64) {
+	t.mat = sub(t.mat, mulScalar(grad, coefficient))
+}
+
 func (t *Tensor) Equals(other *Tensor) bool {
 	return equals(t.mat, other.mat)
-}
-
-func (t *Tensor) ResetGradient() {
-	t.grad = nil
-}
-
-func (t *Tensor) Reduce(coefficient float64) {
-	t.mat = sub(t.mat, mulScalar(t.grad, coefficient))
 }

@@ -1,35 +1,23 @@
 package tensor
 
-func (t *Tensor) addOperation(operation *operation) {
-	t.operations = append(t.operations, operation)
+type Autograd struct {
+
 }
 
-func (t *Tensor) Backward() {
-	t.setInitialGradient()
-	t.backpropagate()
-}
+func NewAutograd() *Autograd {
+	return &Autograd{
 
-func (t *Tensor) backpropagate() {
-	for _, operation := range t.operations {
-		operation.backward()
-		for _, creator := range operation.creators {
-			if !creator.isLeaf() {
-                creator.backpropagate()
-			}
-		}
 	}
 }
 
-func (t *Tensor) isLeaf() bool {
-	return len(t.operations) == 0
+func (a *Autograd) Gradient(c, f *Tensor) [][]float64 {
+	return [][]float64{{1}}
 }
 
-func (t *Tensor) setInitialGradient() {
-	t.grad = make([][]float64, len(t.mat))
-	for i := range t.grad {
-		t.grad[i] = make([]float64, len(t.mat[i]))
-		for j := range t.grad[i] {
-			t.grad[i][j] = 1.0
+func (a *Autograd) pruneGraph(c, f *Tensor) *operation {
+    for _, children := range f.operation.children {
+        if children.tensor.id == c.id {
+
 		}
 	}
 }

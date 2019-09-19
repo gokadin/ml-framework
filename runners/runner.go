@@ -44,8 +44,7 @@ func (nr *NetworkRunner) Train(network *core.Network, inputs, target *tensor.Ten
 	for i := 1; i != nr.epochs; i++ {
         pred := network.Forward(inputs)
         loss := criterion.Forward(pred)
-        loss.Backward()
-        sgd.Step(coefficient)
+        sgd.Step(loss, coefficient)
 
         lossMean = loss.Data()[0][0] / float64(nr.batchSize)
         if i % 10000 == 0 {
