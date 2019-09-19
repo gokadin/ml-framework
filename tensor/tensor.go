@@ -6,7 +6,7 @@ import (
 )
 
 type Tensor struct {
-	id uuid.UUID
+	id string
 	mat [][]float64
 	grad [][]float64
 	operations []*operation
@@ -14,7 +14,7 @@ type Tensor struct {
 
 func NewTensor(mat [][]float64) *Tensor {
 	return &Tensor{
-		id: uuid.New(),
+		id: uuid.New().String(),
         mat: mat,
         operations: make([]*operation, 0),
 	}

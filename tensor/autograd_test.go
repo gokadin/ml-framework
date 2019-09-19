@@ -177,7 +177,7 @@ func Test_autograd_dot_withMultipleVectors(t *testing.T) {
 
     for i := 0; i < 10; i++ {
         pred := Dot(Dot(data, w[0]), w[1])
-        loss := SumX(Pow(Sub(pred, target), 2))
+        loss := Sum(Pow(Sub(pred, target), 2), 0)
 
         loss.Backward()
 
@@ -199,7 +199,7 @@ func Test_autograd_BackwardFullWithOneAssociationAndAutograd(t *testing.T) {
     w[1] = NewTensor([][]float64{{0.5}, {0.5}})
 
     pred := Dot(Dot(data, w[0]), w[1])
-    loss := SumX(Pow(Sub(pred, target), 2))
+    loss := Sum(Pow(Sub(pred, target), 2), 0)
 
     loss.Backward()
 

@@ -130,7 +130,7 @@ func (o *operation) backpropagatePowSelf() {
             }
         }
     } else {
-    	log.Fatal("get out of here")
+    	log.Fatal("get out of here it's not ready")
         //exponent := o.metadata[0] - 1
         //for i := range o.creators[0].grad {
         //    for j := range o.creators[0].grad[i] {

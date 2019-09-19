@@ -49,9 +49,13 @@ func Pow(a *Tensor, power float64) *Tensor {
 }
 
 func (t *Tensor) Pow(power float64) *Tensor {
-	t.mat = pow(t.mat, power)
-	t.addOperation(newOperationPowSelf(t, power))
-	return t
+	//t.mat = pow(t.mat, power)
+	//t.addOperation(newOperationPowSelf(t, power))
+	//return t
+
+	t2 := NewTensor(pow(t.mat, power))
+	t2.addOperation(newOperationPow(t2, []*Tensor{t}, power))
+	return t2
 }
 
 func Dot(a, b *Tensor) *Tensor {
