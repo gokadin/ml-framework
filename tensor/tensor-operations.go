@@ -39,6 +39,7 @@ func Div(a, b *Tensor) *Tensor {
 
 func Pow(a *Tensor, power float64) *Tensor {
 	t := NewTensor(pow(a.mat, power))
+	t.operation = newOperation(operationPow, t, []*operation{a.operation}, power)
 	return t
 }
 

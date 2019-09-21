@@ -23,7 +23,7 @@ func (sgd *SGD) Step(loss *tensor.Tensor, learningRate float64) {
 			continue
 		}
 		for _, parameter := range layer.GetParameters() {
-			grad := sgd.autograd.Gradient(parameter, loss)
+			grad := sgd.autograd.Derivative(parameter, loss)
             parameter.Reduce(grad, learningRate)
 		}
 	}

@@ -32,32 +32,44 @@ func calculateDerivativeHash(c, f *Tensor) string {
 
 func createDerivativeGraph(c, f *operation) []*operation {
     graph := make([]*operation, 0)
-    
+	graph = append(graph, f)
+
     current := f
 	for !current.isLeaf() {
+		current = findThatSpecialChild(c, current.children)
+		current.isMarked = true
 		graph = append(graph, current)
-		for _, child := range current.children {
-			if child.tensor.id == c.tensor.id {
-				current = child
-				break
-			}
-		}
 	}
+
+    return graph
 }
 
-func findThatSpecialChild(c *operation, children []*operation) int {
-    for i, child := range children {
+func findThatSpecialChild(c *operation, children []*operation) *operation {
+    for _, child := range children {
+    	if child.tensor.id == c.tensor.id {
+    		return child
+		}
         if leafIsInPath(c, child) {
-        	return i
+        	return child
 		}
 	}
     
     log.Fatal("no child was special")
-    return 0
+    return nil
 }
 
 func leafIsInPath(c, root *operation) bool {
-    
+    if root.tensor.id == c.tensor.id {
+    	return true
+	}
+
+    for _, child := range root.children {
+		if leafIsInPath(c, child) {
+			return true
+		}
+	}
+
+    return false
 }
 
 func findComponentOperation(leaf, root *operation) *operation {
@@ -73,13 +85,15 @@ func findComponentOperation(leaf, root *operation) *operation {
 	if marked == nil {
         log.Fatalf("did not find component")
 	}
+	
+	return nil
 }
 
 func optimize(f *operation) *operation {
-	
+    return nil
 }
 
 func computeDerivative(graph []*operation) [][]float64 {
-
+	return nil
 }
 

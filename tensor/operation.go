@@ -1,11 +1,14 @@
 package tensor
 
-import "log"
+import (
+	"log"
+)
 
 const (
 	operationNone = "operationNone"
 	operationAdd = "operationAdd"
 	operationSub = "operationSub"
+	operationPow = "operationPow"
 )
 
 type operation struct {
@@ -30,24 +33,42 @@ func (o *operation) isLeaf() bool {
 	return o.name == operationNone
 }
 
-func (o *operation) differentiate() {
+func (o *operation) differentiate() [][]float64 {
     switch o.name {
 	case operationNone:
-        o.gradient = o.tensor.mat
-		break
+        return generateIdentityGradient(o.tensor.mat)
+        //return o.tensor.mat
 	case operationAdd:
-        o.gradient = findMarkedChild(o).gradient
-		break
+        return findMarkedChild(o).differentiate()
 	case operationSub:
 		if o.children[0].isMarked {
-			o.gradient = o.children[0].gradient
-		} else if o.children[1].isMarked {
-			o.gradient = mulScalar(o.children[1].gradient, -1)
-		} else {
-			log.Fatal("could not find a marked child")
+			return o.children[0].differentiate()
 		}
-		break
+		if o.children[1].isMarked {
+			return mulScalar(o.children[1].differentiate(), -1)
+		}
+		log.Fatal("could not find a marked child")
+		return nil
+	case operationPow:
+		if o.metadata[0] == 2 {
+            return mul(mulScalar(o.children[0].tensor.mat, 2), o.children[0].differentiate())
+		}
+		return mul(mulScalar(pow(o.children[0].tensor.mat, o.metadata[0] - 1), o.metadata[0]), o.children[0].differentiate())
+	default:
+		log.Fatalf("differentiation not supported")
+		return nil
 	}
+}
+
+func generateIdentityGradient(mat [][]float64) [][]float64 {
+	grad := make([][]float64, len(mat))
+	for i := range grad {
+		grad[i] = make([]float64, len(mat[i]))
+		for j := range grad[i] {
+			grad[i][j] = 1
+		}
+	}
+	return grad
 }
 
 func findMarkedChild(operation *operation) *operation {
