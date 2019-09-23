@@ -72,28 +72,7 @@ func leafIsInPath(c, root *operation) bool {
     return false
 }
 
-func findComponentOperation(leaf, root *operation) *operation {
-    var marked *operation
-	for _, child := range root.children {
-		if child.tensor.id == leaf.tensor.id {
-            marked = child
-		}
-	}
-	
-	
-
-	if marked == nil {
-        log.Fatalf("did not find component")
-	}
-	
-	return nil
-}
-
-func optimize(f *operation) *operation {
-    return nil
-}
-
 func computeDerivative(graph []*operation) [][]float64 {
-	return nil
+	return graph[0].differentiate()
 }
 

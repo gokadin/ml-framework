@@ -29,6 +29,7 @@ func MulScalar(a *Tensor, scalar float64) *Tensor {
 
 func DivScalar(a *Tensor, scalar float64) *Tensor {
 	t := NewTensor(divScalar(a.mat, scalar))
+	t.operation = newOperation(operationDivScalar, t, []*operation{a.operation}, scalar)
 	return t
 }
 
@@ -54,11 +55,13 @@ func (t *Tensor) Pow(power float64) *Tensor {
 
 func Dot(a, b *Tensor) *Tensor {
 	t := NewTensor(dot(a.mat, b.mat))
+	t.operation = newOperation(operationDot, t, []*operation{a.operation, b.operation})
 	return t
 }
 
 func Sum(t *Tensor, axis int) *Tensor {
 	result := NewTensor(sum(t.mat, axis))
+	result.operation = newOperation(operationSum, result, []*operation{t.operation}, float64(axis))
 	return result
 }
 
