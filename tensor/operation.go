@@ -13,6 +13,7 @@ const (
 	operationSum = "operationSum"
 	operationExpand = "operationExpand"
 	operationDot = "operationDot"
+	operationActivationSigmoid = "operationActivationSigmoid"
 )
 
 type operation struct {
@@ -55,6 +56,8 @@ func (o *operation) differentiate(grad [][]float64) {
 		o.differentiateExpand(grad)
 	case operationDot:
 		o.differentiateDot(grad)
+	case operationActivationSigmoid:
+		o.differentiateActivationSigmoid(grad)
 	default:
 		log.Fatalf("differentiation not supported")
 	}
@@ -95,26 +98,28 @@ func (o *operation) differentiateDivScalar(grad [][]float64) {
 
 func (o *operation) differentiateSum(grad [][]float64) {
     if o.metadata[0] == 0 {
-    	o.children[0].gradient = o.differentiateSumX(grad)
+    	o.differentiateSumX(grad)
+    	return
 	}
 
     log.Fatal("sum y derivative not yet supported")
 }
 
-func (o *operation) differentiateSumX(grad [][]float64) [][]float64 {
-	return expand(grad, 0, len(o.children[0].tensor.mat))
+func (o *operation) differentiateSumX(grad [][]float64) {
+	o.children[0].gradient = expand(grad, 0, len(o.children[0].tensor.mat))
 }
 
 func (o *operation) differentiateExpand(grad [][]float64) {
 	if o.metadata[0] == 0 {
-        o.children[0].gradient = o.differentiateExpandX(grad)
+        o.differentiateExpandX(grad)
+        return
 	}
 
 	log.Fatal("expand y derivative not yet supported")
 }
 
-func (o *operation) differentiateExpandX(grad [][]float64) [][]float64 {
-    return sum(grad, 0)
+func (o *operation) differentiateExpandX(grad [][]float64) {
+    o.children[0].gradient = sum(grad, 0)
 }
 
 func (o *operation) differentiateDot(grad [][]float64) {
@@ -124,6 +129,10 @@ func (o *operation) differentiateDot(grad [][]float64) {
 	if o.children[1].tensor.isGradientEnabled {
 		o.children[1].gradient = transpose(dot(transpose(grad), o.children[0].tensor.mat))
 	}
+}
+
+func (o *operation) differentiateActivationSigmoid(grad [][]float64) {
+	o.children[0].gradient = mul(grad, mul(o.tensor.mat, subFromScalar(o.tensor.mat, 1)))
 }
 
 func generateIdentityGradient(mat [][]float64) [][]float64 {

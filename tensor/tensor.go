@@ -49,3 +49,17 @@ func (t *Tensor) Equals(other *Tensor) bool {
 func (t *Tensor) DisableGradient() {
 	t.isGradientEnabled = false
 }
+
+func (t *Tensor) Backward() {
+	t.operation.gradient = generateIdentityGradient(t.mat)
+	t.backpropagate()
+}
+
+func (t *Tensor) backpropagate() {
+	t.operation.differentiate(t.operation.gradient)
+	for _, child := range t.operation.children {
+		if !child.isLeaf() {
+			child.tensor.backpropagate()
+		}
+	}
+}

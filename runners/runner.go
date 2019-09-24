@@ -34,7 +34,6 @@ func NewNetworkRunner() *NetworkRunner {
 }
 
 func (nr *NetworkRunner) Train(network *core.Network, inputs, target *tensor.Tensor) {
-	autograd := tensor.NewAutograd()
     sgd := NewSGD(network)
     criterion := NewCriterion(lossFunctionMeanSquared, target)
     var lossMean float64
@@ -45,8 +44,8 @@ func (nr *NetworkRunner) Train(network *core.Network, inputs, target *tensor.Ten
 	for i := 1; i != nr.epochs; i++ {
         pred := network.Forward(inputs)
         loss := criterion.Forward(pred)
-        autograd.Backward(loss)
-        sgd.Step(loss, coefficient)
+        loss.Backward()
+        sgd.Step(coefficient)
 
         lossMean = loss.Data()[0][0] / float64(nr.batchSize)
         if i % 10000 == 0 {
@@ -57,7 +56,7 @@ func (nr *NetworkRunner) Train(network *core.Network, inputs, target *tensor.Ten
         }
         if lossMean < nr.maxError {
             fmt.Println("Finished in", i, "loss:", lossMean)
-            fmt.Println(aveTime / int64(i / 10000))
+            //fmt.Println(aveTime / int64(i / 10000))
             break
         }
     }
