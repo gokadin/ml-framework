@@ -18,5 +18,6 @@ func main() {
 	target := tensor.NewTensor([][]float64{{1}, {0}, {1}, {0}})
 
 	runner := runners.NewNetworkRunner()
+	runner.SetBatchSize(4)
 	runner.Train(net, data, target)
 }
