@@ -4,6 +4,15 @@ import (
     "fmt"
     "github.com/gokadin/ml-framework/core"
     "github.com/gokadin/ml-framework/tensor"
+    "time"
+)
+
+const (
+    defaultLearningRate = 0.01
+    defaultBatchSize = 1
+    defaultEpochs = 0
+    defaultMaxError = 0.001
+    defaultValidOutputRange = 0.1
 )
 
 type NetworkRunner struct {
@@ -16,33 +25,41 @@ type NetworkRunner struct {
 
 func NewNetworkRunner() *NetworkRunner {
     return &NetworkRunner{
-        learningRate: 0.01,
-        batchSize: 1,
-        epochs: -1,
-        maxError: 0.001,
-        validOutputRange: 0.1,
+        learningRate: defaultLearningRate,
+        batchSize: defaultBatchSize,
+        epochs: defaultEpochs,
+        maxError: defaultMaxError,
+        validOutputRange: defaultValidOutputRange,
     }
 }
 
 func (nr *NetworkRunner) Train(network *core.Network, inputs, target *tensor.Tensor) {
     sgd := NewSGD(network)
     criterion := NewCriterion(lossFunctionMeanSquared, target)
-    lossMean := 1.0
-    iterations := 0
-    for lossMean > nr.maxError {
-        //for i := 0; i < 10; i++ {
+    var lossMean float64
+    coefficient := nr.learningRate
+
+    var aveTime int64
+    t := time.Now().UnixNano()
+	for i := 1; i != nr.epochs; i++ {
         pred := network.Forward(inputs)
         loss := criterion.Forward(pred)
         loss.Backward()
-        sgd.Step(nr.learningRate, len(inputs.Data()))
-        lossMean = loss.Data()[0][0] / 4.0
-        if iterations % 10000 == 0 {
-            fmt.Println("Epoch", iterations, "finished with error", lossMean)
-        }
-        iterations++
-    }
+        sgd.Step(coefficient)
 
-    fmt.Println("Finished in", iterations, "loss:", lossMean)
+        lossMean = loss.Data()[0][0] / float64(nr.batchSize)
+        if i % 10000 == 0 {
+            fmt.Println("Epoch", i, "finished with error", lossMean)
+            t2ms := (time.Now().UnixNano() - t) / int64(time.Millisecond)
+            aveTime += t2ms
+            t = time.Now().UnixNano()
+        }
+        if lossMean < nr.maxError {
+            fmt.Println("Finished in", i, "loss:", lossMean)
+            //fmt.Println(aveTime / int64(i / 10000))
+            break
+        }
+    }
 }
 
 func (nr *NetworkRunner) SetBatchSize(batchSize int) {

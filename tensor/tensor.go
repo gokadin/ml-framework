@@ -6,20 +6,20 @@ import (
 )
 
 type Tensor struct {
-	id uuid.UUID
+	id string
 	mat [][]float64
-	grad [][]float64
-	creators []*Tensor
-	creationOperator string
-    creationMetadataFloat64 float64
+	isGradientEnabled bool
+	operation *operation
 }
 
 func NewTensor(mat [][]float64) *Tensor {
-	return &Tensor{
-		id: uuid.New(),
+	t := &Tensor{
+		id: uuid.New().String(),
         mat: mat,
-        creators: make([]*Tensor, 0),
+        isGradientEnabled: true,
 	}
+	t.operation = newOperation(operationNone, t, []*operation{})
+	return t
 }
 
 func NewRandomTensor(x, y int) *Tensor {
@@ -34,25 +34,32 @@ func NewRandomTensor(x, y int) *Tensor {
     return NewTensor(mat)
 }
 
-func (t *Tensor) addCreator(creationOperation string, creators ...*Tensor) {
-	t.creationOperator = creationOperation
-	for _, creator := range creators {
-		t.creators = append(t.creators, creator)
-	}
-}
-
 func (t *Tensor) Data() [][]float64 {
 	return t.mat
+}
+
+func (t *Tensor) Reduce(coefficient float64) {
+	t.mat = sub(t.mat, mulScalar(t.operation.gradient, coefficient))
 }
 
 func (t *Tensor) Equals(other *Tensor) bool {
 	return equals(t.mat, other.mat)
 }
 
-func (t *Tensor) ResetGradient() {
-	t.grad = mulScalar(t.grad, 0)
+func (t *Tensor) DisableGradient() {
+	t.isGradientEnabled = false
 }
 
-func (t *Tensor) ReduceFromGradient(coefficient float64, count int) {
-	t.mat = sub(t.mat, divScalar(mulScalar(t.grad, coefficient), float64(count)))
+func (t *Tensor) Backward() {
+	t.operation.gradient = generateIdentityGradient(t.mat)
+	t.backpropagate()
+}
+
+func (t *Tensor) backpropagate() {
+	t.operation.differentiate(t.operation.gradient)
+	for _, child := range t.operation.children {
+		if !child.isLeaf() {
+			child.tensor.backpropagate()
+		}
+	}
 }
