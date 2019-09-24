@@ -11,27 +11,25 @@ const (
 
 type Criterion struct {
     lossFunctionName string
-	target *tensor.Tensor
 }
 
-func NewCriterion(lossFunctionName string, target *tensor.Tensor) *Criterion {
+func NewCriterion(lossFunctionName string) *Criterion {
 	return &Criterion{
 		lossFunctionName: lossFunctionName,
-		target: target,
 	}
 }
 
-func (c *Criterion) Forward(pred *tensor.Tensor) *tensor.Tensor {
+func (c *Criterion) Forward(pred, target *tensor.Tensor) *tensor.Tensor {
     switch c.lossFunctionName {
 	case lossFunctionMeanSquared:
-		return c.forwardMeanSquared(pred)
+		return c.forwardMeanSquared(pred, target)
 	default:
 		log.Fatal("loss function is not defined")
 		return nil
 	}
 }
 
-func (c *Criterion) forwardMeanSquared(pred *tensor.Tensor) *tensor.Tensor {
+func (c *Criterion) forwardMeanSquared(pred, target *tensor.Tensor) *tensor.Tensor {
 	//return tensor.DivScalar(tensor.Sum(pred.Sub(c.target).Pow(2), 0), 2)
-	return tensor.DivScalar(tensor.Sum(tensor.Pow(tensor.Sub(pred, c.target), 2), 0), 2)
+	return tensor.DivScalar(tensor.Sum(tensor.Pow(tensor.Sub(pred, target), 2), 0), 2)
 }

@@ -35,19 +35,27 @@ func NewNetworkRunner() *NetworkRunner {
 
 func (nr *NetworkRunner) Train(network *core.Network, inputs, target *tensor.Tensor) {
     sgd := NewSGD(network)
-    criterion := NewCriterion(lossFunctionMeanSquared, target)
-    var lossMean float64
-    coefficient := nr.learningRate
+    criterion := NewCriterion(lossFunctionMeanSquared)
+    coefficient := nr.learningRate / float64(nr.batchSize)
+    numBatches := len(inputs.Data()) / nr.batchSize
 
     var aveTime int64
     t := time.Now().UnixNano()
 	for i := 1; i != nr.epochs; i++ {
-        pred := network.Forward(inputs)
-        loss := criterion.Forward(pred)
-        loss.Backward()
-        sgd.Step(coefficient)
+		lossMean := 0.0
+		shuffleDataset(inputs.Data(), target.Data())
+		for batchCounter := 0; batchCounter < numBatches; batchCounter++ {
+		    batchInputs := tensor.NewTensor(partitionData(inputs.Data(), batchCounter, nr.batchSize))
+            batchTarget := tensor.NewTensor(partitionData(target.Data(), batchCounter, nr.batchSize))
 
-        lossMean = loss.Data()[0][0] / float64(nr.batchSize)
+            pred := network.Forward(batchInputs)
+            loss := criterion.Forward(pred, batchTarget)
+            lossMean += loss.Data()[0][0]
+            loss.Backward()
+            sgd.Step(coefficient)
+        }
+
+        lossMean /= float64(nr.batchSize)
         if i % 10000 == 0 {
             fmt.Println("Epoch", i, "finished with error", lossMean)
             t2ms := (time.Now().UnixNano() - t) / int64(time.Millisecond)
@@ -56,7 +64,7 @@ func (nr *NetworkRunner) Train(network *core.Network, inputs, target *tensor.Ten
         }
         if lossMean < nr.maxError {
             fmt.Println("Finished in", i, "loss:", lossMean)
-            //fmt.Println(aveTime / int64(i / 10000))
+            fmt.Println(aveTime / int64(i / 10000))
             break
         }
     }
