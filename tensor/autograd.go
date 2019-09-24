@@ -13,7 +13,11 @@ func NewAutograd() *Autograd {
 }
 
 func (a *Autograd) Derivative(c, f *Tensor) [][]float64 {
-	return computeDerivative(a.getDerivativeGraph(c, f))
+	return computeDerivative(f.operation, a.getDerivativeGraph(c, f))
+}
+
+func (a *Autograd) Backward() {
+
 }
 
 func (a *Autograd) getDerivativeGraph(c, f *Tensor) []*operation {
@@ -41,7 +45,21 @@ func createDerivativeGraph(c, f *operation) []*operation {
 		graph = append(graph, current)
 	}
 
-    return graph
+    return optimizeGraph(graph)
+}
+
+func optimizeGraph(graph []*operation) []*operation {
+	optimized := make([]*operation, 0)
+    for _, operation := range graph {
+    	if operation.name == operationNone || operation.name == operationAdd {
+            continue
+		}
+    	if operation.name == operationSub && operation.children[0].isMarked {
+    		continue
+		}
+    	optimized = append(optimized, operation)
+	}
+    return optimized
 }
 
 func findThatSpecialChild(c *operation, children []*operation) *operation {
@@ -72,7 +90,11 @@ func leafIsInPath(c, root *operation) bool {
     return false
 }
 
-func computeDerivative(graph []*operation) [][]float64 {
-	return graph[0].differentiate()
+func computeDerivative(root *operation, graph []*operation) [][]float64 {
+	grad := generateIdentityGradient(root.tensor.mat)
+	for _, operation := range graph {
+        grad = operation.differentiate(grad)
+	}
+    return grad
 }
 

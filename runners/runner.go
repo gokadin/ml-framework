@@ -34,16 +34,18 @@ func NewNetworkRunner() *NetworkRunner {
 }
 
 func (nr *NetworkRunner) Train(network *core.Network, inputs, target *tensor.Tensor) {
+	autograd := tensor.NewAutograd()
     sgd := NewSGD(network)
     criterion := NewCriterion(lossFunctionMeanSquared, target)
     var lossMean float64
-    coefficient := nr.learningRate / 4.0//float64(nr.batchSize)
+    coefficient := nr.learningRate
 
     var aveTime int64
     t := time.Now().UnixNano()
 	for i := 1; i != nr.epochs; i++ {
         pred := network.Forward(inputs)
         loss := criterion.Forward(pred)
+        autograd.Backward(loss)
         sgd.Step(loss, coefficient)
 
         lossMean = loss.Data()[0][0] / float64(nr.batchSize)

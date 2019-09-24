@@ -2,175 +2,124 @@ package tensor
 
 import (
     "github.com/stretchr/testify/assert"
+    "github.com/stretchr/testify/suite"
     "testing"
 )
 
 /** GENERAL **/
 
-func Test_Autograd_operationName(t *testing.T) {
-    a := NewTensor([][]float64{{1, 1}, {1, 1}})
-    b := NewTensor([][]float64{{1, 1}, {1, 1}})
-
-    c := Add(a, b)
-
-    assert.Equal(t, operationAdd, c.operation.name)
+type AutogradTestSuite struct {
+    suite.Suite
+    autograd *Autograd
 }
 
-func Test_Autograd_operationChildren(t *testing.T) {
-    a := NewTensor([][]float64{{1, 1}, {1, 1}})
-    b := NewTensor([][]float64{{1, 1}, {1, 1}})
-
-    c := Add(a, b)
-
-    assert.Equal(t, 2, len(c.operation.children))
+func (s *AutogradTestSuite) SetupTest() {
+    s.autograd = NewAutograd()
 }
 
-func Test_Autograd_operationChildrenAreLeaf(t *testing.T) {
-    a := NewTensor([][]float64{{1, 1}, {1, 1}})
-    b := NewTensor([][]float64{{1, 1}, {1, 1}})
-
-    c := Add(a, b)
-
-    assert.True(t, c.operation.children[0].isLeaf())
-    assert.True(t, c.operation.children[1].isLeaf())
-}
-
-func Test_Autograd_Gradient_prunesGraphCorrectly(t *testing.T) {
-    a := NewTensor([][]float64{{1, 1}, {1, 1}})
-    b := NewTensor([][]float64{{2, 1}, {1, 1}})
-    c := Add(a, b)
-    d := NewTensor([][]float64{{3, 1}, {1, 1}})
-    e := Add(c, d)
-
-    graph := createDerivativeGraph(b.operation, e.operation)
-
-    assert.Equal(t, graph[0].tensor.id, e.id)
-    assert.Equal(t, graph[1].tensor.id, c.id)
-    assert.Equal(t, graph[2].tensor.id, b.id)
+func TestAutogradTestSuite(t *testing.T) {
+    suite.Run(t, new(AutogradTestSuite))
 }
 
 /* DERIVATIVES */
 
-func Test_Autograd_Gradient_Derivative(t *testing.T) {
-    a := NewTensor([][]float64{{1}})
-    b := NewTensor([][]float64{{2}})
-    c := Add(a, b)
-    d := NewTensor([][]float64{{3}})
-    e := Add(c, d)
-    graph := createDerivativeGraph(b.operation, e.operation)
-
-    grad := graph[0].differentiate()
-
-    assert.Equal(t, [][]float64{{1}}, grad)
-}
-
-func Test_Autograd_Differentiate_Add(t *testing.T) {
+func (s *AutogradTestSuite) Test_Autograd_Differentiate_Add() {
     a := NewTensor([][]float64{{1}})
     b := NewTensor([][]float64{{2}})
     e := Add(a, b)
-    graph := createDerivativeGraph(a.operation, e.operation)
 
-    grad := graph[0].differentiate()
+    grad := s.autograd.Derivative(a, e)
 
-    assert.Equal(t, [][]float64{{1}}, grad)
+    assert.Equal(s.T(), [][]float64{{1}}, grad)
 }
 
-func Test_Autograd_Differentiate_Add_chain(t *testing.T) {
+func (s *AutogradTestSuite) Test_Autograd_Differentiate_Add_chain() {
     a := NewTensor([][]float64{{1}})
     b := NewTensor([][]float64{{2}})
     c := Pow(a, 2)
     e := Add(c, b)
-    graph := createDerivativeGraph(a.operation, e.operation)
 
-    grad := graph[0].differentiate()
+    grad := s.autograd.Derivative(a, e)
 
-    assert.Equal(t, [][]float64{{2}}, grad)
+    assert.Equal(s.T(), [][]float64{{2}}, grad)
 }
 
-func Test_Autograd_Differentiate_Sub(t *testing.T) {
+func (s *AutogradTestSuite) Test_Autograd_Differentiate_Sub() {
     a := NewTensor([][]float64{{1}})
     b := NewTensor([][]float64{{2}})
     e := Sub(a, b)
-    graph := createDerivativeGraph(a.operation, e.operation)
 
-    grad := graph[0].differentiate()
+    grad := s.autograd.Derivative(a, e)
 
-    assert.Equal(t, [][]float64{{1}}, grad)
+    assert.Equal(s.T(), [][]float64{{1}}, grad)
 }
 
-func Test_Autograd_Differentiate_SubAndDeriveB(t *testing.T) {
+func (s *AutogradTestSuite) Test_Autograd_Differentiate_SubAndDeriveB() {
     a := NewTensor([][]float64{{1}})
     b := NewTensor([][]float64{{2}})
     e := Sub(a, b)
-    graph := createDerivativeGraph(b.operation, e.operation)
 
-    grad := graph[0].differentiate()
+    grad := s.autograd.Derivative(b, e)
 
-    assert.Equal(t, [][]float64{{-1}}, grad)
+    assert.Equal(s.T(), [][]float64{{-1}}, grad)
 }
 
-func Test_Autograd_Differentiate_Sub_chain(t *testing.T) {
+func (s *AutogradTestSuite) Test_Autograd_Differentiate_Sub_chain() {
     a := NewTensor([][]float64{{1}})
     b := NewTensor([][]float64{{2}})
     c := Pow(b, 2)
     e := Sub(a, c)
-    graph := createDerivativeGraph(b.operation, e.operation)
 
-    grad := graph[0].differentiate()
+    grad := s.autograd.Derivative(b, e)
 
-    assert.Equal(t, [][]float64{{-4}}, grad)
+    assert.Equal(s.T(), [][]float64{{-4}}, grad)
 }
 
-func Test_Autograd_Differentiate_power(t *testing.T) {
+func (s *AutogradTestSuite) Test_Autograd_Differentiate_power() {
     a := NewTensor([][]float64{{2}})
     e := Pow(a, 2)
-    graph := createDerivativeGraph(a.operation, e.operation)
 
-    grad := graph[0].differentiate()
+    grad := s.autograd.Derivative(a, e)
 
-    assert.Equal(t, [][]float64{{4}}, grad)
+    assert.Equal(s.T(), [][]float64{{4}}, grad)
 }
 
-func Test_Autograd_Differentiate_powerHigherThanTwo(t *testing.T) {
+func (s *AutogradTestSuite) Test_Autograd_Differentiate_powerHigherThanTwo() {
     a := NewTensor([][]float64{{2}})
     e := Pow(a, 4)
-    graph := createDerivativeGraph(a.operation, e.operation)
 
-    grad := graph[0].differentiate()
+    grad := s.autograd.Derivative(a, e)
 
-    assert.Equal(t, [][]float64{{32}}, grad)
+    assert.Equal(s.T(), [][]float64{{32}}, grad)
 }
 
-func Test_Autograd_Differentiate_power_chain(t *testing.T) {
+func (s *AutogradTestSuite) Test_Autograd_Differentiate_power_chain() {
     a := NewTensor([][]float64{{2}})
     b := Pow(a, 2)
     e := Pow(b, 2)
-    graph := createDerivativeGraph(a.operation, e.operation)
 
-    grad := graph[0].differentiate()
+    grad := s.autograd.Derivative(a, e)
 
-    assert.Equal(t, [][]float64{{32}}, grad)
+    assert.Equal(s.T(), [][]float64{{32}}, grad)
 }
 
-func Test_Autograd_Differentiate_divScalar(t *testing.T) {
+func (s *AutogradTestSuite) Test_Autograd_Differentiate_divScalar() {
     a := NewTensor([][]float64{{2}})
     e := DivScalar(a, 2)
-    graph := createDerivativeGraph(a.operation, e.operation)
 
-    grad := graph[0].differentiate()
+    grad := s.autograd.Derivative(a, e)
 
-    assert.Equal(t, [][]float64{{0.5}}, grad)
+    assert.Equal(s.T(), [][]float64{{0.5}}, grad)
 }
 
-func Test_Autograd_Differentiate_divScalar_chain(t *testing.T) {
+func (s *AutogradTestSuite) Test_Autograd_Differentiate_divScalar_chain() {
     a := NewTensor([][]float64{{2}})
     b := Pow(a, 2)
     e := DivScalar(b, 2)
-    graph := createDerivativeGraph(a.operation, e.operation)
 
-    grad := graph[0].differentiate()
+    grad := s.autograd.Derivative(a, e)
 
-    assert.Equal(t, [][]float64{{2}}, grad)
+    assert.Equal(s.T(), [][]float64{{2}}, grad)
 }
 
 func Test_Autograd_Differentiate_sum_0(t *testing.T) {
@@ -178,7 +127,7 @@ func Test_Autograd_Differentiate_sum_0(t *testing.T) {
     e := Sum(a, 0)
     graph := createDerivativeGraph(a.operation, e.operation)
 
-    grad := graph[0].differentiate()
+    grad := graph[0].differentiate(generateIdentityGradient(e.mat))
 
     assert.Equal(t, [][]float64{{3, 3}, {3, 3}, {3, 3}}, grad)
 }
@@ -189,134 +138,171 @@ func Test_Autograd_Differentiate_sum_0_chain(t *testing.T) {
     e := Sum(b, 0)
     graph := createDerivativeGraph(a.operation, e.operation)
 
-    grad := graph[0].differentiate()
+    grad := graph[0].differentiate(generateIdentityGradient(e.mat))
 
     assert.Equal(t, [][]float64{{6, 6}, {6, 6}, {6, 6}}, grad)
 }
 
-func Test_Autograd_Differentiate_dotForA(t *testing.T) {
+func (s *AutogradTestSuite) Test_Autograd_Differentiate_dotForA() {
     a := NewTensor([][]float64{{1, 2}, {2, 1}})
     b := NewTensor([][]float64{{0, 3}, {1, 1}})
     e := Dot(a, b)
-    graph := createDerivativeGraph(a.operation, e.operation)
 
-    grad := graph[0].differentiate()
+    grad := s.autograd.Derivative(a, e)
 
-    assert.Equal(t, [][]float64{{15, 7}, {21, 8}}, grad)
+    assert.Equal(s.T(), [][]float64{{3, 2}, {3, 2}}, grad)
 }
 
-func Test_Autograd_Differentiate_dotForB(t *testing.T) {
+func (s *AutogradTestSuite) Test_Autograd_Differentiate_dotForB() {
     a := NewTensor([][]float64{{1, 2}, {2, 1}})
     b := NewTensor([][]float64{{0, 3}, {1, 1}})
     e := Dot(a, b)
-    graph := createDerivativeGraph(b.operation, e.operation)
 
-    grad := graph[0].differentiate()
+    grad := s.autograd.Derivative(b, e)
 
-    assert.Equal(t, [][]float64{{4, 19}, {5, 17}}, grad)
+    assert.Equal(s.T(), [][]float64{{3, 3}, {3, 3}}, grad)
 }
 
 /* DERIVATIVE COMBINATIONS */
 
-func Test_Autograd_Gradient_DerivativePow(t *testing.T) {
+func (s *AutogradTestSuite) Test_Autograd_Gradient_DerivativePow() {
     a := NewTensor([][]float64{{1}})
     b := NewTensor([][]float64{{2}})
     c := Add(a, b)
     e := Pow(c, 2)
-    graph := createDerivativeGraph(b.operation, e.operation)
 
-	grad := graph[0].differentiate()
+	grad := s.autograd.Derivative(b, e)
 
-    assert.Equal(t, [][]float64{{6}}, grad)
+    assert.Equal(s.T(), [][]float64{{6}}, grad)
 }
 
-func Test_Autograd_Gradient_DerivativePowComplicated(t *testing.T) {
+func (s *AutogradTestSuite) Test_Autograd_Gradient_DerivativePowComplicated() {
     a := NewTensor([][]float64{{1}})
     b := NewTensor([][]float64{{2}})
     d := NewTensor([][]float64{{3}})
     c := Sub(b, d)
     f := Pow(c, 3)
     e := Sub(a, f)
-    graph := createDerivativeGraph(d.operation, e.operation)
 
-    grad := graph[0].differentiate()
+    grad := s.autograd.Derivative(d, e)
 
-    assert.Equal(t, [][]float64{{3}}, grad)
+    assert.Equal(s.T(), [][]float64{{3}}, grad)
 }
 
-func Test_Autograd_Gradient_DerivativeErrorSimple(t *testing.T) {
+func (s *AutogradTestSuite) Test_Autograd_Gradient_DerivativeErrorSimple() {
     y := NewTensor([][]float64{{1}})
     yHat := NewTensor([][]float64{{2}})
     e := DivScalar(Sum(Pow(Sub(y, yHat), 2), 0), 2)
-    graph := createDerivativeGraph(y.operation, e.operation)
 
-    grad := graph[0].differentiate()
+    grad := s.autograd.Derivative(y, e)
 
-    assert.Equal(t, [][]float64{{-1}}, grad)
+    assert.Equal(s.T(), [][]float64{{-1}}, grad)
 }
 
-func Test_Autograd_Gradient_DerivativeErrorSimpleMultipleValues(t *testing.T) {
+func (s *AutogradTestSuite) Test_Autograd_Gradient_DerivativeErrorSimpleMultipleValues() {
     y := NewTensor([][]float64{{1, 1}})
     yHat := NewTensor([][]float64{{2, 2}})
     e := DivScalar(Sum(Pow(Sub(y, yHat), 2), 0), 2)
-    graph := createDerivativeGraph(y.operation, e.operation)
 
-    grad := graph[0].differentiate()
+    grad := s.autograd.Derivative(y, e)
 
-    assert.Equal(t, [][]float64{{-1, -1}}, grad)
+    assert.Equal(s.T(), [][]float64{{-1, -1}}, grad)
 }
 
-func Test_Autograd_Gradient_DerivativeErrorFullForWWithSingleValue(t *testing.T) {
+func (s *AutogradTestSuite) Test_Autograd_Gradient_DerivativeErrorFullForWWithSingleValue() {
     x := NewTensor([][]float64{{1}})
     w := NewTensor([][]float64{{1}})
     yHat := NewTensor([][]float64{{2}})
     e := DivScalar(Sum(Pow(Sub(Dot(x, w), yHat), 2), 0), 2)
-    graph := createDerivativeGraph(w.operation, e.operation)
 
-    grad := graph[0].differentiate()
+    grad := s.autograd.Derivative(w, e)
 
-    assert.Equal(t, [][]float64{{-1}}, grad)
+    assert.Equal(s.T(), [][]float64{{-1}}, grad)
 }
 
-func Test_Autograd_Gradient_DerivativeErrorFullForW(t *testing.T) {
+func (s *AutogradTestSuite) Test_Autograd_Gradient_DerivativeErrorFullForW() {
     x := NewTensor([][]float64{{0, 1}})
     w := NewTensor([][]float64{{1, 1}, {1, 1}})
     yHat := NewTensor([][]float64{{2, 2}})
-    y := Dot(x, w)
-    diff := Sub(y, yHat)
-    power := Pow(diff, 2)
-    //summation := Sum(power, 0)
-    e := DivScalar(power, 2)
-    graph := createDerivativeGraph(w.operation, e.operation)
+    e := DivScalar(Sum(Pow(Sub(Dot(x, w), yHat), 2), 0), 2)
 
-    grad := graph[0].differentiate()
+    grad := s.autograd.Derivative(w, e)
 
-    assert.Equal(t, [][]float64{{0, -1}, {0, -1}}, grad)
+    assert.Equal(s.T(), [][]float64{{0, 0}, {-1, -1}}, grad)
 }
 
-func Test_Autograd_Gradient_DerivativeOfDotAndSub(t *testing.T) {
+func (s *AutogradTestSuite) Test_Autograd_Gradient_DerivativeOfDotAndSub() {
     x := NewTensor([][]float64{{0, 1}})
     w := NewTensor([][]float64{{1, 1}, {1, 1}})
     yHat := NewTensor([][]float64{{2, 2}})
-    y := Dot(x, w)
-    e := Sub(y, yHat)
-    graph := createDerivativeGraph(w.operation, e.operation)
+    e := Sub(Dot(x, w), yHat)
 
-    grad := graph[0].differentiate()
+    grad := s.autograd.Derivative(w, e)
 
-    assert.Equal(t, [][]float64{{0, 0}, {1, 1}}, grad)
+    assert.Equal(s.T(), [][]float64{{0, 0}, {1, 1}}, grad)
 }
 
-func Test_Autograd_Gradient_DerivativeOfDotSubAndPow(t *testing.T) {
+func (s *AutogradTestSuite) Test_Autograd_Gradient_DerivativeOfDotSubAndPow() {
     x := NewTensor([][]float64{{0, 1}})
     w := NewTensor([][]float64{{1, 1}, {1, 1}})
     yHat := NewTensor([][]float64{{2, 2}})
-    y := Dot(x, w)
-    s := Sub(y, yHat)
-    e := Pow(s, 2)
-    graph := createDerivativeGraph(w.operation, e.operation)
+    e := Pow(Sub(Dot(x, w), yHat), 2)
 
-    grad := graph[0].differentiate()
+    grad := s.autograd.Derivative(w, e)
 
-    assert.Equal(t, [][]float64{{0, 0}, {-2, -2}}, grad)
+    assert.Equal(s.T(), [][]float64{{0, 0}, {-2, -2}}, grad)
+}
+
+/* CACHE */
+
+func (s *AutogradTestSuite) Test_Cache_createsAnEntryForAGeneratedGraph() {
+    x := NewTensor([][]float64{{0, 1}})
+    w := NewTensor([][]float64{{1, 1}, {1, 1}})
+    yHat := NewTensor([][]float64{{2, 2}})
+    e := Pow(Sub(Dot(x, w), yHat), 2)
+
+    s.autograd.Derivative(w, e)
+
+    assert.Equal(s.T(), 1, len(s.autograd.cache))
+    hash := calculateDerivativeHash(w, e)
+	_, ok := s.autograd.cache[hash]
+    assert.True(s.T(), ok)
+}
+
+func (s *AutogradTestSuite) Test_Cache_noNewCacheIsCreatedWhenCallingTheSameDerivativeTwice() {
+    x := NewTensor([][]float64{{0, 1}})
+    w := NewTensor([][]float64{{1, 1}, {1, 1}})
+    yHat := NewTensor([][]float64{{2, 2}})
+    e := Pow(Sub(Dot(x, w), yHat), 2)
+
+    s.autograd.Derivative(w, e)
+    s.autograd.Derivative(w, e)
+
+    assert.Equal(s.T(), 1, len(s.autograd.cache))
+}
+
+func (s *AutogradTestSuite) Test_Cache_thereAreTwoCacheEntriesForTwoDifferentDerivatives() {
+    x := NewTensor([][]float64{{0, 1}})
+    w := NewTensor([][]float64{{1, 1}, {1, 1}})
+    yHat := NewTensor([][]float64{{2, 2}})
+    e := Pow(Sub(Dot(x, w), yHat), 2)
+
+    s.autograd.Derivative(w, e)
+    s.autograd.Derivative(x, e)
+
+    assert.Equal(s.T(), 2, len(s.autograd.cache))
+}
+
+/* GRAPH OPTIMIZATION */
+
+func (s *AutogradTestSuite) Test_optimization_removesAddOperations() {
+    a := NewTensor([][]float64{{1}})
+    b := NewTensor([][]float64{{2}})
+    c := Pow(b, 2)
+    e := Add(c, a)
+
+    s.autograd.Derivative(b, e)
+
+    graph := s.autograd.getDerivativeGraph(b, e)
+    assert.Equal(s.T(), 1, len(graph))
 }

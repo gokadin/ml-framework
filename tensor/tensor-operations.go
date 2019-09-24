@@ -67,5 +67,6 @@ func Sum(t *Tensor, axis int) *Tensor {
 
 func Expand(t *Tensor, axis, copies int) *Tensor {
 	result := NewTensor(expand(t.mat, axis, copies))
+	result.operation = newOperation(operationExpand, result, []*operation{t.operation}, float64(axis))
 	return result
 }
