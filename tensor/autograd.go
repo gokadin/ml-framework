@@ -16,8 +16,15 @@ func (a *Autograd) Derivative(c, f *Tensor) [][]float64 {
 	return computeDerivative(f.operation, a.getDerivativeGraph(f))
 }
 
-func (a *Autograd) Backward() {
+func (a *Autograd) Backward(t *Tensor) {
+    a.backwardRecursive(t, generateIdentityGradient(t.mat))
+}
 
+func (a *Autograd) backwardRecursive(t *Tensor, grad [][]float64) {
+	t.operation.differentiate(grad)
+	for _, child := range t.operation.children {
+        a.backwardRecursive(child.tensor, t.operation.gradient)
+	}
 }
 
 func (a *Autograd) getDerivativeGraph(t *Tensor) []*operation {
@@ -39,7 +46,7 @@ func createDerivativeGraph(f *operation) []*operation {
 
     current := f
 	for !current.isLeaf() {
-		current = findThatSpecialChild(c, current.children)
+		//current = findThatSpecialChild(c, current.children)
 		current.isMarked = true
 		graph = append(graph, current)
 	}

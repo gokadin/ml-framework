@@ -292,3 +292,14 @@ func (s *AutogradTestSuite) Test_Cache_thereAreTwoCacheEntriesForTwoDifferentDer
 }
 
 /* GRAPH OPTIMIZATION */
+
+func (s *AutogradTestSuite) Test_Some() {
+    x := NewTensor([][]float64{{0, 1}})
+    w := NewTensor([][]float64{{1, 1}, {1, 1}})
+    yHat := NewTensor([][]float64{{2, 2}})
+    e := DivScalar(Sum(Pow(Sub(Dot(x, w), yHat), 2), 0), 2)
+
+    s.autograd.Backward(e)
+
+    assert.Equal(s.T(), [][]float64{{0, 0}, {-1, -1}}, w.operation.gradient)
+}
