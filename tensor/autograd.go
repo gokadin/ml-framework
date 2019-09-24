@@ -13,28 +13,27 @@ func NewAutograd() *Autograd {
 }
 
 func (a *Autograd) Derivative(c, f *Tensor) [][]float64 {
-	return computeDerivative(f.operation, a.getDerivativeGraph(c, f))
+	return computeDerivative(f.operation, a.getDerivativeGraph(f))
 }
 
 func (a *Autograd) Backward() {
 
 }
 
-func (a *Autograd) getDerivativeGraph(c, f *Tensor) []*operation {
-	hash := calculateDerivativeHash(c, f)
-	if _, ok := a.cache[hash]; ok {
-		return a.cache[hash]
+func (a *Autograd) getDerivativeGraph(t *Tensor) []*operation {
+	if _, ok := a.cache[t.id]; ok {
+		return a.cache[t.id]
 	}
 	
-    a.cache[hash] = createDerivativeGraph(c.operation, f.operation)
-    return a.cache[hash]
+    a.cache[t.id] = createDerivativeGraph(t.operation)
+    return a.cache[t.id]
 }
 
 func calculateDerivativeHash(c, f *Tensor) string {
 	return c.id + f.id
 }
 
-func createDerivativeGraph(c, f *operation) []*operation {
+func createDerivativeGraph(f *operation) []*operation {
     graph := make([]*operation, 0)
 	graph = append(graph, f)
 
@@ -91,10 +90,11 @@ func leafIsInPath(c, root *operation) bool {
 }
 
 func computeDerivative(root *operation, graph []*operation) [][]float64 {
-	grad := generateIdentityGradient(root.tensor.mat)
+	previousGrad := generateIdentityGradient(root.tensor.mat)
 	for _, operation := range graph {
-        grad = operation.differentiate(grad)
+        operation.differentiate(previousGrad)
+        previousGrad = operation.gradient
 	}
-    return grad
+    return previousGrad
 }
 

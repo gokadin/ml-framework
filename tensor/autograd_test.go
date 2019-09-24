@@ -122,25 +122,23 @@ func (s *AutogradTestSuite) Test_Autograd_Differentiate_divScalar_chain() {
     assert.Equal(s.T(), [][]float64{{2}}, grad)
 }
 
-func Test_Autograd_Differentiate_sum_0(t *testing.T) {
+func (s *AutogradTestSuite) Test_Autograd_Differentiate_sum_0() {
     a := NewTensor([][]float64{{1, 1}, {1, 1}, {1, 1}})
     e := Sum(a, 0)
-    graph := createDerivativeGraph(a.operation, e.operation)
 
-    grad := graph[0].differentiate(generateIdentityGradient(e.mat))
+    grad := s.autograd.Derivative(a, e)
 
-    assert.Equal(t, [][]float64{{3, 3}, {3, 3}, {3, 3}}, grad)
+    assert.Equal(s.T(), [][]float64{{3, 3}, {3, 3}, {3, 3}}, grad)
 }
 
-func Test_Autograd_Differentiate_sum_0_chain(t *testing.T) {
+func (s *AutogradTestSuite) Test_Autograd_Differentiate_sum_0_chain() {
     a := NewTensor([][]float64{{1, 1}, {1, 1}, {1, 1}})
     b := Pow(a, 2)
     e := Sum(b, 0)
-    graph := createDerivativeGraph(a.operation, e.operation)
 
-    grad := graph[0].differentiate(generateIdentityGradient(e.mat))
+    grad := s.autograd.Derivative(a, e)
 
-    assert.Equal(t, [][]float64{{6, 6}, {6, 6}, {6, 6}}, grad)
+    assert.Equal(s.T(), [][]float64{{6, 6}, {6, 6}, {6, 6}}, grad)
 }
 
 func (s *AutogradTestSuite) Test_Autograd_Differentiate_dotForA() {
@@ -294,15 +292,3 @@ func (s *AutogradTestSuite) Test_Cache_thereAreTwoCacheEntriesForTwoDifferentDer
 }
 
 /* GRAPH OPTIMIZATION */
-
-func (s *AutogradTestSuite) Test_optimization_removesAddOperations() {
-    a := NewTensor([][]float64{{1}})
-    b := NewTensor([][]float64{{2}})
-    c := Pow(b, 2)
-    e := Add(c, a)
-
-    s.autograd.Derivative(b, e)
-
-    graph := s.autograd.getDerivativeGraph(b, e)
-    assert.Equal(s.T(), 1, len(graph))
-}

@@ -8,6 +8,7 @@ import (
 type Tensor struct {
 	id string
 	mat [][]float64
+	isGradientEnabled bool
 	operation *operation
 }
 
@@ -15,6 +16,7 @@ func NewTensor(mat [][]float64) *Tensor {
 	t := &Tensor{
 		id: uuid.New().String(),
         mat: mat,
+        isGradientEnabled: true,
 	}
 	t.operation = newOperation(operationNone, t, []*operation{})
 	return t
@@ -36,10 +38,14 @@ func (t *Tensor) Data() [][]float64 {
 	return t.mat
 }
 
-func (t *Tensor) Reduce(grad [][]float64, coefficient float64) {
-	t.mat = sub(t.mat, mulScalar(grad, coefficient))
+func (t *Tensor) Reduce(coefficient float64) {
+	t.mat = sub(t.mat, mulScalar(t.operation.gradient, coefficient))
 }
 
 func (t *Tensor) Equals(other *Tensor) bool {
 	return equals(t.mat, other.mat)
+}
+
+func (t *Tensor) DisableGradient() {
+	t.isGradientEnabled = false
 }
