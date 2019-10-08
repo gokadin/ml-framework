@@ -1,6 +1,7 @@
 package tensor
 
 import (
+	"github.com/gokadin/ml-framework/mat"
 	"github.com/google/uuid"
 	"math/rand"
 )
@@ -34,16 +35,24 @@ func NewRandomTensor(x, y int) *Tensor {
     return NewTensor(mat)
 }
 
+func (t *Tensor) Id() string {
+	return t.id
+}
+
 func (t *Tensor) Data() [][]float64 {
 	return t.mat
 }
 
-func (t *Tensor) Reduce(coefficient float64) {
-	t.mat = sub(t.mat, mulScalar(t.operation.gradient, coefficient))
+func (t *Tensor) Reduce(grad [][]float64) {
+	t.mat = mat.Sub(t.mat, grad)
+}
+
+func (t *Tensor) Gradient() [][]float64 {
+    return t.operation.gradient
 }
 
 func (t *Tensor) Equals(other *Tensor) bool {
-	return equals(t.mat, other.mat)
+	return mat.Equals(t.mat, other.mat)
 }
 
 func (t *Tensor) DisableGradient() {

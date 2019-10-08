@@ -1,11 +1,19 @@
-package tensor
+package mat
 
 import (
 	"log"
 	"math"
 )
 
-func add(a, b [][]float64) [][]float64 {
+func CreateMatrix(n, m int) [][]float64 {
+	mat := make([][]float64, n)
+	for i := range mat {
+		mat[i] = make([]float64, m)
+	}
+	return mat
+}
+
+func Add(a, b [][]float64) [][]float64 {
 	result := make([][]float64, len(a))
 	for i := range a {
 		result[i] = make([]float64, len(a[i]))
@@ -16,7 +24,7 @@ func add(a, b [][]float64) [][]float64 {
 	return result
 }
 
-func addScalar(a [][]float64, scalar float64) [][]float64 {
+func AddScalar(a [][]float64, scalar float64) [][]float64 {
 	result := make([][]float64, len(a))
 	for i := range a {
 		result[i] = make([]float64, len(a[i]))
@@ -27,51 +35,8 @@ func addScalar(a [][]float64, scalar float64) [][]float64 {
 	return result
 }
 
-func divideScalarBy(a [][]float64, scalar float64) [][]float64 {
-	result := make([][]float64, len(a))
-	for i := range a {
-		result[i] = make([]float64, len(a[i]))
-		for j := range a[i] {
-			result[i][j] = scalar / a[i][j]
-		}
-	}
-	return result
-}
+func Div(a, b [][]float64) [][]float64 {
 
-func sub(a, b [][]float64) [][]float64 {
-	result := make([][]float64, len(a))
-	for i := range a {
-		result[i] = make([]float64, len(a[i]))
-		for j := range a[i] {
-			result[i][j] = a[i][j] - b[i][j]
-		}
-	}
-	return result
-}
-
-func subFromScalar(a [][]float64, scalar float64) [][]float64 {
-	result := make([][]float64, len(a))
-	for i := range a {
-		result[i] = make([]float64, len(a[i]))
-		for j := range a[i] {
-			result[i][j] = scalar - a[i][j]
-		}
-	}
-	return result
-}
-
-func mul(a, b [][]float64) [][]float64 {
-	result := make([][]float64, len(a))
-	for i := range a {
-		result[i] = make([]float64, len(a[i]))
-		for j := range a[i] {
-			result[i][j] = a[i][j] * b[i][j]
-		}
-	}
-	return result
-}
-
-func div(a, b [][]float64) [][]float64 {
 	result := make([][]float64, len(a))
 	for i := range a {
 		result[i] = make([]float64, len(a[i]))
@@ -82,7 +47,18 @@ func div(a, b [][]float64) [][]float64 {
 	return result
 }
 
-func divScalar(a [][]float64, scalar float64) [][]float64 {
+func DivScalarBy(a [][]float64, scalar float64) [][]float64 {
+	result := make([][]float64, len(a))
+	for i := range a {
+		result[i] = make([]float64, len(a[i]))
+		for j := range a[i] {
+			result[i][j] = scalar / a[i][j]
+		}
+	}
+	return result
+}
+
+func DivScalar(a [][]float64, scalar float64) [][]float64 {
 	result := make([][]float64, len(a))
 	for i := range a {
 		result[i] = make([]float64, len(a[i]))
@@ -93,7 +69,40 @@ func divScalar(a [][]float64, scalar float64) [][]float64 {
 	return result
 }
 
-func pow(a [][]float64, power float64) [][]float64 {
+func Sub(a, b [][]float64) [][]float64 {
+	result := make([][]float64, len(a))
+	for i := range a {
+		result[i] = make([]float64, len(a[i]))
+		for j := range a[i] {
+			result[i][j] = a[i][j] - b[i][j]
+		}
+	}
+	return result
+}
+
+func SubFromScalar(a [][]float64, scalar float64) [][]float64 {
+	result := make([][]float64, len(a))
+	for i := range a {
+		result[i] = make([]float64, len(a[i]))
+		for j := range a[i] {
+			result[i][j] = scalar - a[i][j]
+		}
+	}
+	return result
+}
+
+func Mul(a, b [][]float64) [][]float64 {
+	result := make([][]float64, len(a))
+	for i := range a {
+		result[i] = make([]float64, len(a[i]))
+		for j := range a[i] {
+			result[i][j] = a[i][j] * b[i][j]
+		}
+	}
+	return result
+}
+
+func Pow(a [][]float64, power float64) [][]float64 {
 	result := make([][]float64, len(a))
 	for i := range a {
 		result[i] = make([]float64, len(a[i]))
@@ -104,7 +113,18 @@ func pow(a [][]float64, power float64) [][]float64 {
 	return result
 }
 
-func exp(a [][]float64) [][]float64 {
+func Sqrt(a [][]float64) [][]float64 {
+	result := make([][]float64, len(a))
+	for i := range a {
+		result[i] = make([]float64, len(a[i]))
+		for j := range a[i] {
+			result[i][j] = math.Sqrt(a[i][j])
+		}
+	}
+	return result
+}
+
+func Exp(a [][]float64) [][]float64 {
 	result := make([][]float64, len(a))
 	for i := range a {
 		result[i] = make([]float64, len(a[i]))
@@ -115,7 +135,7 @@ func exp(a [][]float64) [][]float64 {
 	return result
 }
 
-func dot(a, b [][]float64) [][]float64 {
+func Dot(a, b [][]float64) [][]float64 {
 	if len(a) == 0 || len(a[0]) == 0 || len(b) == 0 || len(b[0]) == 0 || len(a[0]) != len(b) {
 		log.Fatalf("cannot multiply matrices of incompatible sizes -> %dx%d and %dx%d", len(a), len(a[0]), len(b), len(b[0]))
 	}
@@ -135,9 +155,9 @@ func dot(a, b [][]float64) [][]float64 {
 	return result
 }
 
-func normalize(a [][]float64) [][]float64 {
-	minValue := min(a)
-	maxValue := max(a)
+func Normalize(a [][]float64) [][]float64 {
+	minValue := Min(a)
+	maxValue := Max(a)
 	difference := maxValue - minValue
 	result := make([][]float64, len(a))
 	for i := range a {
@@ -149,7 +169,7 @@ func normalize(a [][]float64) [][]float64 {
 	return result
 }
 
-func max(a [][]float64) float64 {
+func Max(a [][]float64) float64 {
 	maxValue := a[0][0]
 	for i := range a {
 		for j := range a[i] {
@@ -161,7 +181,7 @@ func max(a [][]float64) float64 {
 	return maxValue
 }
 
-func min(a [][]float64) float64 {
+func Min(a [][]float64) float64 {
 	minValue := a[0][0]
 	for i := range a {
 		for j := range a[i] {
@@ -173,7 +193,7 @@ func min(a [][]float64) float64 {
 	return minValue
 }
 
-func equals(a, b [][]float64) bool {
+func Equals(a, b [][]float64) bool {
 	if len(a) != len(b) {
 		return false
 	}
@@ -190,7 +210,7 @@ func equals(a, b [][]float64) bool {
     return true
 }
 
-func mulScalar(mat [][]float64, scalar float64) [][]float64 {
+func MulScalar(mat [][]float64, scalar float64) [][]float64 {
 	result := make([][]float64, len(mat))
 	for i := range mat {
 		result[i] = make([]float64, len(mat[i]))
@@ -201,7 +221,7 @@ func mulScalar(mat [][]float64, scalar float64) [][]float64 {
 	return result
 }
 
-func transpose(mat [][]float64) [][]float64 {
+func Transpose(mat [][]float64) [][]float64 {
 	result := make([][]float64, len(mat[0]))
 	for i := 0; i < len(result); i++ {
 		result[i] = make([]float64, len(mat))
@@ -215,14 +235,14 @@ func transpose(mat [][]float64) [][]float64 {
 	return result
 }
 
-func sum(mat [][]float64, axis int) [][]float64 {
+func Sum(mat [][]float64, axis int) [][]float64 {
     switch axis {
 	case 0:
 		return sum0(mat)
 	case 1:
 		return sum1(mat)
 	default:
-		log.Fatal("sum only supports axis 0 and 1")
+		log.Fatal("Sum only supports axis 0 and 1")
 		return nil
 	}
 }
@@ -249,21 +269,21 @@ func sum1(mat [][]float64) [][]float64 {
 	return result
 }
 
-func expand(mat [][]float64, axis, copies int) [][]float64 {
+func Expand(mat [][]float64, axis, copies int) [][]float64 {
 	switch axis {
 	case 0:
 		return expand0(mat, copies)
 	case 1:
 		return expand1(mat, copies)
 	default:
-		log.Fatal("expand only supports axis 0 and 1")
+		log.Fatal("Expand only supports axis 0 and 1")
 		return nil
 	}
 }
 
 func expand0(mat [][]float64, copies int) [][]float64 {
 	if len(mat) != 1 {
-		log.Fatalf("incompatible matrix size for expand operation on X axis -> %d", len(mat))
+		log.Fatalf("incompatible matrix size for Expand operation on X axis -> %d", len(mat))
 	}
 
 	result := make([][]float64, copies)
@@ -278,7 +298,7 @@ func expand0(mat [][]float64, copies int) [][]float64 {
 
 func expand1(mat [][]float64, copies int) [][]float64 {
 	if len(mat) == 0 || len(mat[0]) != 1 {
-		log.Fatalf("incompatible matrix size for expand operation on X axis -> %d", len(mat))
+		log.Fatalf("incompatible matrix size for Expand operation on X axis -> %d", len(mat))
 	}
 
 	result := make([][]float64, len(mat))
