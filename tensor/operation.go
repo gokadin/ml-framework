@@ -1,6 +1,7 @@
 package tensor
 
 import (
+	"github.com/gokadin/ml-framework/mat"
 	"log"
 )
 
@@ -14,6 +15,7 @@ const (
 	operationExpand = "operationExpand"
 	operationDot = "operationDot"
 	operationActivationSigmoid = "operationActivationSigmoid"
+	operationActivationRelu = "operationActivationRelu"
 )
 
 type operation struct {
@@ -58,6 +60,8 @@ func (o *operation) differentiate(grad [][]float64) {
 		o.differentiateDot(grad)
 	case operationActivationSigmoid:
 		o.differentiateActivationSigmoid(grad)
+	case operationActivationRelu:
+		o.differentiateActivationRelu(grad)
 	default:
 		log.Fatalf("differentiation not supported")
 	}
@@ -81,19 +85,19 @@ func (o *operation) differentiateSub(grad [][]float64) {
 		o.children[0].gradient = grad
 	}
 	if o.children[1].tensor.isGradientEnabled {
-		o.children[1].gradient = mulScalar(grad, -1)
+		o.children[1].gradient = mat.MulScalar(grad, -1)
 	}
 }
 
 func (o *operation) differentiatePow(grad [][]float64) {
 	if o.metadata[0] == 2 {
-		o.children[0].gradient = mul(grad, mulScalar(o.children[0].tensor.mat, 2))
+		o.children[0].gradient = mat.Mul(grad, mat.MulScalar(o.children[0].tensor.mat, 2))
 	}
-	o.children[0].gradient = mul(grad, mulScalar(pow(o.children[0].tensor.mat, o.metadata[0] - 1), o.metadata[0]))
+	o.children[0].gradient = mat.Mul(grad, mat.MulScalar(mat.Pow(o.children[0].tensor.mat, o.metadata[0] - 1), o.metadata[0]))
 }
 
 func (o *operation) differentiateDivScalar(grad [][]float64) {
-	o.children[0].gradient = mulScalar(grad, 1 / o.metadata[0])
+	o.children[0].gradient = mat.MulScalar(grad, 1 / o.metadata[0])
 }
 
 func (o *operation) differentiateSum(grad [][]float64) {
@@ -106,7 +110,7 @@ func (o *operation) differentiateSum(grad [][]float64) {
 }
 
 func (o *operation) differentiateSumX(grad [][]float64) {
-	o.children[0].gradient = expand(grad, 0, len(o.children[0].tensor.mat))
+	o.children[0].gradient = mat.Expand(grad, 0, len(o.children[0].tensor.mat))
 }
 
 func (o *operation) differentiateExpand(grad [][]float64) {
@@ -119,20 +123,35 @@ func (o *operation) differentiateExpand(grad [][]float64) {
 }
 
 func (o *operation) differentiateExpandX(grad [][]float64) {
-    o.children[0].gradient = sum(grad, 0)
+    o.children[0].gradient = mat.Sum(grad, 0)
 }
 
 func (o *operation) differentiateDot(grad [][]float64) {
 	if o.children[0].tensor.isGradientEnabled {
-        o.children[0].gradient = dot(grad, transpose(o.children[1].tensor.mat))
+        o.children[0].gradient = mat.Dot(grad, mat.Transpose(o.children[1].tensor.mat))
 	}
 	if o.children[1].tensor.isGradientEnabled {
-		o.children[1].gradient = transpose(dot(transpose(grad), o.children[0].tensor.mat))
+		o.children[1].gradient = mat.Transpose(mat.Dot(mat.Transpose(grad), o.children[0].tensor.mat))
 	}
 }
 
 func (o *operation) differentiateActivationSigmoid(grad [][]float64) {
-	o.children[0].gradient = mul(grad, mul(o.tensor.mat, subFromScalar(o.tensor.mat, 1)))
+	o.children[0].gradient = mat.Mul(grad, mat.Mul(o.tensor.mat, mat.SubFromScalar(o.tensor.mat, 1)))
+}
+
+func (o *operation) differentiateActivationRelu(grad [][]float64) {
+	d := make([][]float64, len(o.tensor.mat))
+	for i := range d {
+		d[i] = make([]float64, len(o.tensor.mat[i]))
+		for j := range d[i] {
+			if o.tensor.mat[i][j] > 0 {
+				d[i][j] = 1
+			} else {
+				d[i][j] = 0
+			}
+		}
+	}
+	o.children[0].gradient = mat.Mul(grad, d)
 }
 
 func generateIdentityGradient(mat [][]float64) [][]float64 {

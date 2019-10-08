@@ -6,21 +6,23 @@ import (
 
 type SGD struct {
 	network *core.Network
+	optimizer optimizer
 }
 
-func NewSGD(network *core.Network) *SGD {
+func NewSGD(network *core.Network, optimizer optimizer) *SGD {
 	return &SGD{
-        network: network,
+        network,
+        optimizer,
 	}
 }
 
-func (sgd *SGD) Step(learningRate float64) {
-	for _, layer := range sgd.network.GetLayers() {
+func (sgd *SGD) Step(batchSize, counter int) {
+	for i, layer := range sgd.network.GetLayers() {
 		if layer.IsOutputLayer() {
 			continue
 		}
-		for _, parameter := range layer.GetParameters() {
-            parameter.Reduce(learningRate)
+		for j, p := range layer.GetParameters() {
+			sgd.optimizer.update(p, string(i) + string(j), batchSize, counter)
 		}
 	}
 }

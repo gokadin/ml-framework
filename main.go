@@ -16,8 +16,12 @@ func main() {
 	data := tensor.NewTensor([][]float64{{1, 0}, {1, 1}, {0, 1}, {0, 0}})
 	//target := tensor.NewTensor([][]float64{{0.5}})
 	target := tensor.NewTensor([][]float64{{1}, {0}, {1}, {0}})
+	//data := tensor.NewRandomTensor(10, 4)
+	//target := tensor.NewRandomTensor(10, 2)
 
 	runner := runners.NewNetworkRunner()
 	runner.SetBatchSize(4)
+	runner.SetOptimizer(runners.OptimizerAdam)
+
 	runner.Train(net, data, target)
 }

@@ -71,6 +71,8 @@ func (l *Layer) activate(in *tensor.Tensor) *tensor.Tensor {
 		return in
 	case tensor.ActivationFunctionSigmoid:
 		return in.Sigmoid()
+	case tensor.ActivationFunctionRelu:
+		return in.Relu()
 	default:
 		log.Fatal("activation function is unknown:", l.activationFunctionName)
 		return nil

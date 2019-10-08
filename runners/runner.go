@@ -4,42 +4,44 @@ import (
     "fmt"
     "github.com/gokadin/ml-framework/core"
     "github.com/gokadin/ml-framework/tensor"
+    "log"
     "time"
 )
 
 const (
-    defaultLearningRate = 0.01
     defaultBatchSize = 1
     defaultEpochs = 0
     defaultMaxError = 0.001
     defaultValidOutputRange = 0.1
+    defaultOptimizerType = OptimizerDefault
 )
 
 type NetworkRunner struct {
-    learningRate float64
     batchSize int
     epochs int
     maxError float64
     validOutputRange float64
+    optimizer string
+    optimizerOverrides []float64
 }
 
 func NewNetworkRunner() *NetworkRunner {
     return &NetworkRunner{
-        learningRate: defaultLearningRate,
         batchSize: defaultBatchSize,
         epochs: defaultEpochs,
         maxError: defaultMaxError,
         validOutputRange: defaultValidOutputRange,
+        optimizer: defaultOptimizerType,
+        optimizerOverrides: make([]float64, 0),
     }
 }
 
 func (nr *NetworkRunner) Train(network *core.Network, inputs, target *tensor.Tensor) {
-    sgd := NewSGD(network)
+    sgd := NewSGD(network, nr.createOptimizer())
     criterion := NewCriterion(lossFunctionMeanSquared)
-    coefficient := nr.learningRate / float64(nr.batchSize)
     numBatches := len(inputs.Data()) / nr.batchSize
 
-    var aveTime int64
+    var aveTime int64 = 1
     t := time.Now().UnixNano()
 	for i := 1; i != nr.epochs; i++ {
 		lossMean := 0.0
@@ -52,7 +54,7 @@ func (nr *NetworkRunner) Train(network *core.Network, inputs, target *tensor.Ten
             loss := criterion.Forward(pred, batchTarget)
             lossMean += loss.Data()[0][0]
             loss.Backward()
-            sgd.Step(coefficient)
+            sgd.Step(nr.batchSize, i * nr.batchSize + batchCounter)
         }
 
         lossMean /= float64(nr.batchSize)
@@ -70,6 +72,20 @@ func (nr *NetworkRunner) Train(network *core.Network, inputs, target *tensor.Ten
     }
 }
 
+func (nr *NetworkRunner) createOptimizer() optimizer {
+    switch nr.optimizer {
+    case OptimizerDefault:
+        return newDefaultOptimizer(nr.optimizerOverrides)
+    case OptimizerMomentum:
+        return newMomentumOptimizer(nr.optimizerOverrides)
+    case OptimizerAdam:
+        return newAdamOptimizer(nr.optimizerOverrides)
+    }
+
+    log.Fatal("Unknown optimizer selected:", nr.optimizer)
+    return nil
+}
+
 func (nr *NetworkRunner) SetBatchSize(batchSize int) {
     nr.batchSize = batchSize
 }
@@ -78,14 +94,15 @@ func (nr *NetworkRunner) SetEpochLimit(epochs int) {
     nr.epochs = epochs
 }
 
-func (nr *NetworkRunner) SetLearningRate(learningRate float64) {
-    nr.learningRate = learningRate
-}
-
 func (nr *NetworkRunner) SetMaxError(maxError float64) {
     nr.maxError = maxError
 }
 
 func (nr *NetworkRunner) SetValidOutputRange(validOutputRange float64) {
     nr.validOutputRange = validOutputRange
+}
+
+func (nr *NetworkRunner) SetOptimizer(optimizerType string, overrides ...float64) {
+    nr.optimizer = optimizerType
+    nr.optimizerOverrides = overrides
 }
