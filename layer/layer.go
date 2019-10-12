@@ -57,7 +57,7 @@ func (l *Layer) initializeWeightsAndBias() {
     l.bias = tensor.NewTensor(biasMat)
 }
 
-func (l *Layer) Forward(input *tensor.Tensor) *tensor.Tensor {
+func (l *Layer) Forward(input *tensor.Tensor) *tensor.Tensor { // can optimize the expand here
 	pred := tensor.Add(tensor.Dot(l.activate(input), l.weights), tensor.Expand(l.bias, 0, len(input.Data())))
 	if l.nextLayer != nil && !l.nextLayer.isOutputLayer {
 		return l.nextLayer.Forward(pred)
