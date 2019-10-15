@@ -2,6 +2,7 @@ package runners
 
 import (
     "github.com/gokadin/ml-framework/tensor"
+    "github.com/stretchr/testify/assert"
     "testing"
 )
 
@@ -13,9 +14,7 @@ func Test_Criterion_meanSquared_oneAssociation(t *testing.T) {
     loss := c.Forward(pred, target)
 
     expected := tensor.NewTensor([][]float64{{0.125}})
-    if !expected.Equals(loss) {
-        t.Fatal("tensors don't match", expected.Data(), loss.Data())
-    }
+    assert.Equal(t, expected.Data(), loss.Data())
 }
 
 func Test_Criterion_meanSquared_multipleOutputs(t *testing.T) {
@@ -26,9 +25,7 @@ func Test_Criterion_meanSquared_multipleOutputs(t *testing.T) {
     loss := c.Forward(pred, target)
 
     expected := tensor.NewTensor([][]float64{{0.125, 0.125, 0.125}})
-    if !expected.Equals(loss) {
-        t.Fatal("tensors don't match", expected.Data(), loss.Data())
-    }
+    assert.Equal(t, expected.Data(), loss.Data())
 }
 
 func Test_Criterion_meanSquared_multipleAssociations(t *testing.T) {
@@ -39,7 +36,5 @@ func Test_Criterion_meanSquared_multipleAssociations(t *testing.T) {
     loss := c.Forward(pred, target)
 
     expected := tensor.NewTensor([][]float64{{0.25, 0.25}})
-    if !expected.Equals(loss) {
-        t.Fatal("tensors don't match", expected.Data(), loss.Data())
-    }
+    assert.Equal(t, expected.Data(), loss.Data())
 }
