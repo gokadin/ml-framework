@@ -40,7 +40,7 @@ func newDefaultOptimizer(overrides []float64) *defaultOptimizer {
 }
 
 func (do defaultOptimizer) update(tensor *tensor.Tensor, hash string, batchSize, counter int) {
-    tensor.Reduce(mat.MulScalar(tensor.Gradient(), do.learningRate))
+    tensor.Reduce(mat.MulScalar(tensor.Gradient(), do.learningRate / float64(batchSize)))
 }
 
 type momentumOptimizer struct {
