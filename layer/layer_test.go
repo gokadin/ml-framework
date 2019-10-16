@@ -3,6 +3,7 @@ package layer
 import (
 	"github.com/gokadin/ml-framework/mat"
 	"github.com/gokadin/ml-framework/tensor"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -13,33 +14,25 @@ const (
 func Test_Layer_NewLayer_activationFunctionIsSetCorrectly(t *testing.T) {
 	l := NewLayer(someInputSize, tensor.ActivationFunctionIdentity)
 
-	if l.activationFunctionName != tensor.ActivationFunctionIdentity {
-		t.Fatal("activation function was not correctly initialized")
-	}
+	assert.Equal(t, tensor.ActivationFunctionIdentity, l.activationFunctionName)
 }
 
 func Test_Layer_NewLayer_inputSizeIsSetCorrectly(t *testing.T) {
 	l := NewLayer(someInputSize, tensor.ActivationFunctionIdentity)
 
-	if l.inputSize != someInputSize {
-		t.Fatal("input size was not correctly initialized")
-	}
+	assert.Equal(t, someInputSize, l.inputSize)
 }
 
 func Test_Layer_NewLayer_shouldNotBeAnOutputLayer(t *testing.T) {
 	l := NewLayer(someInputSize, tensor.ActivationFunctionIdentity)
 
-	if l.isOutputLayer {
-		t.Fatal("layer should not be an output layer")
-	}
+	assert.False(t, l.isOutputLayer)
 }
 
 func Test_Layer_NewOutputLayer_shouldBeAnOutputLayer(t *testing.T) {
 	l := NewOutputLayer(someInputSize, tensor.ActivationFunctionIdentity)
 
-	if !l.isOutputLayer {
-		t.Fatal("layer should be an output layer")
-	}
+	assert.True(t, l.isOutputLayer)
 }
 
 func Test_Layer_ConnectTo_nextLayerIsSetCorrectly(t *testing.T) {
@@ -48,9 +41,8 @@ func Test_Layer_ConnectTo_nextLayerIsSetCorrectly(t *testing.T) {
 
 	l1.ConnectTo(l2)
 
-	if l1.nextLayer == nil || l1.nextLayer != l2 {
-		t.Fatal("next layer is not set correctly")
-	}
+	assert.NotNil(t, l1.nextLayer)
+	assert.Equal(t,l2, l1.nextLayer)
 }
 
 func Test_Layer_ConnectTo_weightsAreInitialized(t *testing.T) {
@@ -59,9 +51,7 @@ func Test_Layer_ConnectTo_weightsAreInitialized(t *testing.T) {
 
 	l1.ConnectTo(l2)
 
-	if l1.weights == nil {
-		t.Fatal("weights should be initialized")
-	}
+	assert.NotNil(t, l1.weights)
 }
 
 func Test_Layer_ConnectTo_biasesAreInitialized(t *testing.T) {
@@ -70,9 +60,7 @@ func Test_Layer_ConnectTo_biasesAreInitialized(t *testing.T) {
 
 	l1.ConnectTo(l2)
 
-	if l1.bias == nil {
-		t.Fatal("weights should be initialized")
-	}
+	assert.NotNil(t, l1.bias)
 }
 
 func Test_Layer_initializeWeightsAndBias_setsCorrectLengthToWeights(t *testing.T) {
@@ -81,9 +69,7 @@ func Test_Layer_initializeWeightsAndBias_setsCorrectLengthToWeights(t *testing.T
 
 	l1.ConnectTo(l2)
 
-	if len(l1.weights.Data()) != l1.inputSize {
-		t.Fatal("weights length is incorrect")
-	}
+	assert.Equal(t, l1.inputSize, len(l1.weights.Data()))
 }
 
 func Test_Layer_initializeWeightsAndBias_setsCorrectDepthToWeights(t *testing.T) {
@@ -93,9 +79,7 @@ func Test_Layer_initializeWeightsAndBias_setsCorrectDepthToWeights(t *testing.T)
 	l1.ConnectTo(l2)
 
 	for _, x := range l1.weights.Data() {
-		if len(x) != l2.inputSize {
-			t.Fatal("weights depth is incorrect")
-		}
+		assert.Equal(t, l2.inputSize, len(x))
 	}
 }
 
@@ -107,9 +91,7 @@ func Test_Layer_initializeWeightsAndBias_setsCorrectValuesToWeights(t *testing.T
 
 	for _, x := range l1.weights.Data() {
 		for _, y := range x {
-			if y == 0 {
-				t.Fatal("weight value should not be zero")
-			}
+			assert.NotEqual(t, 0, y)
 		}
 	}
 }
@@ -120,9 +102,7 @@ func Test_Layer_initializeWeightsAndBias_setsCorrectLengthToBiases(t *testing.T)
 
 	l1.ConnectTo(l2)
 
-	if len(l1.bias.Data()) != 1 {
-		t.Fatal("biases length is incorrect")
-	}
+	assert.Equal(t, 1, len(l1.bias.Data()))
 }
 
 func Test_Layer_initializeWeightsAndBias_setsCorrectDepthToBiases(t *testing.T) {
@@ -132,9 +112,7 @@ func Test_Layer_initializeWeightsAndBias_setsCorrectDepthToBiases(t *testing.T) 
 	l1.ConnectTo(l2)
 
 	for _, x := range l1.bias.Data() {
-		if len(x) != l2.inputSize {
-			t.Fatal("biases depth is incorrect")
-		}
+		assert.Equal(t, l2.inputSize, len(x))
 	}
 }
 
@@ -146,9 +124,7 @@ func Test_Layer_initializeWeightsAndBias_setsCorrectValuesToBiases(t *testing.T)
 
 	for _, x := range l1.bias.Data() {
 		for _, y := range x {
-			if y != initialBias {
-				t.Fatal("bias value is incorrect")
-			}
+			assert.Equal(t, initialBias, y)
 		}
 	}
 }
@@ -158,9 +134,7 @@ func Test_Layer_GetParameters_shouldBeASliceOfTwoElements(t *testing.T) {
 
 	p := l.GetParameters()
 
-	if len(p) != 2 {
-		t.Fatal("slice should contain two elements")
-	}
+	assert.Equal(t, 2, len(p))
 }
 
 func Test_Layer_activate_identityDoesNotChangeTheInput(t *testing.T) {
@@ -169,12 +143,9 @@ func Test_Layer_activate_identityDoesNotChangeTheInput(t *testing.T) {
 
 	result := l1.activate(input)
 
-	if len(result.Data()) != someInputSize || len(result.Data()[0]) != someInputSize {
-		t.Fatal("result dimensions changed")
-	}
-	if !mat.Equals(input.Data(), result.Data()) {
-		t.Fatal("result values changed")
-	}
+	assert.Equal(t, someInputSize, len(result.Data()))
+	assert.Equal(t, someInputSize, len(result.Data()[0]))
+	assert.Equal(t, input.Data(), result.Data())
 }
 
 func Test_Layer_activate_sigmoidCorrectlyModifiesTheInput(t *testing.T) {
@@ -184,9 +155,7 @@ func Test_Layer_activate_sigmoidCorrectlyModifiesTheInput(t *testing.T) {
 	result := l1.activate(input)
 
 	expected := input.Sigmoid()
-	if !mat.Equals(expected.Data(), result.Data()) {
-		t.Fatal("result values changed")
-	}
+	assert.Equal(t, expected.Data(), result.Data())
 }
 
 func Test_Layer_activate_reluCorrectlyModifiesTheInput(t *testing.T) {
@@ -196,9 +165,7 @@ func Test_Layer_activate_reluCorrectlyModifiesTheInput(t *testing.T) {
 	result := l1.activate(input)
 
 	expected := input.Relu()
-	if !mat.Equals(expected.Data(), result.Data()) {
-		t.Fatal("result values changed")
-	}
+	assert.Equal(t, expected.Data(), result.Data())
 }
 
 func Test_Layer_Forward_singleLayerWithIdentityShouldProduceADotOfInputAndWeightsPlusBias(t *testing.T) {
@@ -210,9 +177,7 @@ func Test_Layer_Forward_singleLayerWithIdentityShouldProduceADotOfInputAndWeight
 	pred := l1.Forward(input)
 
 	expected := tensor.Add(tensor.Dot(input, l1.weights), tensor.Expand(l1.bias, 0, someInputSize))
-	if !mat.Equals(expected.Data(), pred.Data()) {
-		t.Fatal("operations are incorrect")
-	}
+	assert.Equal(t, expected.Data(), pred.Data())
 }
 
 func Test_Layer_Forward_singleLayerWithSigmoidShouldProduceADotOfActivatedInputAndWeightsPlusBias(t *testing.T) {
@@ -224,9 +189,7 @@ func Test_Layer_Forward_singleLayerWithSigmoidShouldProduceADotOfActivatedInputA
 	pred := l1.Forward(input)
 
 	expected := tensor.Add(tensor.Dot(input.Sigmoid(), l1.weights), tensor.Expand(l1.bias, 0, someInputSize))
-	if !mat.Equals(expected.Data(), pred.Data()) {
-		t.Fatal("operations are incorrect")
-	}
+	assert.Equal(t, expected.Data(), pred.Data())
 }
 
 func Test_Layer_Forward_twoLayersWithIdentityShouldChainTheirResults(t *testing.T) {
@@ -241,9 +204,7 @@ func Test_Layer_Forward_twoLayersWithIdentityShouldChainTheirResults(t *testing.
 
 	expected := tensor.Add(tensor.Dot(input, l1.weights), tensor.Expand(l1.bias, 0, someInputSize))
 	expected = tensor.Add(tensor.Dot(expected, l2.weights), tensor.Expand(l2.bias, 0, someInputSize))
-	if !mat.Equals(expected.Data(), pred.Data()) {
-		t.Fatal("operations are incorrect")
-	}
+	assert.Equal(t, expected.Data(), pred.Data())
 }
 
 func generateInput(m, n int) *tensor.Tensor {

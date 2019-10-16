@@ -193,23 +193,6 @@ func Min(a [][]float64) float64 {
 	return minValue
 }
 
-func Equals(a, b [][]float64) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i := range a {
-		if len(a[i]) != len(b[i]) {
-			return false
-		}
-		for j := range a[i] {
-			if a[i][j] != b[i][j] {
-				return false
-			}
-		}
-	}
-    return true
-}
-
 func MulScalar(mat [][]float64, scalar float64) [][]float64 {
 	result := make([][]float64, len(mat))
 	for i := range mat {

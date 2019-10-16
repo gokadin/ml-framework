@@ -51,10 +51,6 @@ func (t *Tensor) Gradient() [][]float64 {
     return t.operation.gradient
 }
 
-func (t *Tensor) Equals(other *Tensor) bool {
-	return mat.Equals(t.mat, other.mat)
-}
-
 func (t *Tensor) DisableGradient() {
 	t.isGradientEnabled = false
 }
