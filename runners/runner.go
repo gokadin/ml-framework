@@ -66,7 +66,11 @@ func (nr *NetworkRunner) Train(network *core.Network, inputs, target *tensor.Ten
         }
         if lossMean < nr.maxError {
             fmt.Println("Finished in", i, "loss:", lossMean)
-            fmt.Println(aveTime / int64(i / 10000))
+            div := int64(i / 10000)
+            if div == 0 {
+                div = 1
+            }
+            fmt.Println(aveTime / div)
             break
         }
     }
