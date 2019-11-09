@@ -3,6 +3,7 @@ package layer
 import (
 	"github.com/gokadin/ml-framework/tensor"
 	"log"
+	"math"
 	"math/rand"
 )
 
@@ -50,7 +51,7 @@ func (l *Layer) initializeWeightsAndBias() {
     		if i == 0 {
     			biasMat[0][j] = initialBias
 			}
-    		weightsMat[i][j] = rand.Float64()
+    		weightsMat[i][j] = rand.NormFloat64() / math.Sqrt(float64(l.inputSize))
 		}
 	}
     l.weights = tensor.NewTensor(weightsMat)
