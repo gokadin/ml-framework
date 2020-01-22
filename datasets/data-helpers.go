@@ -40,3 +40,11 @@ func oneHotEncode(data [][]float64, depth int) {
 		data[i] = encoded
 	}
 }
+
+func normalize(data [][]float64, min, max float64) {
+	for _, row := range data {
+		for j := 0; j < len(row); j++ {
+			row[j] = (row[j] - min) / (max - min)
+		}
+	}
+}

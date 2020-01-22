@@ -23,13 +23,15 @@ func loadMNIST() *dataset {
 	trainX, trainY, valX, valY := getData()
 	oneHotEncode(trainY, 10)
 	oneHotEncode(valY, 10)
+	normalize(trainX, 0, 255)
+	normalize(valX, 0, 255)
 
-	dataset := newDataset()
-	dataset.setName(mnistName)
-	dataset.addSet(trainingSetX, trainX)
-	dataset.addSet(trainingSetY, trainY)
-	dataset.addSet(validationSetX, valX)
-	dataset.addSet(validationSetY, valY)
+	dataset := NewDataset()
+	dataset.SetName(mnistName)
+	dataset.AddData(trainingSetX, trainX)
+	dataset.AddData(trainingSetY, trainY)
+	dataset.AddData(validationSetX, valX)
+	dataset.AddData(validationSetY, valY)
 	return dataset
 }
 

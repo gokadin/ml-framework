@@ -7,19 +7,23 @@ const validationSetY = "validationSetY"
 
 type dataset struct {
 	name string
-	sets map[string][][]float64
+	sets map[string]*set
 }
 
-func newDataset() *dataset {
+func NewDataset() *dataset {
 	return &dataset{
-		sets: make(map[string][][]float64),
+		sets: make(map[string]*set),
 	}
 }
 
-func (d *dataset) setName(name string) {
+func (d *dataset) SetName(name string) {
 	d.name = name
 }
 
-func (d *dataset) addSet(setName string, set [][]float64) {
-	d.sets[setName] = set
+func (d *dataset) AddData(name string, data [][]float64) {
+	d.sets[name] = &set{data}
+}
+
+func (d *dataset) Get(name string) *set {
+	return d.sets[name]
 }
