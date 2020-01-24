@@ -7,13 +7,19 @@ import (
 )
 
 func main() {
-	dataset := datasets.From("mnist")
-	_ = dataset
+	//dataset := datasets.From("mnist")
+	dataset := datasets.From("xor")
 
 	model := models.Build(
-		modules.Dense(128, modules.ActivationRelu),
-		modules.Dense(10, modules.ActivationSoftmax))
+		modules.Dense(2, modules.ActivationSigmoid),
+		modules.Dense(1, modules.ActivationIdentity))
+		//modules.Dense(128, modules.ActivationRelu),
+		//modules.Dense(10, modules.ActivationSoftmax))
 
-	//model.Fit(dataset)
+	//model.Configure(models.ModelConfig{
+	//	Epochs: 3,
+	//})
+
+	model.Fit(dataset)
 	model.Evaluate(dataset)
 }

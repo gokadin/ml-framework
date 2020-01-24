@@ -37,6 +37,10 @@ func (d *dense) Backward() {
 
 }
 
+func (d *dense) GetParameters() []*tensor.Tensor {
+	return []*tensor.Tensor{d.weights, d.bias}
+}
+
 func (d *dense) initialize(inputSize int) {
 	d.weights = initializeParameter(inputSize, d.unitCount, d.weightInitializer)
 	d.bias = initializeParameter(1, d.unitCount, d.biasInitializer)

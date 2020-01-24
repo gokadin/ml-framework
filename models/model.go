@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"github.com/gokadin/ml-framework/datasets"
 	"github.com/gokadin/ml-framework/modules"
 	"github.com/gokadin/ml-framework/tensor"
@@ -11,13 +12,21 @@ import (
 
 type Model struct {
 	modules []modules.Module
+	configuration ModelConfig
+	criterion *Criterion
 }
 
 func NewModel() *Model {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	rand.Seed(time.Now().UTC().UnixNano())
 
-	return &Model{}
+	model := &Model{
+		configuration: ModelConfig{},
+	}
+	model.configuration.populateDefaults()
+	model.initialize()
+
+	return model
 }
 
 func Build(modules ...modules.Module) *Model {
@@ -31,18 +40,29 @@ func (m *Model) Add(module modules.Module) *Model {
 	return m
 }
 
-func (m *Model) Fit(dataset *datasets.Dataset) {
+func (m *Model) Configure(configuration ModelConfig) {
+	m.configuration = configuration
+	m.configuration.populateDefaults()
+	m.initialize()
+}
 
+func (m *Model) Fit(dataset *datasets.Dataset) {
+	x := tensor.NewTensor(dataset.Get(datasets.TrainingSetX).Data())
+	target := tensor.NewTensor(dataset.Get(datasets.TrainingSetY).Data())
+
+	fit(m, x, target)
 }
 
 func (m *Model) Evaluate(dataset *datasets.Dataset) {
-	y := tensor.NewTensor(dataset.Get(datasets.ValidationSetX).Data())
-	yHat := tensor.NewTensor(dataset.Get(datasets.ValidationSetY).Data())
-	_ = yHat
-	for _, module := range m.modules {
-		y = module.Forward(y)
-	}
+	x := tensor.NewTensor(dataset.Get(datasets.ValidationSetX).Data())
+	target := tensor.NewTensor(dataset.Get(datasets.ValidationSetY).Data())
 
-	x := y
-	_ = x
+	y := forward(m.modules, x)
+	loss := m.criterion.Forward(y, target)
+
+	fmt.Println(loss.Data()[0][0])
+}
+
+func (m *Model) initialize() {
+	m.criterion = NewCriterion(m.configuration.Loss)
 }

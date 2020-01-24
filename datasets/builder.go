@@ -5,21 +5,24 @@ import (
 )
 
 const datasetNameMNIST = "mnist"
+const datasetNameXor = "xor"
 
 func From(source string) *Dataset {
 	switch source {
 	// file formats
 	default:
-		return fromOnline(source)
+		return fromNamed(source)
 	}
 }
 
-func fromOnline(datasetName string) *Dataset {
+func fromNamed(datasetName string) *Dataset {
 	createCache()
 
 	switch datasetName {
 	case datasetNameMNIST:
 		return loadMNIST()
+	case datasetNameXor:
+		return loadXor()
 	default:
 		log.Fatalf("Could not find Dataset with name %s", datasetName)
 	}
