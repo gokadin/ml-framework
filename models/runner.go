@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/gokadin/ml-framework/modules"
 	"github.com/gokadin/ml-framework/tensor"
-	"log"
 	"time"
 )
 
@@ -17,8 +16,6 @@ func forward(modules []modules.Module, x *tensor.Tensor) *tensor.Tensor {
 }
 
 func fit(model *Model, x, target *tensor.Tensor) {
-	sgd := NewSGD(model, createOptimizer(model.configuration.Optimizer))
-	criterion := NewCriterion(model.configuration.Loss)
 	numBatches := len(x.Data()) / model.configuration.BatchSize
 
 	var aveTime int64 = 1
@@ -31,10 +28,11 @@ func fit(model *Model, x, target *tensor.Tensor) {
 			batchTarget := tensor.NewTensor(partitionData(target.Data(), batchCounter, model.configuration.BatchSize))
 
 			pred := forward(model.modules, batchInputs)
-			loss := criterion.Forward(pred, batchTarget)
+			loss := model.criterion.forward(pred, batchTarget)
 			lossMean += loss.Data()[0][0]
 			loss.Backward()
-			sgd.Step(model.configuration.BatchSize, i * model.configuration.BatchSize + batchCounter)
+
+			update(model, i, batchCounter)
 		}
 
 		lossMean /= float64(model.configuration.BatchSize)
@@ -56,16 +54,10 @@ func fit(model *Model, x, target *tensor.Tensor) {
 	}
 }
 
-func createOptimizer(optimizerType string) optimizer {
-	switch optimizerType {
-	case OptimizerDefault:
-		return newDefaultOptimizer([]float64{})
-	case OptimizerMomentum:
-		return newMomentumOptimizer([]float64{})
-	case OptimizerAdam:
-		return newAdamOptimizer([]float64{})
+func update(model *Model, epoch, batchCounter int) {
+	for i, module := range model.modules {
+		for j, p := range module.GetParameters() {
+			model.optimizer.update(p, i * 10 + j, model.configuration.BatchSize, epoch * model.configuration.BatchSize + batchCounter)
+		}
 	}
-
-	log.Fatal("Unknown optimizer selected:", optimizerType)
-	return nil
 }

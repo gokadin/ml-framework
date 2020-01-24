@@ -6,30 +6,30 @@ import (
 )
 
 const (
-	lossFunctionMeanSquared = "lossFunctionMeanSquared"
+	LossMeanSquared = "LossMeanSquared"
 )
 
-type Criterion struct {
-    lossFunctionName string
+type criterion interface {
+	forward(pred, target *tensor.Tensor) *tensor.Tensor
 }
 
-func NewCriterion(lossFunctionName string) *Criterion {
-	return &Criterion{
-		lossFunctionName: lossFunctionName,
+func newCriterion(loss string) criterion {
+	switch loss {
+	case LossMeanSquared:
+		return newMeanSquaredCriterion()
 	}
+
+	log.Fatalf("unknown loss function selected: %s", loss)
+	return nil
 }
 
-func (c *Criterion) Forward(pred, target *tensor.Tensor) *tensor.Tensor {
-    switch c.lossFunctionName {
-	case lossFunctionMeanSquared:
-		return c.forwardMeanSquared(pred, target)
-	default:
-		log.Fatal("loss function is not defined")
-		return nil
-	}
+type meanSquaredCriterion struct {}
+
+func newMeanSquaredCriterion() *meanSquaredCriterion {
+	return &meanSquaredCriterion{}
 }
 
-func (c *Criterion) forwardMeanSquared(pred, target *tensor.Tensor) *tensor.Tensor {
+func (msc *meanSquaredCriterion) forward(pred, target *tensor.Tensor) *tensor.Tensor {
 	//return tensor.DivScalar(tensor.Sum(pred.Sub(c.target).Pow(2), 0), 2)
 	return tensor.DivScalar(tensor.Sum(tensor.Pow(tensor.Sub(pred, target), 2), 0), 2)
 }

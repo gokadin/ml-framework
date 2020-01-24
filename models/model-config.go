@@ -6,7 +6,7 @@ const (
 	defaultMaxError = 0.001
 	defaultValidOutputRange = 0.1
 	defaultOptimizerType = OptimizerAdam
-	defaultLoss = lossFunctionMeanSquared
+	defaultLoss = LossMeanSquared
 )
 
 type ModelConfig struct {

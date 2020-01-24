@@ -13,7 +13,8 @@ import (
 type Model struct {
 	modules []modules.Module
 	configuration ModelConfig
-	criterion *Criterion
+	criterion criterion
+	optimizer optimizer
 }
 
 func NewModel() *Model {
@@ -58,11 +59,12 @@ func (m *Model) Evaluate(dataset *datasets.Dataset) {
 	target := tensor.NewTensor(dataset.Get(datasets.ValidationSetY).Data())
 
 	y := forward(m.modules, x)
-	loss := m.criterion.Forward(y, target)
+	loss := m.criterion.forward(y, target)
 
 	fmt.Println(loss.Data()[0][0])
 }
 
 func (m *Model) initialize() {
-	m.criterion = NewCriterion(m.configuration.Loss)
+	m.criterion = newCriterion(m.configuration.Loss)
+	m.optimizer = newOptimizer(m.configuration.Optimizer)
 }
