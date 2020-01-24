@@ -16,6 +16,7 @@ const (
 	operationDot = "operationDot"
 	operationActivationSigmoid = "operationActivationSigmoid"
 	operationActivationRelu = "operationActivationRelu"
+	operationActivationSoftmax = "operationActivationSoftmax"
 )
 
 type operation struct {

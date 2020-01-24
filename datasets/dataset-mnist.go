@@ -17,8 +17,8 @@ const trainingLabelsHeaderOffset = 8
 const validationImagesHeaderOffset = 16
 const validationLabelsHeaderOffset = 8
 
-func loadMNIST() *dataset {
-	log.Print("Getting MNIST dataset...")
+func loadMNIST() *Dataset {
+	log.Print("Getting MNIST Dataset...")
 
 	trainX, trainY, valX, valY := getData()
 	oneHotEncode(trainY, 10)
@@ -28,10 +28,10 @@ func loadMNIST() *dataset {
 
 	dataset := NewDataset()
 	dataset.SetName(mnistName)
-	dataset.AddData(trainingSetX, trainX)
-	dataset.AddData(trainingSetY, trainY)
-	dataset.AddData(validationSetX, valX)
-	dataset.AddData(validationSetY, valY)
+	dataset.AddData(TrainingSetX, trainX)
+	dataset.AddData(TrainingSetY, trainY)
+	dataset.AddData(ValidationSetX, valX)
+	dataset.AddData(ValidationSetY, valY)
 	return dataset
 }
 

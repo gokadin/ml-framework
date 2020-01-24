@@ -6,7 +6,7 @@ import (
 
 const datasetNameMNIST = "mnist"
 
-func From(source string) *dataset {
+func From(source string) *Dataset {
 	switch source {
 	// file formats
 	default:
@@ -14,15 +14,15 @@ func From(source string) *dataset {
 	}
 }
 
-func fromOnline(datasetName string) *dataset {
+func fromOnline(datasetName string) *Dataset {
 	createCache()
 
 	switch datasetName {
 	case datasetNameMNIST:
 		return loadMNIST()
 	default:
-		log.Fatalf("Could not find dataset with name %s", datasetName)
+		log.Fatalf("Could not find Dataset with name %s", datasetName)
 	}
 
-	return &dataset{}
+	return &Dataset{}
 }

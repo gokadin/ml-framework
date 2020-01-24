@@ -2,7 +2,7 @@ package runners
 
 import (
     "fmt"
-    "github.com/gokadin/ml-framework/core"
+    "github.com/gokadin/ml-framework/models"
     "github.com/gokadin/ml-framework/tensor"
     "log"
     "time"
@@ -36,7 +36,7 @@ func NewNetworkRunner() *NetworkRunner {
     }
 }
 
-func (nr *NetworkRunner) Train(network *core.Network, inputs, target *tensor.Tensor) {
+func (nr *NetworkRunner) Train(network *models.Model, inputs, target *tensor.Tensor) {
     sgd := NewSGD(network, nr.createOptimizer())
     criterion := NewCriterion(lossFunctionMeanSquared)
     numBatches := len(inputs.Data()) / nr.batchSize

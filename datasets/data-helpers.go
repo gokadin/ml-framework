@@ -6,7 +6,7 @@ import (
 
 func bytesToMat(bytes []byte, numOfSamples, headerOffset int) [][]float64 {
 	if (len(bytes) - headerOffset) % numOfSamples != 0 {
-		log.Fatal("Could not transform raw data into usable dataset")
+		log.Fatal("Could not transform raw data into usable Dataset")
 	}
 
 	sampleLength := (len(bytes) - headerOffset) / numOfSamples
@@ -24,7 +24,7 @@ func bytesToMat(bytes []byte, numOfSamples, headerOffset int) [][]float64 {
 
 func oneHotEncode(data [][]float64, depth int) {
 	if len(data) == 0 || len(data[0]) != 1 {
-		log.Fatal("cannot one hot encode dataset with more than one value per output")
+		log.Fatal("cannot one hot encode Dataset with more than one value per output")
 	}
 
 	for i, output := range data {

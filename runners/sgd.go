@@ -1,15 +1,15 @@
 package runners
 
 import (
-	"github.com/gokadin/ml-framework/core"
+	"github.com/gokadin/ml-framework/models"
 )
 
 type SGD struct {
-	network *core.Network
+	network *models.Model
 	optimizer optimizer
 }
 
-func NewSGD(network *core.Network, optimizer optimizer) *SGD {
+func NewSGD(network *models.Model, optimizer optimizer) *SGD {
 	return &SGD{
         network,
         optimizer,
