@@ -1,5 +1,7 @@
 package tensor2
 
+import "github.com/gokadin/ml-framework/mat"
+
 const operationSub = "opSub"
 
 type opSub struct {
@@ -22,8 +24,14 @@ func (os *opSub) forward(mat [][]float64) {
 	}
 }
 
-func (os *opSub) backward() {
+func (os *opSub) backward(grad [][]float64) {
+	if os.a.isGradientEnabled {
+		os.a.grad = grad
+	}
 
+	if os.b.isGradientEnabled {
+		os.b.grad = mat.Neg(grad)
+	}
 }
 
 func Sub(a, b *Tensor) *Tensor {

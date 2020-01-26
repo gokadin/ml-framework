@@ -4,5 +4,5 @@ type op interface {
 	name() string
 	dependencies() []*Tensor
 	forward(mat [][]float64)
-	backward()
+	backward(grad [][]float64)
 }

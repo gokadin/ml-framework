@@ -22,8 +22,14 @@ func (oa *opAdd) forward(mat [][]float64) {
 	}
 }
 
-func (oa *opAdd) backward() {
+func (oa *opAdd) backward(grad [][]float64) {
+	if oa.a.isGradientEnabled {
+		oa.a.grad = grad
+	}
 
+	if oa.b.isGradientEnabled {
+		oa.b.grad = grad
+	}
 }
 
 func Add(a, b *Tensor) *Tensor {
