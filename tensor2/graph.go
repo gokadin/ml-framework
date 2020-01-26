@@ -1,21 +1,21 @@
 package tensor2
 
 type Graph struct {
-	cache map[string]*executionGraph
+	forwardGraphs map[string]*forwardGraph
 }
 
 func NewGraph() *Graph {
 	return &Graph{
-		cache: make(map[string]*executionGraph),
+		forwardGraphs: make(map[string]*forwardGraph),
 	}
 }
 
 func (g *Graph) Forward(tensor *Tensor) {
-	if _, ok := g.cache[tensor.id]; !ok {
-		g.cache[tensor.id] = newExecutionGraph(tensor)
+	if _, ok := g.forwardGraphs[tensor.id]; !ok {
+		g.forwardGraphs[tensor.id] = buildForwardGraph(tensor)
 	}
 
-	g.cache[tensor.id].run()
+	g.forwardGraphs[tensor.id].run()
 }
 
 func (g *Graph) Backward(tensor *Tensor) {

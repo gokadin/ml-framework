@@ -1,49 +1,49 @@
 package tensor2
 
-type executionGraph struct {
+type forwardGraph struct {
 	startChannels []chan bool
 	done chan bool
 }
 
-func newExecutionGraph(tensor *Tensor) *executionGraph {
-	eg := &executionGraph{
+func buildForwardGraph(tensor *Tensor) *forwardGraph {
+	fg := &forwardGraph{
 		startChannels: make([]chan bool, 0),
 		done: make(chan bool),
 	}
 
-	eg.build(tensor, eg.done)
+	fg.build(tensor, fg.done)
 
-	return eg
+	return fg
 }
 
-func (eg *executionGraph) build(tensor *Tensor, lastChan chan bool) {
+func (fg *forwardGraph) build(tensor *Tensor, lastChan chan bool) {
 	c := make(chan bool)
 
 	activeDependencyCount := 0
 	for _, dependency := range tensor.op.dependencies() {
 		if dependency.op != nil {
 			activeDependencyCount++
-			eg.build(dependency, c)
+			fg.build(dependency, c)
 		}
 	}
 
 	if activeDependencyCount == 0 {
 		activeDependencyCount = 1
-		eg.startChannels = append(eg.startChannels, c)
+		fg.startChannels = append(fg.startChannels, c)
 	}
 
-	go executeOp(tensor, c, lastChan, activeDependencyCount)
+	go executeForwardOp(tensor, c, lastChan, activeDependencyCount)
 }
 
-func (eg *executionGraph) run() {
-	for _, startChannel := range eg.startChannels {
+func (fg *forwardGraph) run() {
+	for _, startChannel := range fg.startChannels {
 		startChannel <- true
 	}
 
-	<-eg.done
+	<-fg.done
 }
 
-func executeOp(tensor *Tensor, in, out chan bool, threshold int) {
+func executeForwardOp(tensor *Tensor, in, out chan bool, threshold int) {
 	counter := 0
 	for range in {
 		counter++
