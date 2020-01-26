@@ -297,3 +297,14 @@ func expand1(mat [][]float64, copies int) [][]float64 {
 	}
 	return result
 }
+
+func Log(mat [][]float64) [][]float64 {
+	result := make([][]float64, len(mat))
+	for i := range mat {
+		result[i] = make([]float64, len(mat[i]))
+		for j := range mat[i] {
+			result[i][j] = math.Log(mat[i][j])
+		}
+	}
+	return result
+}

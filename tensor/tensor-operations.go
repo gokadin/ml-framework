@@ -5,6 +5,7 @@ import "github.com/gokadin/ml-framework/mat"
 func Add(a, b *Tensor) *Tensor {
 	t := NewTensor(mat.Add(a.mat, b.mat))
 	t.operation = newOperation(operationAdd, t, []*operation{a.operation, b.operation})
+	t.operation2 = &operationAdd2{}
 	return t
 }
 
@@ -72,5 +73,11 @@ func Sum(t *Tensor, axis int) *Tensor {
 func Expand(t *Tensor, axis, copies int) *Tensor {
 	result := NewTensor(mat.Expand(t.mat, axis, copies))
 	result.operation = newOperation(operationExpand, result, []*operation{t.operation}, float64(axis))
+	return result
+}
+
+func Log(t *Tensor) *Tensor {
+	result := NewTensor(mat.Log(t.mat))
+	result.operation = newOperation(operationLog, result, []*operation{t.operation})
 	return result
 }

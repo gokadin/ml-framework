@@ -33,10 +33,6 @@ func (d *dense) Forward(input *tensor.Tensor) *tensor.Tensor { // can optimize t
 	return activate(tensor.Add(tensor.Dot(input, d.weights), tensor.Expand(d.bias, 0, len(input.Data()))), d.activation)
 }
 
-func (d *dense) Backward() {
-
-}
-
 func (d *dense) GetParameters() []*tensor.Tensor {
 	return []*tensor.Tensor{d.weights, d.bias}
 }

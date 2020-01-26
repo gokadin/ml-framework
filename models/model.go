@@ -54,7 +54,7 @@ func (m *Model) Fit(dataset *datasets.Dataset) {
 	fit(m, x, target)
 }
 
-func (m *Model) Evaluate(dataset *datasets.Dataset) {
+func (m *Model) Run(dataset *datasets.Dataset) {
 	x := tensor.NewTensor(dataset.Get(datasets.ValidationSetX).Data())
 	target := tensor.NewTensor(dataset.Get(datasets.ValidationSetY).Data())
 

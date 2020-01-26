@@ -36,7 +36,7 @@ func Test_defaultOptimizer_update(t *testing.T) {
 	t3.Backward()
 	expected := mat.Sub(t1.Data(), mat.MulScalar(t1.Gradient(), o.learningRate / float64(someBatchSize)))
 
-	o.update(t1, "", someBatchSize, 0)
+	o.update(t1, 1, someBatchSize, 0)
 
 	assert.Equal(t, expected, t1.Data())
 }
@@ -56,7 +56,7 @@ func Test_momentumOptimizer_initializesWithDefaultMomentum(t *testing.T) {
 func Test_momentumOptimizer_initializesAnEmptyVelocityMap(t *testing.T) {
 	o := newMomentumOptimizer([]float64{})
 
-	assert.Equal(t, make(map[string][][]float64), o.velocityMap)
+	assert.Equal(t, make(map[int][][]float64), o.velocityMap)
 }
 
 func Test_momentumOptimizer_correctlyOverridesDefaultLearningRate(t *testing.T) {
@@ -98,13 +98,13 @@ func Test_adamOptimizer_initializesWithADefaultEpsStable(t *testing.T) {
 func Test_adamOptimizer_initializesAnEmptyVelocityMap(t *testing.T) {
 	o := newAdamOptimizer([]float64{})
 
-	assert.Equal(t, make(map[string][][]float64), o.velocityMap)
+	assert.Equal(t, make(map[int][][]float64), o.velocityMap)
 }
 
 func Test_adamOptimizer_initializesAnEmptyMeanMap(t *testing.T) {
 	o := newAdamOptimizer([]float64{})
 
-	assert.Equal(t, make(map[string][][]float64), o.meanMap)
+	assert.Equal(t, make(map[int][][]float64), o.meanMap)
 }
 
 func Test_adamOptimizer_correctlyOverridesDefaultLearningRate(t *testing.T) {

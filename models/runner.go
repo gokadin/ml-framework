@@ -23,6 +23,10 @@ func fit(model *Model, x, target *tensor.Tensor) {
 	for i := 1; i != model.configuration.Epochs; i++ {
 		lossMean := 0.0
 		shuffleDataset(x.Data(), target.Data())
+
+		var ttAve int64
+		ttAve = 0
+		tt := time.Now().UnixNano()
 		for batchCounter := 0; batchCounter < numBatches; batchCounter++ {
 			batchInputs := tensor.NewTensor(partitionData(x.Data(), batchCounter, model.configuration.BatchSize))
 			batchTarget := tensor.NewTensor(partitionData(target.Data(), batchCounter, model.configuration.BatchSize))
@@ -33,6 +37,15 @@ func fit(model *Model, x, target *tensor.Tensor) {
 			loss.Backward()
 
 			update(model, i, batchCounter)
+
+			if batchCounter > 0 && batchCounter % 100 == 0 {
+				tt2 := time.Now().UnixNano()
+				diff := tt2 - tt
+				diffms := diff / int64(time.Millisecond)
+				ttAve += diffms
+				fmt.Println("current:", diffms, "ave:", ttAve / int64(batchCounter / 100))
+				tt = time.Now().UnixNano()
+			}
 		}
 
 		lossMean /= float64(model.configuration.BatchSize)

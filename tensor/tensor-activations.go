@@ -32,8 +32,7 @@ func (t *Tensor) Softmax() *Tensor {
 			sum += math.Pow(math.E, t.mat[i][j])
 		}
 		for j := range t.mat[i] {
-			sumOthers := sum - math.Pow(math.E, t.mat[i][j])
-			mat[i][j] = math.Pow(math.E, t.mat[i][j]) / sumOthers
+			mat[i][j] = math.Pow(math.E, t.mat[i][j]) / sum
 		}
 	}
 	result := NewTensor(mat)

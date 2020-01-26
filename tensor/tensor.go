@@ -3,7 +3,6 @@ package tensor
 import (
 	"github.com/gokadin/ml-framework/mat"
 	"github.com/google/uuid"
-	"math/rand"
 )
 
 type Tensor struct {
@@ -21,18 +20,6 @@ func NewTensor(mat [][]float64) *Tensor {
 	}
 	t.operation = newOperation(operationNone, t, []*operation{})
 	return t
-}
-
-func NewRandomTensor(x, y int) *Tensor {
-    mat := make([][]float64, x)
-    for i := range mat {
-    	mat[i] = make([]float64, y)
-    	for j := range mat[i] {
-    		mat[i][j] = rand.Float64()
-		}
-	}
-
-    return NewTensor(mat)
 }
 
 func (t *Tensor) Id() string {

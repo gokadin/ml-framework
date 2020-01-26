@@ -14,6 +14,7 @@ const (
 	operationSum = "operationSum"
 	operationExpand = "operationExpand"
 	operationDot = "operationDot"
+	operationLog = "operationLog"
 	operationActivationSigmoid = "operationActivationSigmoid"
 	operationActivationRelu = "operationActivationRelu"
 	operationActivationSoftmax = "operationActivationSoftmax"
@@ -59,10 +60,14 @@ func (o *operation) differentiate(grad [][]float64) {
 		o.differentiateExpand(grad)
 	case operationDot:
 		o.differentiateDot(grad)
+	case operationLog:
+		o.differentiateLog(grad)
 	case operationActivationSigmoid:
 		o.differentiateActivationSigmoid(grad)
 	case operationActivationRelu:
 		o.differentiateActivationRelu(grad)
+	case operationActivationSoftmax:
+		o.differentiateActivationSoftmax(grad)
 	default:
 		log.Fatalf("differentiation not supported")
 	}
@@ -136,6 +141,10 @@ func (o *operation) differentiateDot(grad [][]float64) {
 	}
 }
 
+func (o *operation) differentiateLog(grad [][]float64) {
+	o.children[0].gradient = mat.DivScalarBy(grad, 1)
+}
+
 func (o *operation) differentiateActivationSigmoid(grad [][]float64) {
 	o.children[0].gradient = mat.Mul(grad, mat.Mul(o.tensor.mat, mat.SubFromScalar(o.tensor.mat, 1)))
 }
@@ -149,6 +158,21 @@ func (o *operation) differentiateActivationRelu(grad [][]float64) {
 				d[i][j] = 1
 			} else {
 				d[i][j] = 0
+			}
+		}
+	}
+	o.children[0].gradient = mat.Mul(grad, d)
+}
+
+func (o *operation) differentiateActivationSoftmax(grad [][]float64) {
+	d := make([][]float64, len(o.tensor.mat))
+	for i := range d {
+		d[i] = make([]float64, len(o.tensor.mat[i]))
+		for j := range d[i] {
+			if i == j {
+				d[i][j] = o.tensor.mat[i][j] * (1 - o.tensor.mat[i][j])
+			} else {
+				d[i][j] = -o.tensor.mat[i][j] * o.tensor.mat[i][j]
 			}
 		}
 	}
