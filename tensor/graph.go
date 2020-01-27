@@ -1,4 +1,4 @@
-package tensor2
+package tensor
 
 type Graph struct {
 	forwardGraphs map[string]*forwardGraph
@@ -20,14 +20,16 @@ func (g *Graph) Forward(tensor *Tensor) {
 	g.forwardGraphs[tensor.id].run()
 }
 
-func (g *Graph) Backward(derivative, of *Tensor) {
-	if _, ok := g.backwardGraphs[derivative.id + of.id]; !ok {
-		g.backwardGraphs[derivative.id + of.id] = buildBackwardGraph(derivative, of)
-	}
+func (g *Graph) Backward(of *Tensor, derivatives ...*Tensor) {
+	for _, derivative := range derivatives {
+		if _, ok := g.backwardGraphs[derivative.id + of.id]; !ok {
+			g.backwardGraphs[derivative.id + of.id] = buildBackwardGraph(derivative, of)
+		}
 
-	if _, ok := g.forwardGraphs[of.id]; !ok {
-		g.Forward(of)
-	}
+		if _, ok := g.forwardGraphs[of.id]; !ok {
+			g.Forward(of)
+		}
 
-	g.backwardGraphs[derivative.id + of.id].run()
+		g.backwardGraphs[derivative.id + of.id].run()
+	}
 }

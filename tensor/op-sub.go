@@ -1,4 +1,4 @@
-package tensor2
+package tensor
 
 import "github.com/gokadin/ml-framework/mat"
 
@@ -16,21 +16,21 @@ func (os *opSub) dependencies() []*Tensor {
 	return []*Tensor{os.a, os.b}
 }
 
-func (os *opSub) forward(mat [][]float64) {
-	for i := range mat {
-		for j := range mat[i] {
-			mat[i][j] = os.a.mat[i][j] - os.b.mat[i][j]
+func (os *opSub) forward(tensor *Tensor) {
+	for i := range tensor.mat {
+		for j := range tensor.mat[i] {
+			tensor.mat[i][j] = os.a.mat[i][j] - os.b.mat[i][j]
 		}
 	}
 }
 
-func (os *opSub) backward(grad [][]float64) {
+func (os *opSub) backward(tensor *Tensor) {
 	if os.a.isGradientEnabled {
-		os.a.grad = grad
+		os.a.grad = tensor.grad
 	}
 
 	if os.b.isGradientEnabled {
-		os.b.grad = mat.Neg(grad)
+		os.b.grad = mat.Neg(tensor.grad)
 	}
 }
 

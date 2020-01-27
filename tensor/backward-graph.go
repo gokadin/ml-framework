@@ -1,4 +1,4 @@
-package tensor2
+package tensor
 
 type backwardGraph struct {
 	start chan bool
@@ -30,9 +30,15 @@ func (bg *backwardGraph) build(derivative, root *Tensor, isFirstRoot bool) (bool
 
 		if dependency.id == derivative.id {
 			dependency.isGradientEnabled = true
-			in := make(chan bool)
-			go executeBackwardOp(root, in, bg.done)
-			return true, in
+			if isFirstRoot {
+				root.isGradientEnabled = true
+				go executeBackwardOp(root, bg.start, bg.done)
+				return false, nil
+			} else {
+				in := make(chan bool)
+				go executeBackwardOp(root, in, bg.done)
+				return true, in
+			}
 		}
 
 		if ok, out := bg.build(derivative, dependency, false); ok {

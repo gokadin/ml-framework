@@ -10,16 +10,17 @@ const ActivationSigmoid = "sigmoid"
 const ActivationRelu = "relu"
 const ActivationSoftmax = "softmax"
 
-func activate(tensor *tensor.Tensor, activation string) *tensor.Tensor {
+func activate(t *tensor.Tensor, activation string) *tensor.Tensor {
 	switch activation {
 	case ActivationIdentity:
-		return tensor
+		return t
 	case ActivationSigmoid:
-		return tensor.Sigmoid()
+		return tensor.Sigmoid(t)
 	case ActivationRelu:
-		return tensor.Relu()
+		return tensor.Relu(t)
 	case ActivationSoftmax:
-		return tensor.Softmax()
+		//return tensor.Softmax()
+		break
 	}
 
 	log.Fatal("activation function is unknown:", activation)

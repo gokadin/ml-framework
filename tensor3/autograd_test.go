@@ -1,4 +1,4 @@
-package tensor
+package tensor3
 //
 //import (
 //    "github.com/stretchr/testify/assert"

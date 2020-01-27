@@ -1,12 +1,14 @@
 package modules
 
-import "github.com/gokadin/ml-framework/tensor"
+import (
+	"github.com/gokadin/ml-framework/tensor"
+)
 
 const defaultWeightInitializer = initializerTypeNormalized
 const defaultBiasInitializer = initializerTypeZeros
 
 type dense struct {
-	activation string // make callable
+	activation string
 	weightInitializer string
 	biasInitializer string
 	isOutputLayer bool
@@ -25,7 +27,7 @@ func Dense(unitCount int, activation string) *dense {
 	}
 }
 
-func (d *dense) Forward(input *tensor.Tensor) *tensor.Tensor { // can optimize the expand here
+func (d *dense) Forward(input *tensor.Tensor) *tensor.Tensor {
 	if d.weights == nil {
 		d.initialize(len(input.Data()[0]))
 	}

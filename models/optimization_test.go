@@ -30,10 +30,11 @@ func Test_defaultOptimizer_correctlyOverridesLearningRate(t *testing.T) {
 
 func Test_defaultOptimizer_update(t *testing.T) {
 	o := newDefaultOptimizer([]float64{})
-	t1 := tensor.NewTensor([][]float64{{1, 2}})
-	t2 := tensor.NewTensor([][]float64{{1, 2}})
+	t1 := tensor.Constant([][]float64{{1, 2}})
+	t2 := tensor.Constant([][]float64{{1, 2}})
 	t3 := tensor.Add(t1, t2)
-	t3.Backward()
+	graph := tensor.NewGraph()
+	graph.Backward(t1, t3)
 	expected := mat.Sub(t1.Data(), mat.MulScalar(t1.Gradient(), o.learningRate / float64(someBatchSize)))
 
 	o.update(t1, 1, someBatchSize, 0)

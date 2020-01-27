@@ -1,7 +1,6 @@
 package models
 
 const (
-	defaultBatchSize = 1
 	defaultEpochs = 0
 	defaultMaxError = 0.001
 	defaultValidOutputRange = 0.1
@@ -10,7 +9,6 @@ const (
 )
 
 type ModelConfig struct {
-	BatchSize int
 	Epochs int
 	MaxError float64
 	ValidOutputRange float64
@@ -21,10 +19,6 @@ type ModelConfig struct {
 }
 
 func (mc *ModelConfig) populateDefaults() {
-	if mc.BatchSize == 0 {
-		mc.BatchSize = defaultBatchSize
-	}
-
 	if mc.Epochs == 0 {
 		mc.Epochs = defaultEpochs
 	}

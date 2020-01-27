@@ -1,4 +1,4 @@
-package tensor2
+package tensor
 
 const operationAdd = "opAdd"
 
@@ -14,21 +14,21 @@ func (oa *opAdd) dependencies() []*Tensor {
 	return []*Tensor{oa.a, oa.b}
 }
 
-func (oa *opAdd) forward(mat [][]float64) {
-	for i := range mat {
-		for j := range mat[i] {
-			mat[i][j] = oa.a.mat[i][j] + oa.b.mat[i][j]
+func (oa *opAdd) forward(tensor *Tensor) {
+	for i := range tensor.mat {
+		for j := range tensor.mat[i] {
+			tensor.mat[i][j] = oa.a.mat[i][j] + oa.b.mat[i][j]
 		}
 	}
 }
 
-func (oa *opAdd) backward(grad [][]float64) {
+func (oa *opAdd) backward(tensor *Tensor) {
 	if oa.a.isGradientEnabled {
-		oa.a.grad = grad
+		oa.a.grad = tensor.grad
 	}
 
 	if oa.b.isGradientEnabled {
-		oa.b.grad = grad
+		oa.b.grad = tensor.grad
 	}
 }
 

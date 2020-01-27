@@ -1,4 +1,4 @@
-package tensor2
+package tensor
 
 import (
 	"github.com/gokadin/ml-framework/mat"
@@ -20,19 +20,20 @@ func (opw *opPow) dependencies() []*Tensor {
 	return []*Tensor{opw.a}
 }
 
-func (opw *opPow) forward(mat [][]float64) {
-	for i := range mat {
-		for j := range mat[i] {
-			mat[i][j] = math.Pow(opw.a.mat[i][j], opw.power)
+func (opw *opPow) forward(tensor *Tensor) {
+	for i := range tensor.mat {
+		for j := range tensor.mat[i] {
+			tensor.mat[i][j] = math.Pow(opw.a.mat[i][j], opw.power)
 		}
 	}
 }
 
-func (opw *opPow) backward(grad [][]float64) {
+func (opw *opPow) backward(tensor *Tensor) {
 	if opw.power == 2 {
-		opw.a.grad = mat.Mul(grad, mat.MulScalar(opw.a.mat, 2))
+		opw.a.grad = mat.Mul(tensor.grad, mat.MulScalar(opw.a.mat, 2))
+		return
 	}
-	opw.a.grad = mat.Mul(grad, mat.MulScalar(mat.Pow(opw.a.mat, opw.power - 1), opw.power))
+	opw.a.grad = mat.Mul(tensor.grad, mat.MulScalar(mat.Pow(opw.a.mat, opw.power - 1), opw.power))
 }
 
 func Pow(a *Tensor, power float64) *Tensor {

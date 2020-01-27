@@ -11,7 +11,7 @@ func main() {
 }
 
 func mnist() {
-	dataset := datasets.From("mnist")
+	dataset := datasets.From("mnist").SetBatchSize(60000)
 
 	model := models.Build(
 		modules.Dense(128, modules.ActivationRelu),

@@ -1,4 +1,4 @@
-package tensor2
+package tensor
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -63,7 +63,7 @@ func Test_nonsnese3(t *testing.T) {
 	g := Add(e, f).SetName("g")
 	graph := NewGraph()
 
-	graph.Backward(y, g)
+	graph.Backward(g, y)
 
 	assert.Equal(t, [][]float64{{1}}, y.grad)
 }
@@ -81,12 +81,33 @@ func Test_nonsnese4(t *testing.T) {
 	h := Pow(g, 3)
 	graph := NewGraph()
 
-	graph.Backward(y, h)
+	graph.Backward(h, y)
 
 	assert.Equal(t, [][]float64{{729}}, h.mat)
 	assert.Equal(t, [][]float64{{243}}, y.grad)
 
-	graph.Backward(x, h)
+	graph.Backward(h, x)
 
 	assert.Equal(t, [][]float64{{243}}, x.grad)
+}
+
+func Test_nonsnese5(t *testing.T) {
+	a := Constant([][]float64{{1, 2}, {2, 1}}).SetName("a")
+	b := Constant([][]float64{{0, 3}, {1, 1}}).SetName("b")
+	e := Dot(a, b).SetName("e")
+	graph := NewGraph()
+
+	graph.Backward(e, a)
+
+	assert.Equal(t, [][]float64{{3, 2}, {3, 2}}, a.grad)
+}
+
+func Test_nonsnese6(t *testing.T) {
+	a := Constant([][]float64{{1, 2}, {2, 1}}).SetName("a")
+	e := Sum(a, 0).SetName("e")
+	graph := NewGraph()
+
+	graph.Forward(e)
+
+	assert.Equal(t, [][]float64{{3, 3}}, e.mat)
 }

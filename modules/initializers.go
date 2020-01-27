@@ -35,7 +35,7 @@ func initializeParameterZeros(x, y int) *tensor.Tensor {
 			mat[i][j] = 0
 		}
 	}
-	return tensor.NewTensor(mat)
+	return tensor.Constant(mat)
 }
 
 func initializeParameterRandom(x, y int) *tensor.Tensor {
@@ -46,7 +46,7 @@ func initializeParameterRandom(x, y int) *tensor.Tensor {
 			mat[i][j] = rand.NormFloat64()
 		}
 	}
-	return tensor.NewTensor(mat)
+	return tensor.Constant(mat)
 }
 
 func initializeParameterNormalized(x, y int) *tensor.Tensor {
@@ -57,5 +57,5 @@ func initializeParameterNormalized(x, y int) *tensor.Tensor {
 			mat[i][j] = rand.NormFloat64() / math.Sqrt(float64(x))
 		}
 	}
-	return tensor.NewTensor(mat)
+	return tensor.Constant(mat)
 }
