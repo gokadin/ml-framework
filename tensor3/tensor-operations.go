@@ -5,7 +5,6 @@ import "github.com/gokadin/ml-framework/mat"
 func Add(a, b *Tensor) *Tensor {
 	t := NewTensor(mat.Add(a.mat, b.mat))
 	t.operation = newOperation(operationAdd, t, []*operation{a.operation, b.operation})
-	t.operation2 = &operationAdd2{}
 	return t
 }
 

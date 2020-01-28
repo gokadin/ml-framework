@@ -21,15 +21,18 @@ func (g *Graph) Forward(tensor *Tensor) {
 }
 
 func (g *Graph) Backward(of *Tensor, derivatives ...*Tensor) {
-	for _, derivative := range derivatives {
-		if _, ok := g.backwardGraphs[derivative.id + of.id]; !ok {
-			g.backwardGraphs[derivative.id + of.id] = buildBackwardGraph(derivative, of)
-		}
-
-		if _, ok := g.forwardGraphs[of.id]; !ok {
-			g.Forward(of)
-		}
-
-		g.backwardGraphs[derivative.id + of.id].run()
+	id := backwardGraphId(of, derivatives)
+	if _, ok := g.backwardGraphs[id]; !ok {
+		g.backwardGraphs[id] = buildBackwardGraph(derivatives, of)
 	}
+
+	g.backwardGraphs[id].run()
+}
+
+func backwardGraphId(of *Tensor, derivatives []*Tensor) string {
+	id := of.id
+	for _, derivative := range derivatives {
+		id += derivative.id
+	}
+	return id // truncate (md5)
 }

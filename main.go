@@ -7,7 +7,10 @@ import (
 )
 
 func main() {
-	mnist()
+	//perftest()
+	//mnist()
+	xor()
+	//random()
 }
 
 func mnist() {
@@ -33,6 +36,33 @@ func xor() {
 		modules.Dense(2, modules.ActivationSigmoid),
 		modules.Dense(1, modules.ActivationIdentity))
 
+	model.Configure(models.ModelConfig{
+		Optimizer:          models.OptimizerMomentum,
+		Loss:               models.LossMeanSquared,
+	})
+
 	model.Fit(dataset)
 	model.Run(dataset)
+}
+
+func random() {
+	//x := [][]float64{{1, 0}, {1, 1}, {0, 1}, {0, 0}}
+	//y := [][]float64{{1}, {0}, {1}, {0}}
+	x := [][]float64{{1, 0}, {1, 1}, {0, 1}}
+	y := [][]float64{{0.5}, {1}, {0.6}}
+
+	dataset := datasets.NewDataset()
+	dataset.AddData(datasets.TrainingSetX, x)
+	dataset.AddData(datasets.TrainingSetY, y)
+	dataset.SetBatchSize(3).DisableShuffle()
+
+	model := models.Build(
+		modules.Dense(2, modules.ActivationSigmoid),
+		modules.Dense(1, modules.ActivationIdentity))
+
+	model.Configure(models.ModelConfig{
+		Optimizer: models.OptimizerMomentum,
+	})
+
+	model.Fit(dataset)
 }

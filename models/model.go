@@ -83,7 +83,11 @@ func (m *Model) Fit(dataset *datasets.Dataset) {
 			m.graph.Forward(loss)
 			m.graph.Backward(loss, m.trainableVariables...)
 
-			lossMean += 1//loss.Data()[0][0]
+			batchLossMean := 0.0
+			for _, yLoss := range loss.Data()[0] {
+				batchLossMean += yLoss
+			}
+			lossMean += batchLossMean / float64(len(loss.Data()[0]))
 
 			for _, parameter := range m.TrainableVariables() {
 				m.optimizer.update(parameter, dataset.BatchSize(), epoch * dataset.BatchSize() + dataset.BatchCounter())

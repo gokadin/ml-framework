@@ -1,4 +1,10 @@
 package tensor3
+
+import (
+   "github.com/stretchr/testify/assert"
+   "testing"
+)
+
 //
 //import (
 //    "github.com/stretchr/testify/assert"
@@ -240,16 +246,16 @@ package tensor3
 //    assert.Equal(s.T(), [][]float64{{0, 0}, {1, 1}}, grad)
 //}
 //
-//func (s *AutogradTestSuite) Test_Autograd_Gradient_DerivativeOfDotSubAndPow() {
-//    x := NewTensor([][]float64{{0, 1}})
-//    w := NewTensor([][]float64{{1, 1}, {1, 1}})
-//    yHat := NewTensor([][]float64{{2, 2}})
-//    e := Pow(Sub(Dot(x, w), yHat), 2)
-//
-//    grad := s.autograd.Derivative(w, e)
-//
-//    assert.Equal(s.T(), [][]float64{{0, 0}, {-2, -2}}, grad)
-//}
+func Test_Autograd_Gradient_DerivativeOfDotSubAndPow(t *testing.T) {
+   x := NewTensor([][]float64{{1, 0}, {1, 1}})
+   w := NewTensor([][]float64{{0.5}, {0.5}})
+   yHat := NewTensor([][]float64{{0}, {1}})
+   e := DivScalar(Sum(Pow(Sub(Dot(x, w), yHat), 2), 0), 2)
+
+   e.Backward()
+
+   assert.Equal(t, [][]float64{{1, 1}}, e.Gradient())
+}
 //
 ///* CACHE */
 //

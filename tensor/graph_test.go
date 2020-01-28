@@ -111,3 +111,30 @@ func Test_nonsnese6(t *testing.T) {
 
 	assert.Equal(t, [][]float64{{3, 3}}, e.mat)
 }
+
+func Test_nonsnese7(t *testing.T) {
+	a := Constant([][]float64{{1, 2}, {2, 1}}).SetName("a")
+	b := Constant([][]float64{{0, 3}, {1, 1}}).SetName("b")
+	e := Dot(a, b).SetName("e")
+	graph := NewGraph()
+
+	graph.Backward(e, a)
+
+	assert.Equal(t, [][]float64{{3, 2}, {3, 2}}, a.grad)
+
+	graph.Backward(e, a)
+
+	assert.Equal(t, [][]float64{{3, 2}, {3, 2}}, a.grad)
+}
+
+func Test_Autograd_Gradient_DerivativeOfDotSubAndPow2(t *testing.T) {
+	x := Constant([][]float64{{0, 1}})
+	w := Constant([][]float64{{1, 1}, {1, 1}})
+	yHat := Constant([][]float64{{2, 2}})
+	e := Pow(Sub(Dot(x, w), yHat), 2)
+	graph := NewGraph()
+
+	graph.Backward(e, w)
+
+	assert.Equal(t, [][]float64{{1, 1}}, e.grad)
+}

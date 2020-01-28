@@ -57,6 +57,11 @@ func (d *Dataset) Shuffle() *Dataset {
 	return d
 }
 
+func (d *Dataset) DisableShuffle() *Dataset {
+	d.shouldShuffle = false
+	return d
+}
+
 func (d *Dataset) BatchSize() int {
 	return d.batchSize
 }
@@ -71,7 +76,7 @@ func (d *Dataset) SetBatchSize(batchSize int) *Dataset {
 }
 
 func (d *Dataset) HasNextBatch() bool {
-	return d.batchCounter < d.batchSize
+	return d.batchCounter < d.NumBatches()
 }
 
 func (d *Dataset) ResetBatchCounter() {
