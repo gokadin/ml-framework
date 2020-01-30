@@ -66,7 +66,6 @@ func (m *Model) Fit(dataset *datasets.Dataset) {
 	t := time.Now().UnixNano()
 	for epoch := 1; epoch != m.configuration.Epochs; epoch++ {
 		lossMean := 0.0
-		dataset.Shuffle()
 
 		var ttAve int64
 		ttAve = 0

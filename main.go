@@ -8,8 +8,8 @@ import (
 
 func main() {
 	//perftest()
-	//mnist()
-	xor()
+	mnist()
+	//xor()
 	//random()
 }
 
@@ -30,14 +30,14 @@ func mnist() {
 }
 
 func xor() {
-	dataset := datasets.From("xor")
+	dataset := datasets.From("xor").SetBatchSize(4)
 
 	model := models.Build(
 		modules.Dense(2, modules.ActivationSigmoid),
 		modules.Dense(1, modules.ActivationIdentity))
 
 	model.Configure(models.ModelConfig{
-		Optimizer:          models.OptimizerMomentum,
+		Optimizer:          models.OptimizerAdam,
 		Loss:               models.LossMeanSquared,
 	})
 

@@ -2,7 +2,6 @@ package tensor
 
 import (
 	"github.com/gokadin/ml-framework/mat"
-	"runtime"
 )
 
 const operationDot = "opDot"
@@ -28,24 +27,26 @@ func (od *opDot) forward(tensor *Tensor) {
 	//	}
 	//}
 
-	start := make(chan int, len(od.a.mat))
-	output := make(chan bool)
-	for i := 0; i < runtime.NumCPU(); i++ {
-		go thread(od.a.mat, od.b.mat, start, output, tensor)
-	}
+	tensor.mat = mat.Dot(od.a.mat, od.b.mat)
 
-	for i := range od.a.mat {
-		start <- i
-	}
-
-	count := 0
-	for range output {
-		count++
-		if count == len(od.a.mat) {
-			close(start)
-			close(output)
-		}
-	}
+	//start := make(chan int, len(od.a.mat))
+	//output := make(chan bool)
+	//for i := 0; i < runtime.NumCPU(); i++ {
+	//	go thread(od.a.mat, od.b.mat, start, output, tensor)
+	//}
+	//
+	//for i := range od.a.mat {
+	//	start <- i
+	//}
+	//
+	//count := 0
+	//for range output {
+	//	count++
+	//	if count == len(od.a.mat) {
+	//		close(start)
+	//		close(output)
+	//	}
+	//}
 }
 
 func thread(a, b [][]float64, start chan int, output chan bool, tensor *Tensor) {
