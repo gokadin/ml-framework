@@ -40,6 +40,6 @@ func (d *dense) GetParameters() []*tensor.Tensor {
 }
 
 func (d *dense) initialize(inputSize int) {
-	d.weights = initializeParameter(inputSize, d.unitCount, d.weightInitializer)
-	d.bias = initializeParameter(1, d.unitCount, d.biasInitializer)
+	d.weights = initializeParameter(inputSize, d.unitCount, d.weightInitializer).SetName("dense layer weights")
+	d.bias = initializeParameter(1, d.unitCount, d.biasInitializer).SetName("dense layer biases")
 }

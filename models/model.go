@@ -26,6 +26,7 @@ func NewModel() *Model {
 	model := &Model{
 		configuration: ModelConfig{},
 		graph: tensor.NewGraph(),
+		trainableVariables: make([]*tensor.Tensor, 0),
 	}
 	model.configuration.populateDefaults()
 	model.initialize()
@@ -55,11 +56,11 @@ func (m *Model) TrainableVariables() []*tensor.Tensor {
 }
 
 func (m *Model) Fit(dataset *datasets.Dataset) {
-	batchX := tensor.Variable(dataset.BatchSize(), dataset.Get(datasets.TrainingSetX).ShapeY())
-	batchY := tensor.Variable(dataset.BatchSize(), dataset.Get(datasets.TrainingSetY).ShapeY())
+	batchX := tensor.Variable(dataset.BatchSize(), dataset.Get(datasets.TrainingSetX).ShapeY()).SetName("batch x")
+	batchY := tensor.Variable(dataset.BatchSize(), dataset.Get(datasets.TrainingSetY).ShapeY()).SetName("batch y")
 
-	pred := m.buildModules(batchX)
-	loss := m.criterion.forward(pred, batchY)
+	pred := m.buildModules(batchX).SetName("prediction")
+	loss := m.criterion.forward(pred, batchY).SetName("loss")
 
 	var aveTime int64 = 1
 	t := time.Now().UnixNano()
@@ -143,7 +144,7 @@ func (m *Model) buildModules(x *tensor.Tensor) *tensor.Tensor {
 	pred := x
 	for _, module := range m.modules {
 		pred = module.Forward(pred)
-		m.trainableVariables = append(module.GetParameters())
+		m.trainableVariables = append(m.trainableVariables, module.GetParameters()...)
 	}
 	return pred
 }

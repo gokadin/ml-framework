@@ -28,7 +28,8 @@ func (opw *opDivScalar) forward(tensor *Tensor) {
 }
 
 func (opw *opDivScalar) backward(tensor *Tensor) {
-	opw.a.grad = mat.MulScalar(tensor.grad, 1 / opw.scalar)
+	multiplier := 1.0 / opw.scalar
+	opw.a.grad = mat.MulScalar(tensor.grad, multiplier)
 }
 
 func DivScalar(a *Tensor, scalar float64) *Tensor {

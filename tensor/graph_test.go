@@ -75,12 +75,13 @@ func Test_nonsnese4(t *testing.T) {
 	b := Constant([][]float64{{5}}).SetName("b")
 	c := Constant([][]float64{{6}}).SetName("c")
 	d := Constant([][]float64{{4}}).SetName("d")
-	e := Add(a, b).SetName("e")
-	f := Sub(c, d).SetName("f")
-	g := Add(e, f).SetName("g")
-	h := Pow(g, 3)
+	e := Add(a, b).SetName("e") //7
+	f := Sub(c, d).SetName("f") //2
+	g := Add(e, f).SetName("g") //9
+	h := Pow(g, 3) //729
 	graph := NewGraph()
 
+	graph.Forward(h)
 	graph.Backward(h, y)
 
 	assert.Equal(t, [][]float64{{729}}, h.mat)

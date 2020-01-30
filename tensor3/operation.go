@@ -133,7 +133,7 @@ func (o *operation) differentiateExpandX(grad [][]float64) {
 }
 
 func (o *operation) differentiateDot(grad [][]float64) {
-	if o.children[0].tensor.isGradientEnabled {
+	if o.children[0].tensor.isGradientEnabled{
         o.children[0].gradient = mat.Dot(grad, mat.Transpose(o.children[1].tensor.mat))
 	}
 	if o.children[1].tensor.isGradientEnabled {

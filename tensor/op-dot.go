@@ -23,7 +23,7 @@ func (od *opDot) forward(tensor *Tensor) {
 	//for i := range od.a.mat {
 	//	for j := 0; j < len(od.b.mat[0]); j++ {
 	//		for k := range od.b.mat {
-	//			tensor.mat[i][j] = od.a.mat[i][k] * od.b.mat[k][j]
+	//			tensor.mat[i][j] += od.a.mat[i][k] * od.b.mat[k][j]
 	//		}
 	//	}
 	//}
@@ -52,7 +52,7 @@ func thread(a, b [][]float64, start chan int, output chan bool, tensor *Tensor) 
 	for i := range start {
 		for j := 0; j < len(b[0]); j++ {
 			for k := range b {
-				tensor.mat[i][j] = a[i][k] * b[k][j]
+				tensor.mat[i][j] += a[i][k] * b[k][j]
 			}
 		}
 		output <- true
