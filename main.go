@@ -8,8 +8,8 @@ import (
 
 func main() {
 	//perftest()
-	mnist()
-	//xor()
+	//mnist()
+	xor()
 	//random()
 }
 
