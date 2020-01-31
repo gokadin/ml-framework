@@ -2,6 +2,7 @@ package tensor
 
 import (
 	"github.com/gokadin/ml-framework/mat"
+	"runtime"
 )
 
 const operationDot = "opDot"
@@ -19,41 +20,37 @@ func (od *opDot) dependencies() []*Tensor {
 }
 
 func (od *opDot) forward(tensor *Tensor) {
-	//for i := range od.a.mat {
-	//	for j := 0; j < len(od.b.mat[0]); j++ {
-	//		for k := range od.b.mat {
-	//			tensor.mat[i][j] += od.a.mat[i][k] * od.b.mat[k][j]
-	//		}
-	//	}
-	//}
+	resultSizeI := len(od.a.mat)
+	resultSizeJ := len(od.b.mat[0])
+	result := make([][]float64, resultSizeI)
 
-	tensor.mat = mat.Dot(od.a.mat, od.b.mat)
+	start := make(chan int, len(od.a.mat))
+	output := make(chan bool)
+	for i := 0; i < runtime.NumCPU(); i++ {
+		go thread(od.a.mat, od.b.mat, start, output, result)
+	}
 
-	//start := make(chan int, len(od.a.mat))
-	//output := make(chan bool)
-	//for i := 0; i < runtime.NumCPU(); i++ {
-	//	go thread(od.a.mat, od.b.mat, start, output, tensor)
-	//}
-	//
-	//for i := range od.a.mat {
-	//	start <- i
-	//}
-	//
-	//count := 0
-	//for range output {
-	//	count++
-	//	if count == len(od.a.mat) {
-	//		close(start)
-	//		close(output)
-	//	}
-	//}
+	for i := range od.a.mat {
+		result[i] = make([]float64, resultSizeJ)
+		start <- i
+	}
+
+	count := 0
+	for range output {
+		count++
+		if count == len(od.a.mat) {
+			close(start)
+			close(output)
+			tensor.mat = result
+		}
+	}
 }
 
-func thread(a, b [][]float64, start chan int, output chan bool, tensor *Tensor) {
+func thread(a, b [][]float64, start chan int, output chan bool, mat [][]float64) {
 	for i := range start {
 		for j := 0; j < len(b[0]); j++ {
 			for k := range b {
-				tensor.mat[i][j] += a[i][k] * b[k][j]
+				mat[i][j] += a[i][k] * b[k][j]
 			}
 		}
 		output <- true

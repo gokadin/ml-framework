@@ -22,15 +22,14 @@ func (oa *opAdd) forward(tensor *Tensor) {
 	}
 }
 
+
 func (oa *opAdd) backward(tensor *Tensor) {
 	if oa.a.isGradientEnabled {
 		oa.a.grad = tensor.grad
-		//oa.a.grad = mat.MulScalar(tensor.grad, 1)
 	}
 
 	if oa.b.isGradientEnabled {
 		oa.b.grad = tensor.grad
-		//oa.b.grad = mat.MulScalar(tensor.grad, 1)
 	}
 }
 

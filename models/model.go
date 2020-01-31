@@ -17,6 +17,7 @@ type Model struct {
 	optimizer optimizer
 	trainableVariables []*tensor.Tensor
 	graph *tensor.Graph
+	metric *metric
 }
 
 func NewModel() *Model {
@@ -28,8 +29,10 @@ func NewModel() *Model {
 		graph: tensor.NewGraph(),
 		trainableVariables: make([]*tensor.Tensor, 0),
 	}
+	model.metric = newMetric(&model.configuration)
 	model.configuration.populateDefaults()
 	model.initialize()
+	model.metric.start()
 
 	return model
 }
@@ -58,23 +61,22 @@ func (m *Model) TrainableVariables() []*tensor.Tensor {
 func (m *Model) Fit(dataset *datasets.Dataset) {
 	batchX := tensor.Variable(dataset.BatchSize(), dataset.Get(datasets.TrainingSetX).ShapeY()).SetName("batch x")
 	batchY := tensor.Variable(dataset.BatchSize(), dataset.Get(datasets.TrainingSetY).ShapeY()).SetName("batch y")
-
 	pred := m.buildModules(batchX).SetName("prediction")
 	loss := m.criterion.forward(pred, batchY).SetName("loss")
 
-	var aveTime int64 = 1
-	t := time.Now().UnixNano()
-	for epoch := 1; epoch != m.configuration.Epochs; epoch++ {
-		lossMean := 0.0
+	m.metric.events.trainingStarted <- true
 
-		var ttAve int64
-		ttAve = 0
-		tt := time.Now().UnixNano()
+	for epoch := 1; epoch != m.configuration.Epochs + 1; epoch++ {
+		m.metric.events.epochStarted <- epoch
+
+		epochLoss := 0.0
 		for {
 			if !dataset.HasNextBatch() {
 				dataset.ResetBatchCounter()
 				break
 			}
+
+			m.metric.events.batchStarted <- dataset.BatchCounter()
 
 			batchDataX, batchDataY := dataset.NextBatch()
 			batchX.SetData(batchDataX)
@@ -83,43 +85,26 @@ func (m *Model) Fit(dataset *datasets.Dataset) {
 			m.graph.Forward(loss)
 			m.graph.Backward(loss, m.trainableVariables...)
 
-			batchLossMean := 0.0
-			for _, yLoss := range loss.Data()[0] {
-				batchLossMean += yLoss
-			}
-			lossMean += batchLossMean / float64(len(loss.Data()[0]))
+			batchLoss := averageLoss(loss)
+			epochLoss += batchLoss
 
 			for _, parameter := range m.TrainableVariables() {
 				m.optimizer.update(parameter, dataset.BatchSize(), epoch * dataset.BatchSize() + dataset.BatchCounter())
 			}
 
-			if dataset.BatchCounter() > 0 && dataset.BatchCounter() % 100 == 0 {
-				tt2 := time.Now().UnixNano()
-				diff := tt2 - tt
-				diffms := diff / int64(time.Millisecond)
-				ttAve += diffms
-				fmt.Println("current:", diffms, "ave:", ttAve / int64(dataset.BatchCounter() / 100))
-				tt = time.Now().UnixNano()
-			}
+			m.metric.events.batchFinished <- true
 		}
 
-		lossMean /= float64(dataset.BatchSize())
-		if epoch % 10000 == 0 {
-			fmt.Println("Epoch", epoch, "finished with error", lossMean)
-			t2ms := (time.Now().UnixNano() - t) / int64(time.Millisecond)
-			aveTime += t2ms
-			t = time.Now().UnixNano()
-		}
-		if lossMean < m.configuration.MaxError {
-			fmt.Println("Finished in", epoch, "loss:", lossMean)
-			div := int64(epoch / 10000)
-			if div == 0 {
-				div = 1
-			}
-			fmt.Println(aveTime / div)
+		epochLoss /= float64(dataset.NumBatches())
+
+		m.metric.events.epochFinished <- epochLoss
+
+		if epochLoss < m.configuration.MaxError {
 			break
 		}
 	}
+
+	m.metric.events.trainingFinished <- true
 }
 
 func (m *Model) Run(dataset *datasets.Dataset) {
@@ -131,7 +116,7 @@ func (m *Model) Run(dataset *datasets.Dataset) {
 
 	m.graph.Forward(loss)
 
-	fmt.Println(loss.Data()[0][0])
+	fmt.Printf("Error: %f Accuracy: %.2f", averageLoss(loss), accuracy(y, target, m.configuration.ValidOutputRange))
 }
 
 func (m *Model) initialize() {

@@ -27,7 +27,6 @@ func (os *opSub) forward(tensor *Tensor) {
 func (os *opSub) backward(tensor *Tensor) {
 	if os.a.isGradientEnabled {
 		os.a.grad = tensor.grad
-		//os.a.grad = mat.MulScalar(tensor.grad, 1)
 	}
 
 	if os.b.isGradientEnabled {

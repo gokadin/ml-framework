@@ -8,13 +8,13 @@ import (
 
 func main() {
 	//perftest()
-	//mnist()
-	xor()
+	mnist()
+	//xor()
 	//random()
 }
 
 func mnist() {
-	dataset := datasets.From("mnist").SetBatchSize(60000)
+	dataset := datasets.From("mnist").SetBatchSize(1000)
 
 	model := models.Build(
 		modules.Dense(128, modules.ActivationRelu),
