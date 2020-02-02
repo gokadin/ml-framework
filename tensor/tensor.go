@@ -1,70 +1,91 @@
 package tensor
 
 import (
-	"github.com/gokadin/ml-framework/mat"
 	"github.com/google/uuid"
-	"math/rand"
 )
 
 type Tensor struct {
 	id string
+	name string
+	shapeX int
+	shapeY int
+	op op
 	mat [][]float64
+	grad [][]float64
 	isGradientEnabled bool
-	operation *operation
 }
 
-func NewTensor(mat [][]float64) *Tensor {
-	t := &Tensor{
+func Constant(mat [][]float64) *Tensor {
+	return &Tensor{
 		id: uuid.New().String(),
-        mat: mat,
-        isGradientEnabled: true,
+		shapeX: len(mat),
+		shapeY: len(mat[0]),
+		mat: mat,
 	}
-	t.operation = newOperation(operationNone, t, []*operation{})
-	return t
 }
 
-func NewRandomTensor(x, y int) *Tensor {
-    mat := make([][]float64, x)
-    for i := range mat {
-    	mat[i] = make([]float64, y)
-    	for j := range mat[i] {
-    		mat[i][j] = rand.Float64()
-		}
+func Variable(shapeX, shapeY int) *Tensor {
+	return &Tensor {
+		id: uuid.New().String(),
+		shapeX: shapeX,
+		shapeY: shapeY,
+		mat: buildMat(shapeX, shapeY),
 	}
-
-    return NewTensor(mat)
 }
 
 func (t *Tensor) Id() string {
 	return t.id
 }
 
+func (t *Tensor) SetData(data [][]float64) {
+	t.mat = data
+}
+
+func (t *Tensor) Name() string {
+	return t.name
+}
+
+func (t *Tensor) SetName(name string) *Tensor {
+	t.name = name
+	return t
+}
+
 func (t *Tensor) Data() [][]float64 {
 	return t.mat
 }
 
-func (t *Tensor) Reduce(grad [][]float64) {
-	t.mat = mat.Sub(t.mat, grad)
-}
-
 func (t *Tensor) Gradient() [][]float64 {
-    return t.operation.gradient
+	return t.grad
 }
 
-func (t *Tensor) DisableGradient() {
-	t.isGradientEnabled = false
-}
-
-func (t *Tensor) Backward() {
-	t.operation.gradient = generateIdentityGradient(t.mat)
-	t.backpropagate()
-}
-
-func (t *Tensor) backpropagate() {
-	t.operation.differentiate(t.operation.gradient)
-	for _, child := range t.operation.children {
-		if !child.isLeaf() {
-			child.tensor.backpropagate()
+func (t *Tensor) Reduce(grad [][]float64) {
+	for i := range t.mat {
+		for j := range t.mat[i] {
+			t.mat[i][j] -= grad[i][j]
 		}
 	}
+}
+
+func (t *Tensor) Shape() (x, y int) {
+	return t.shapeX, t.shapeY
+}
+
+func (t *Tensor) forward() {
+	t.op.forward(t)
+}
+
+func (t *Tensor) backward() {
+	t.op.backward(t)
+}
+
+func buildMat(shapeX, shapeY int) [][]float64 {
+	mat := make([][]float64, shapeX)
+	for i := range mat {
+		col := make([]float64, shapeY)
+		for j := range col {
+			col[j] = 0
+		}
+		mat[i] = col
+	}
+	return mat
 }

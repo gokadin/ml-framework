@@ -204,6 +204,17 @@ func MulScalar(mat [][]float64, scalar float64) [][]float64 {
 	return result
 }
 
+func Neg(mat [][]float64) [][]float64 {
+	result := make([][]float64, len(mat))
+	for i := range mat {
+		result[i] = make([]float64, len(mat[i]))
+		for j := range mat[i] {
+			result[i][j] = -mat[i][j]
+		}
+	}
+	return result
+}
+
 func Transpose(mat [][]float64) [][]float64 {
 	result := make([][]float64, len(mat[0]))
 	for i := 0; i < len(result); i++ {
@@ -293,6 +304,17 @@ func expand1(mat [][]float64, copies int) [][]float64 {
 				result[i][copyCounter] = mat[i][k]
 				copyCounter++
 			}
+		}
+	}
+	return result
+}
+
+func Log(mat [][]float64) [][]float64 {
+	result := make([][]float64, len(mat))
+	for i := range mat {
+		result[i] = make([]float64, len(mat[i]))
+		for j := range mat[i] {
+			result[i][j] = math.Log(mat[i][j])
 		}
 	}
 	return result

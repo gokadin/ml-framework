@@ -17,3 +17,5 @@
 /.idea/
 /pkg/
 /src/github.com/
+
+.cache
