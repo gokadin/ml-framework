@@ -82,8 +82,12 @@ func (m *Model) Fit(dataset *datasets.Dataset) {
 			batchX.SetData(batchDataX)
 			batchY.SetData(batchDataY)
 
+			m.metric.events.forwardStarted <- true
 			m.graph.Forward(loss)
+			m.metric.events.forwardFinished <- true
+			m.metric.events.backwardStarted <- true
 			m.graph.Backward(loss, m.trainableVariables...)
+			m.metric.events.backwardFinished <- true
 
 			batchLoss := averageLoss(loss)
 			epochLoss += batchLoss
