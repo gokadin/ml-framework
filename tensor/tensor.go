@@ -1,6 +1,7 @@
 package tensor
 
 import (
+	"github.com/gokadin/ml-framework/mat"
 	"github.com/google/uuid"
 )
 
@@ -10,26 +11,22 @@ type Tensor struct {
 	shapeX int
 	shapeY int
 	op op
-	mat [][]float64
-	grad [][]float64
+	mat *mat.Mat32f
+	grad *mat.Mat32f
 	isGradientEnabled bool
 }
 
-func Constant(mat [][]float64) *Tensor {
+func Constant(mat *mat.Mat32f) *Tensor {
 	return &Tensor{
 		id: uuid.New().String(),
-		shapeX: len(mat),
-		shapeY: len(mat[0]),
 		mat: mat,
 	}
 }
 
-func Variable(shapeX, shapeY int) *Tensor {
+func Variable(shape mat.Shape) *Tensor {
 	return &Tensor {
 		id: uuid.New().String(),
-		shapeX: shapeX,
-		shapeY: shapeY,
-		mat: buildMat(shapeX, shapeY),
+		mat: mat.NewMat32f(shape, nil),
 	}
 }
 
@@ -37,7 +34,7 @@ func (t *Tensor) Id() string {
 	return t.id
 }
 
-func (t *Tensor) SetData(data [][]float64) {
+func (t *Tensor) SetData(data *mat.Mat32f) {
 	t.mat = data
 }
 
@@ -50,20 +47,16 @@ func (t *Tensor) SetName(name string) *Tensor {
 	return t
 }
 
-func (t *Tensor) Data() [][]float64 {
+func (t *Tensor) Data() *mat.Mat32f {
 	return t.mat
 }
 
-func (t *Tensor) Gradient() [][]float64 {
+func (t *Tensor) Gradient() *mat.Mat32f {
 	return t.grad
 }
 
-func (t *Tensor) Reduce(grad [][]float64) {
-	for i := range t.mat {
-		for j := range t.mat[i] {
-			t.mat[i][j] -= grad[i][j]
-		}
-	}
+func (t *Tensor) Reduce(grad *mat.Mat32f) {
+	t.mat.Sub(grad)
 }
 
 func (t *Tensor) Shape() (x, y int) {
@@ -76,16 +69,4 @@ func (t *Tensor) forward() {
 
 func (t *Tensor) backward() {
 	t.op.backward(t)
-}
-
-func buildMat(shapeX, shapeY int) [][]float64 {
-	mat := make([][]float64, shapeX)
-	for i := range mat {
-		col := make([]float64, shapeY)
-		for j := range col {
-			col[j] = 0
-		}
-		mat[i] = col
-	}
-	return mat
 }

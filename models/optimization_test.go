@@ -37,7 +37,7 @@ func Test_defaultOptimizer_update(t *testing.T) {
 	graph.Backward(t1, t3)
 	expected := mat.Sub(t1.Data(), mat.MulScalar(t1.Gradient(), o.learningRate / float64(someBatchSize)))
 
-	o.update(t1, 1, someBatchSize, 0)
+	o.update(t1, someBatchSize, 0)
 
 	assert.Equal(t, expected, t1.Data())
 }

@@ -1,50 +1,45 @@
 package datasets
 
 import (
+	"github.com/gokadin/ml-framework/mat"
 	"log"
 )
 
-func bytesToMat(bytes []byte, numOfSamples, headerOffset int) [][]float64 {
+func bytesToMat(bytes []byte, numOfSamples, headerOffset int) *mat.Mat32f {
 	if (len(bytes) - headerOffset) % numOfSamples != 0 {
 		log.Fatal("Could not transform raw data into usable Dataset")
 	}
 
 	sampleLength := (len(bytes) - headerOffset) / numOfSamples
-	mat := make([][]float64, numOfSamples)
+	data := make([]float32, numOfSamples * sampleLength)
 	for i := 0; i < numOfSamples; i++ {
-		sampleMat := make([]float64, sampleLength)
 		for j := 0; j < sampleLength; j++ {
-			sampleMat[j] = float64(bytes[headerOffset + (i * sampleLength + j)])
+			data[i * numOfSamples + j] = float32(bytes[headerOffset + (i * sampleLength + j)])
 		}
-		mat[i] = sampleMat
 	}
 
-	return mat
+	return mat.NewMat32f(mat.WithShape(numOfSamples, sampleLength), data)
 }
 
-func oneHotEncode(data [][]float64, depth int) {
-	if len(data) == 0 || len(data[0]) != 1 {
+func oneHotEncode(mat *mat.Mat32f, depth int) {
+	if mat.Shape().X == 0 || mat.Shape().Y != 1 {
 		log.Fatal("cannot one hot encode Dataset with more than one value per output")
 	}
 
-	for i, output := range data {
-		value := int(output[0])
-		encoded := make([]float64, depth)
+	for i := 0; i < mat.Shape().X; i++ {
+		value := int(mat.At(i * mat.Shape().X))
 		for j := 0; j < depth; j++ {
 			if value == j {
-				encoded[j] = 1.0
+				mat.Set(i * mat.Shape().X + j, 1)
 			} else {
-				encoded[j] = 0.0
+				mat.Set(i * mat.Shape().X + j, 0)
 			}
 		}
-		data[i] = encoded
 	}
 }
 
-func normalize(data [][]float64, min, max float64) {
-	for _, row := range data {
-		for j := 0; j < len(row); j++ {
-			row[j] = (row[j] - min) / (max - min)
-		}
-	}
+func normalize(mat *mat.Mat32f, min, max float32) {
+	mat.Apply(func(value float32) float32 {
+		return (value - min) / (max - min)
+	})
 }

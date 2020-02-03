@@ -13,17 +13,6 @@ func CreateMatrix(n, m int) [][]float64 {
 	return mat
 }
 
-func Add(a, b [][]float64) [][]float64 {
-	result := make([][]float64, len(a))
-	for i := range a {
-		result[i] = make([]float64, len(a[i]))
-		for j := range a[i] {
-			result[i][j] = a[i][j] + b[i][j]
-		}
-	}
-	return result
-}
-
 func AddScalar(a [][]float64, scalar float64) [][]float64 {
 	result := make([][]float64, len(a))
 	for i := range a {
@@ -69,17 +58,6 @@ func DivScalar(a [][]float64, scalar float64) [][]float64 {
 	return result
 }
 
-func Sub(a, b [][]float64) [][]float64 {
-	result := make([][]float64, len(a))
-	for i := range a {
-		result[i] = make([]float64, len(a[i]))
-		for j := range a[i] {
-			result[i][j] = a[i][j] - b[i][j]
-		}
-	}
-	return result
-}
-
 func SubFromScalar(a [][]float64, scalar float64) [][]float64 {
 	result := make([][]float64, len(a))
 	for i := range a {
@@ -102,34 +80,12 @@ func Mul(a, b [][]float64) [][]float64 {
 	return result
 }
 
-func Pow(a [][]float64, power float64) [][]float64 {
-	result := make([][]float64, len(a))
-	for i := range a {
-		result[i] = make([]float64, len(a[i]))
-		for j := range a[i] {
-			result[i][j] = math.Pow(a[i][j], power)
-		}
-	}
-	return result
-}
-
 func Sqrt(a [][]float64) [][]float64 {
 	result := make([][]float64, len(a))
 	for i := range a {
 		result[i] = make([]float64, len(a[i]))
 		for j := range a[i] {
 			result[i][j] = math.Sqrt(a[i][j])
-		}
-	}
-	return result
-}
-
-func Exp(a [][]float64) [][]float64 {
-	result := make([][]float64, len(a))
-	for i := range a {
-		result[i] = make([]float64, len(a[i]))
-		for j := range a[i] {
-			result[i][j] = math.Pow(math.E, a[i][j])
 		}
 	}
 	return result
@@ -199,17 +155,6 @@ func MulScalar(mat [][]float64, scalar float64) [][]float64 {
 		result[i] = make([]float64, len(mat[i]))
 		for j := range mat[i] {
 			result[i][j] = mat[i][j] * scalar
-		}
-	}
-	return result
-}
-
-func Neg(mat [][]float64) [][]float64 {
-	result := make([][]float64, len(mat))
-	for i := range mat {
-		result[i] = make([]float64, len(mat[i]))
-		for j := range mat[i] {
-			result[i][j] = -mat[i][j]
 		}
 	}
 	return result

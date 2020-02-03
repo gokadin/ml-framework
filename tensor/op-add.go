@@ -1,5 +1,7 @@
 package tensor
 
+import "github.com/gokadin/ml-framework/mat"
+
 const operationAdd = "opAdd"
 
 type opAdd struct {
@@ -15,11 +17,7 @@ func (oa *opAdd) dependencies() []*Tensor {
 }
 
 func (oa *opAdd) forward(tensor *Tensor) {
-	for i := range tensor.mat {
-		for j := range tensor.mat[i] {
-			tensor.mat[i][j] = oa.a.mat[i][j] + oa.b.mat[i][j]
-		}
-	}
+	tensor.mat = mat.Add(oa.a.mat, oa.b.mat)
 }
 
 
@@ -34,7 +32,7 @@ func (oa *opAdd) backward(tensor *Tensor) {
 }
 
 func Add(a, b *Tensor) *Tensor {
-	result := Variable(len(a.mat), len(a.mat[0]))
+	result := Variable(a.mat.Shape())
 	result.op = &opAdd{a, b}
 	return result
 }
