@@ -20,11 +20,9 @@ func (opw *opSigmoid) dependencies() []*Tensor {
 }
 
 func (opw *opSigmoid) forward(tensor *Tensor) {
-	for i := range tensor.mat {
-		for j := range tensor.mat[i] {
-			tensor.mat[i][j] = 1 / (math.Exp(-opw.a.mat[i][j]) + 1)
-		}
-	}
+	tensor.mat = mat.Apply(opw.a.mat, func(value float32) float32 {
+		return float32(1 / (math.Exp(-float64(value)) + 1))
+	})
 }
 
 func (opw *opSigmoid) backward(tensor *Tensor) {
@@ -32,7 +30,7 @@ func (opw *opSigmoid) backward(tensor *Tensor) {
 }
 
 func Sigmoid(a *Tensor) *Tensor {
-	result := Variable(len(a.mat), len(a.mat[0]))
+	result := Variable(a.mat.Shape())
 	result.op = &opSigmoid{a}
 	return result
 }

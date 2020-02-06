@@ -27,6 +27,10 @@ func (m *Mat32f) Shape() Shape {
 	return m.shape
 }
 
+func (m *Mat32f) Reshape(shape Shape) {
+	m.shape = shape
+}
+
 func (m *Mat32f) Data() []float32 {
 	return m.data
 }
@@ -43,6 +47,14 @@ func (m *Mat32f) Apply(mapping func(float32) float32) {
 	for i := 0; i < len(m.data); i++ {
 		m.data[i] = mapping(m.data[i])
 	}
+}
+
+func Apply(a *Mat32f, mapping func(float32) float32) *Mat32f {
+	result := make([]float32, a.shape.X * a.shape.Y)
+	for i := 0; i < len(a.data); i++ {
+		result[i] = mapping(a.data[i])
+	}
+	return NewMat32f(a.shape, result)
 }
 
 func (m *Mat32f) Slice(from, to int) *Mat32f {
@@ -260,7 +272,7 @@ func Transpose(a *Mat32f) *Mat32f {
 	result := make([]float32, a.shape.X * a.shape.Y)
 	for i := 0; i < a.shape.X; i++ {
 		for j := 0; j < a.shape.Y; j++ {
-			a.data[j * a.shape.Y + i] = a.data[i * a.shape.X + j]
+			result[j * a.shape.X + i] = a.data[i * a.shape.X + j]
 		}
 	}
 	return NewMat32f(WithShape(a.shape.Y, a.shape.X), result)
@@ -274,8 +286,9 @@ func MatMul(a, b *Mat32f) *Mat32f {
 	result := make([]float32, a.shape.X * b.shape.Y)
 	for i := 0; i < a.shape.X; i++ {
 		for j := 0; j < b.shape.Y; j++ {
-			for k := 0; k < b.shape.X; j++ {
-				result[i * a.shape.X + j] += a.data[i * a.shape.X + k] * b.data[k * b.shape.X + j]
+			for k := 0; k < b.shape.X; k++ {
+				result[i * a.shape.Y + j] += a.data[i * a.shape.Y + k] * b.data[k * b.shape.Y + j]
+				//result[i * a.shape.X + j] += a.data[i + k] * b.data[k + j]
 			}
 		}
 	}
@@ -356,4 +369,22 @@ func expand1(a *Mat32f, copies int) *Mat32f {
 		}
 	}
 	return NewMat32f(WithShape(a.shape.X, a.shape.Y * copies), result)
+}
+
+func (m *Mat32f) Equals32f(other *Mat32f) bool {
+	return Equals32f(m, other)
+}
+
+func Equals32f(a, b *Mat32f) bool {
+	if a == nil || b == nil || a.shape.X != b.shape.X || a.shape.Y != b.shape.Y {
+		return false
+	}
+
+	for i := 0; i < len(a.data); i++ {
+		if a.data[i] != b.data[i] {
+			return false
+		}
+	}
+
+	return true
 }

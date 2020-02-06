@@ -8,8 +8,6 @@ import (
 type Tensor struct {
 	id string
 	name string
-	shapeX int
-	shapeY int
 	op op
 	mat *mat.Mat32f
 	grad *mat.Mat32f
@@ -59,8 +57,12 @@ func (t *Tensor) Reduce(grad *mat.Mat32f) {
 	t.mat.Sub(grad)
 }
 
-func (t *Tensor) Shape() (x, y int) {
-	return t.shapeX, t.shapeY
+func (t *Tensor) Shape() mat.Shape {
+	return t.mat.Shape()
+}
+
+func (t *Tensor) Reshape(shape mat.Shape) {
+	t.mat.Reshape(shape)
 }
 
 func (t *Tensor) forward() {

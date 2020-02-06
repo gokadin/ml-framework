@@ -1,40 +1,41 @@
 package tensor
 
 import (
+	"github.com/gokadin/ml-framework/mat"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func Test_sub_forward(t *testing.T) {
-	a := Constant([][]float64{{3, 4}})
-	b := Constant([][]float64{{1, 2}})
+	a := Constant(mat.NewMat32f(mat.WithShape(1, 2), []float32{3, 4}))
+	b := Constant(mat.NewMat32f(mat.WithShape(1, 2), []float32{1, 2}))
 	c := Sub(a, b)
 
 	c.forward()
 
-	assert.Equal(t, [][]float64{{2, 2}}, c.mat)
+	assert.True(t, mat.NewMat32f(a.Shape(), []float32{2, 2}).Equals32f(c.mat))
 }
 
 func Test_sub_backward(t *testing.T) {
-	a := Constant([][]float64{{3, 4}, {5, 3}})
+	a := Constant(mat.NewMat32f(mat.WithShape(2, 2), []float32{3, 4, 5, 3}))
 	a.isGradientEnabled = true
-	b := Constant([][]float64{{1, 2}, {1, 4}})
+	b := Constant(mat.NewMat32f(mat.WithShape(2, 2), []float32{1, 2, 1, 4}))
 	b.isGradientEnabled = true
 	c := Sub(a, b)
-	c.grad = generateIdentityGradient(len(c.mat), len(c.mat[0]))
+	c.grad = mat.NewMat32fOnes(c.mat.Shape())
 	c.forward()
 
 	c.backward()
 
-	assert.Equal(t, [][]float64{{1, 1}, {1, 1}}, a.grad)
-	assert.Equal(t, [][]float64{{-1, -1}, {-1, -1}}, b.grad)
+	assert.True(t, mat.NewMat32f(a.Shape(), []float32{1, 1, 1, 1}).Equals32f(a.grad))
+	assert.True(t, mat.NewMat32f(a.Shape(), []float32{-1, -1, -1, -1}).Equals32f(b.grad))
 }
 
 func Test_sub_backward_isGradientsAreDisabled(t *testing.T) {
-	a := Constant([][]float64{{3, 4}, {5, 3}})
-	b := Constant([][]float64{{1, 2}, {1, 4}})
+	a := Constant(mat.NewMat32f(mat.WithShape(2, 2), []float32{3, 4, 5, 3}))
+	b := Constant(mat.NewMat32f(mat.WithShape(2, 2), []float32{1, 2, 1, 4}))
 	c := Sub(a, b)
-	c.grad = generateIdentityGradient(len(c.mat), len(c.mat[0]))
+	c.grad = mat.NewMat32fOnes(c.mat.Shape())
 	c.forward()
 
 	c.backward()

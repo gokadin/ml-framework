@@ -26,8 +26,7 @@ func (os *opSub) backward(tensor *Tensor) {
 	}
 
 	if os.b.isGradientEnabled {
-		tensor.grad.Neg()
-		os.b.grad = tensor.grad
+		os.b.grad = mat.Neg(tensor.grad)
 	}
 }
 

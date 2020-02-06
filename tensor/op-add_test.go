@@ -13,7 +13,7 @@ func Test_add_forward(t *testing.T) {
 
 	c.forward()
 
-	assert.Equal(t, mat.NewMat32f(mat.WithShape(1, 2), []float32{3, 5}), c.mat)
+	assert.True(t, mat.NewMat32f(a.Shape(), []float32{3, 5}).Equals32f(c.mat))
 }
 
 func Test_add_forward_multipleAssociations(t *testing.T) {
@@ -23,7 +23,7 @@ func Test_add_forward_multipleAssociations(t *testing.T) {
 
 	c.forward()
 
-	assert.Equal(t, [][]float32{{3, 5}, {3, 5}}, c.mat)
+	assert.True(t, mat.NewMat32f(a.Shape(), []float32{3, 5, 3, 5}).Equals32f(c.mat))
 }
 
 func Test_add_backward(t *testing.T) {
@@ -37,8 +37,8 @@ func Test_add_backward(t *testing.T) {
 
 	c.backward()
 
-	assert.Equal(t, [][]float32{{1, 1}, {1, 1}}, a.grad)
-	assert.Equal(t, [][]float32{{1, 1}, {1, 1}}, b.grad)
+	assert.True(t, mat.NewMat32f(a.Shape(), []float32{1, 1, 1, 1}).Equals32f(a.grad))
+	assert.True(t, mat.NewMat32f(a.Shape(), []float32{1, 1, 1, 1}).Equals32f(b.grad))
 }
 
 func Test_add_backward_isGradientsAreDisabled(t *testing.T) {
