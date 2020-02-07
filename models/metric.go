@@ -74,12 +74,12 @@ func (m *metric) receiveEvents() {
 			m.timings["epoch"].timeMs = time.Now().UnixNano()
 		case epochLoss := <- m.events.epochFinished:
 			epochTimeMs := (time.Now().UnixNano() - m.timings["epoch"].timeMs) / int64(time.Millisecond)
-			batchTimeAveMs := m.timings["batch"].timeAveMs / int64(m.timings["batch"].iteration)
+			batchTimeAveMs := m.timings["batch"].timeAveMs / (int64(m.timings["batch"].iteration) + 1)
 			m.timings["batch"].timeAveMs = 0
-			forwardTimeAveMs := m.timings["forward"].timeAveMs / int64(m.timings["forward"].iteration)
+			forwardTimeAveMs := m.timings["forward"].timeAveMs / (int64(m.timings["forward"].iteration) + 1)
 			m.timings["forward"].timeAveMs = 0
 			m.timings["forward"].iteration = 0
-			backwardTimeAveMs := m.timings["backward"].timeAveMs / int64(m.timings["backward"].iteration)
+			backwardTimeAveMs := m.timings["backward"].timeAveMs / (int64(m.timings["backward"].iteration) + 1)
 			m.timings["backward"].timeAveMs = 0
 			m.timings["backward"].iteration = 0
 			fmt.Printf("epoch %d finished in %dms with loss %f\n", m.timings["epoch"].iteration, epochTimeMs, epochLoss)

@@ -66,7 +66,10 @@ func Apply(a *Mat32f, mapping func(float32) float32) *Mat32f {
 }
 
 func (m *Mat32f) Slice(from, to int) *Mat32f {
-	return NewMat32f(WithShape(to - from, m.shape.Y), m.data[from:to])
+	shapeX := to - from
+	from *= m.shape.Y
+	to *= m.shape.Y
+	return NewMat32f(WithShape(shapeX, m.shape.Y), m.data[from:to])
 }
 
 func (m *Mat32f) Add(other *Mat32f) {

@@ -14,6 +14,28 @@ func Test_mat_slice(t *testing.T) {
 	assert.True(t, expected.Equals32f(result))
 }
 
+func Test_mat_slice_multiDimension(t *testing.T) {
+	mat := NewMat32f(WithShape(4, 2), []float32{1, 2, 3, 4, 5, 6, 7, 8})
+
+	result := mat.Slice(2, 4)
+
+	expected := NewMat32f(WithShape(2, 2), []float32{5, 6, 7, 8})
+	assert.True(t, expected.Equals32f(result))
+}
+
+func Test_mat_slice_multiDimensionDifferent(t *testing.T) {
+	mat := NewMat32f(WithShape(4, 5), []float32{1, 2, 3, 4, 5,
+												6, 7, 8, 9, 10,
+												11, 12, 13, 14, 15,
+												16, 17, 18, 19, 20})
+
+	result := mat.Slice(1, 3)
+
+	expected := NewMat32f(WithShape(2, 5), []float32{6, 7, 8, 9, 10,
+													 11, 12, 13, 14, 15})
+	assert.True(t, expected.Equals32f(result))
+}
+
 func Test_mat_add_singleDimension(t *testing.T) {
 	m1 := NewMat32f(WithShape(1, 3), []float32{1, 2, 3})
 	m2 := NewMat32f(WithShape(1, 3), []float32{1, 2, 3})
