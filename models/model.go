@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"github.com/gokadin/ml-framework/datasets"
+	"github.com/gokadin/ml-framework/mat"
 	"github.com/gokadin/ml-framework/modules"
 	"github.com/gokadin/ml-framework/tensor"
 	"math/rand"
@@ -59,8 +60,8 @@ func (m *Model) TrainableVariables() []*tensor.Tensor {
 }
 
 func (m *Model) Fit(dataset *datasets.Dataset) {
-	batchX := tensor.Variable(dataset.BatchSize(), dataset.Get(datasets.TrainingSetX).ShapeY()).SetName("batch x")
-	batchY := tensor.Variable(dataset.BatchSize(), dataset.Get(datasets.TrainingSetY).ShapeY()).SetName("batch y")
+	batchX := tensor.Variable(mat.WithShape(dataset.BatchSize(), dataset.Get(datasets.TrainingSetX).Data().Shape().Y)).SetName("batch x")
+	batchY := tensor.Variable(mat.WithShape(dataset.BatchSize(), dataset.Get(datasets.TrainingSetY).Data().Shape().Y)).SetName("batch y")
 	pred := m.buildModules(batchX).SetName("prediction")
 	loss := m.criterion.forward(pred, batchY).SetName("loss")
 
@@ -69,7 +70,7 @@ func (m *Model) Fit(dataset *datasets.Dataset) {
 	for epoch := 1; epoch != m.configuration.Epochs + 1; epoch++ {
 		m.metric.events.epochStarted <- epoch
 
-		epochLoss := 0.0
+		var epochLoss float32
 		for {
 			if !dataset.HasNextBatch() {
 				dataset.ResetBatchCounter()
@@ -99,7 +100,7 @@ func (m *Model) Fit(dataset *datasets.Dataset) {
 			m.metric.events.batchFinished <- true
 		}
 
-		epochLoss /= float64(dataset.NumBatches())
+		epochLoss /= float32(dataset.NumBatches())
 
 		m.metric.events.epochFinished <- epochLoss
 

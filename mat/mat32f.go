@@ -15,10 +15,18 @@ func NewMat32f(shape Shape, data []float32) *Mat32f {
 }
 
 func NewMat32fOnes(shape Shape) *Mat32f {
+	return newMat32fWithInitialValue(shape, 1)
+}
+
+func NewMat32fZeros(shape Shape) *Mat32f {
+	return newMat32fWithInitialValue(shape, 0)
+}
+
+func newMat32fWithInitialValue(shape Shape, initialValue float32) *Mat32f {
 	m := &Mat32f{shape: shape}
 	m.data = make([]float32, shape.X * shape.Y)
 	for i := 0; i < len(m.data); i++ {
-		m.data[i] = 1
+		m.data[i] = initialValue
 	}
 	return m
 }

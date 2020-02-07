@@ -9,7 +9,7 @@ type metricEvents struct {
 	trainingStarted chan bool
 	trainingFinished chan bool
 	epochStarted chan int
-	epochFinished chan float64
+	epochFinished chan float32
 	batchStarted chan int
 	batchFinished chan bool
 	forwardStarted chan bool
@@ -23,7 +23,7 @@ func makeMetricEvents() metricEvents {
 		trainingStarted: make(chan bool),
 		trainingFinished: make(chan bool),
 		epochStarted: make(chan int),
-		epochFinished: make(chan float64),
+		epochFinished: make(chan float32),
 		batchStarted: make(chan int),
 		batchFinished: make(chan bool),
 		forwardStarted: make(chan bool),
