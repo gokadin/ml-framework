@@ -225,14 +225,14 @@ func Pow(a *Mat32f, power float64) *Mat32f {
 
 func (m *Mat32f) Exp() {
 	for i := 0; i < len(m.data); i++ {
-		m.data[i] = float32(math.Pow(math.E, float64(m.data[i])))
+		m.data[i] = float32(math.Exp(float64(m.data[i])))
 	}
 }
 
 func Exp(a *Mat32f) *Mat32f {
 	result := make([]float32, a.shape.X * a.shape.Y)
 	for i := 0; i < len(result); i++ {
-		result[i] = float32(math.Pow(math.E, float64(a.data[i])))
+		result[i] = float32(math.Exp(float64(a.data[i])))
 	}
 	return NewMat32f(a.shape, result)
 }
@@ -280,7 +280,7 @@ func Transpose(a *Mat32f) *Mat32f {
 	result := make([]float32, a.shape.X * a.shape.Y)
 	for i := 0; i < a.shape.X; i++ {
 		for j := 0; j < a.shape.Y; j++ {
-			result[j * a.shape.X + i] = a.data[i * a.shape.X + j]
+			result[j * a.shape.X + i] = a.data[i * a.shape.Y + j]
 		}
 	}
 	return NewMat32f(WithShape(a.shape.Y, a.shape.X), result)
@@ -295,8 +295,7 @@ func MatMul(a, b *Mat32f) *Mat32f {
 	for i := 0; i < a.shape.X; i++ {
 		for j := 0; j < b.shape.Y; j++ {
 			for k := 0; k < b.shape.X; k++ {
-				result[i * a.shape.Y + j] += a.data[i * a.shape.Y + k] * b.data[k * b.shape.Y + j]
-				//result[i * a.shape.X + j] += a.data[i + k] * b.data[k + j]
+				result[i * b.shape.Y + j] += a.data[i * b.shape.X + k] * b.data[k * b.shape.Y + j]
 			}
 		}
 	}
@@ -319,7 +318,7 @@ func sum0(a *Mat32f) *Mat32f {
 	result := make([]float32, a.shape.Y)
 	for i := 0; i < a.shape.X; i++ {
 		for j := 0; j < a.shape.Y; j++ {
-			result[j] += a.data[i * a.shape.X + j]
+			result[j] += a.data[i * a.shape.Y + j]
 		}
 	}
 	return NewMat32f(WithShape(1, a.shape.Y), result)
@@ -329,7 +328,7 @@ func sum1(a *Mat32f) *Mat32f {
 	result := make([]float32, a.shape.X)
 	for i := 0; i < a.shape.X; i++ {
 		for j := 0; j < a.shape.Y; j++ {
-			result[i] += a.data[i * a.shape.X + j]
+			result[i] += a.data[i * a.shape.Y + j]
 		}
 	}
 	return NewMat32f(WithShape(a.shape.X, 1), result)
@@ -355,7 +354,7 @@ func expand0(a *Mat32f, copies int) *Mat32f {
 	result := make([]float32, copies * a.shape.Y)
 	for i := 0; i < copies; i++ {
 		for j := 0; j < a.shape.Y; j++ {
-			result[i * copies + j] = a.data[j]
+			result[i * a.shape.Y + j] = a.data[j]
 		}
 	}
 	return NewMat32f(WithShape(copies, a.shape.Y), result)
@@ -368,12 +367,8 @@ func expand1(a *Mat32f, copies int) *Mat32f {
 
 	result := make([]float32, a.shape.X * a.shape.Y * copies)
 	for i := 0; i < a.shape.X; i++ {
-		copyCounter := 0
 		for j := 0; j < copies; j++ {
-			for k := 0; k < a.shape.Y; k++ {
-				result[i * a.shape.X + copyCounter] = a.data[i * a.shape.X + k]
-				copyCounter++
-			}
+			result[i * copies + j] = a.data[i * a.shape.Y]
 		}
 	}
 	return NewMat32f(WithShape(a.shape.X, a.shape.Y * copies), result)
