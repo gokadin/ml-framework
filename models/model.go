@@ -67,7 +67,7 @@ func (m *Model) Fit(dataset *datasets.Dataset) {
 
 	m.metric.events.trainingStarted <- true
 
-	for epoch := 1; epoch != m.configuration.Epochs; epoch++ {
+	for epoch := 1; epoch != m.configuration.Epochs + 1; epoch++ {
 		m.metric.events.epochStarted <- epoch
 
 		var epochLoss float32

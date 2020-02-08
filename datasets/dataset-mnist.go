@@ -22,8 +22,8 @@ func loadMNIST() *Dataset {
 	log.Print("Getting MNIST Dataset...")
 
 	trainX, trainY, valX, valY := getData()
-	oneHotEncode(trainY, 10)
-	oneHotEncode(valY, 10)
+	trainY = oneHotEncode(trainY, 10)
+	valY = oneHotEncode(valY, 10)
 	normalize(trainX, 0, 255)
 	normalize(valX, 0, 255)
 

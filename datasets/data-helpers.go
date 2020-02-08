@@ -14,28 +14,30 @@ func bytesToMat(bytes []byte, numOfSamples, headerOffset int) *mat.Mat32f {
 	data := make([]float32, numOfSamples * sampleLength)
 	for i := 0; i < numOfSamples; i++ {
 		for j := 0; j < sampleLength; j++ {
-			data[i * numOfSamples + j] = float32(bytes[headerOffset + (i * sampleLength + j)])
+			data[i * sampleLength + j] = float32(bytes[headerOffset + (i * sampleLength + j)])
 		}
 	}
 
 	return mat.NewMat32f(mat.WithShape(numOfSamples, sampleLength), data)
 }
 
-func oneHotEncode(mat *mat.Mat32f, depth int) {
-	if mat.Shape().X == 0 || mat.Shape().Y != 1 {
+func oneHotEncode(m *mat.Mat32f, depth int) *mat.Mat32f {
+	if m.Shape().X == 0 || m.Shape().Y != 1 {
 		log.Fatal("cannot one hot encode Dataset with more than one value per output")
 	}
 
-	for i := 0; i < mat.Shape().X; i++ {
-		value := int(mat.At(i * mat.Shape().X))
+	result := mat.Expand(m, 1, depth)
+	for i := 0; i < result.Shape().X; i++ {
+		value := int(result.At(i * depth))
 		for j := 0; j < depth; j++ {
 			if value == j {
-				mat.Set(i * mat.Shape().X + j, 1)
+				result.Set(i * depth + j, 1)
 			} else {
-				mat.Set(i * mat.Shape().X + j, 0)
+				result.Set(i * depth + j, 0)
 			}
 		}
 	}
+	return result
 }
 
 func normalize(mat *mat.Mat32f, min, max float32) {
