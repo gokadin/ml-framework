@@ -24,7 +24,7 @@ func MatMulParallel(a, b *Mat32f) *Mat32f {
 	}
 
 	wg.Wait()
-
+	close(in)
 	return NewMat32f(WithShape(a.shape.X, b.shape.Y), result)
 }
 
