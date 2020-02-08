@@ -1,6 +1,7 @@
 package datasets
 
 import (
+	"github.com/gokadin/ml-framework/mat"
 	"log"
 	"math/rand"
 )
@@ -31,8 +32,8 @@ func (d *Dataset) SetName(name string) {
 	d.name = name
 }
 
-func (d *Dataset) AddData(name string, data [][]float64) {
-	d.sets[name] = &set{data}
+func (d *Dataset) AddData(name string, mat *mat.Mat32f) {
+	d.sets[name] = &set{mat}
 }
 
 func (d *Dataset) Get(name string) *set {
@@ -46,7 +47,7 @@ func (d *Dataset) Get(name string) *set {
 
 func (d *Dataset) InputSize() int {
 	if set, ok := d.sets[TrainingSetX]; ok {
-		return len(set.data)
+		return set.data.Shape().X
 	}
 
 	return 0
@@ -67,7 +68,7 @@ func (d *Dataset) BatchSize() int {
 }
 
 func (d *Dataset) NumBatches() int {
-	return d.sets[TrainingSetX].ShapeX() / d.BatchSize()
+	return d.sets[TrainingSetX].data.Shape().X / d.BatchSize()
 }
 
 func (d *Dataset) SetBatchSize(batchSize int) *Dataset {
@@ -83,20 +84,20 @@ func (d *Dataset) ResetBatchCounter() {
 	d.batchCounter = 0
 }
 
-func (d *Dataset) NextBatch() ([][]float64, [][]float64) {
+func (d *Dataset) NextBatch() (*mat.Mat32f, *mat.Mat32f) {
 	if d.batchCounter == 0 && d.shouldShuffle {
 		d.shuffleData()
 	}
 
 	fromIndex := d.batchCounter * d.batchSize
 	toIndex := (d.batchCounter + 1) * d.batchSize
-	if toIndex > d.sets[TrainingSetX].ShapeX() {
-		toIndex = d.sets[TrainingSetX].ShapeX()
+	if toIndex > d.sets[TrainingSetX].data.Shape().X {
+		toIndex = d.sets[TrainingSetX].data.Shape().X
 	}
 
 	d.batchCounter++
 
-	return d.sets[TrainingSetX].data[fromIndex:toIndex], d.sets[TrainingSetY].data[fromIndex:toIndex]
+	return d.sets[TrainingSetX].data.Slice(fromIndex, toIndex), d.sets[TrainingSetY].data.Slice(fromIndex, toIndex)
 }
 
 func (d *Dataset) BatchCounter() int {
@@ -104,8 +105,10 @@ func (d *Dataset) BatchCounter() int {
 }
 
 func (d *Dataset) shuffleData() {
-	rand.Shuffle(len(d.sets[TrainingSetX].data), func(i, j int) {
-		d.sets[TrainingSetX].data[i], d.sets[TrainingSetX].data[j] = d.sets[TrainingSetX].data[j], d.sets[TrainingSetX].data[i]
-		d.sets[TrainingSetY].data[i], d.sets[TrainingSetY].data[j] = d.sets[TrainingSetY].data[j], d.sets[TrainingSetY].data[i]
+	matX := d.sets[TrainingSetX].data.Data()
+	matY := d.sets[TrainingSetY].data.Data()
+	rand.Shuffle(d.sets[TrainingSetX].data.Shape().X * d.sets[TrainingSetX].data.Shape().Y, func(i, j int) {
+		matX[i], matX[j] = matX[j], matX[i]
+		matY[i], matY[j] = matY[i], matY[i]
 	})
 }

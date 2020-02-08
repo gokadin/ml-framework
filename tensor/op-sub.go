@@ -17,11 +17,7 @@ func (os *opSub) dependencies() []*Tensor {
 }
 
 func (os *opSub) forward(tensor *Tensor) {
-	for i := range tensor.mat {
-		for j := range tensor.mat[i] {
-			tensor.mat[i][j] = os.a.mat[i][j] - os.b.mat[i][j]
-		}
-	}
+	tensor.mat = mat.Sub(os.a.mat, os.b.mat)
 }
 
 func (os *opSub) backward(tensor *Tensor) {
@@ -35,7 +31,7 @@ func (os *opSub) backward(tensor *Tensor) {
 }
 
 func Sub(a, b *Tensor) *Tensor {
-	result := Variable(len(a.mat), len(a.mat[0]))
+	result := Variable(a.mat.Shape())
 	result.op = &opSub{a, b}
 	return result
 }

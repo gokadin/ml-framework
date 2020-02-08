@@ -1,6 +1,7 @@
 package datasets
 
 import (
+	"github.com/gokadin/ml-framework/mat"
 	"log"
 )
 
@@ -21,8 +22,8 @@ func loadMNIST() *Dataset {
 	log.Print("Getting MNIST Dataset...")
 
 	trainX, trainY, valX, valY := getData()
-	oneHotEncode(trainY, 10)
-	oneHotEncode(valY, 10)
+	trainY = oneHotEncode(trainY, 10)
+	valY = oneHotEncode(valY, 10)
 	normalize(trainX, 0, 255)
 	normalize(valX, 0, 255)
 
@@ -35,7 +36,7 @@ func loadMNIST() *Dataset {
 	return dataset
 }
 
-func getData() ([][]float64, [][]float64, [][]float64, [][]float64) {
+func getData() (*mat.Mat32f, *mat.Mat32f, *mat.Mat32f, *mat.Mat32f) {
 	trainingImagesBytes := unzip(downloadFile(baseUrl, trainingSetImagesFilename))
 	trainingLabelsBytes := unzip(downloadFile(baseUrl, trainingSetLabelsFilename))
 	validationImagesBytes := unzip(downloadFile(baseUrl, validationSetImagesFilename))

@@ -1,6 +1,7 @@
 package modules
 
 import (
+	"github.com/gokadin/ml-framework/mat"
 	"github.com/gokadin/ml-framework/tensor"
 	"log"
 	"math"
@@ -13,49 +14,36 @@ const (
 	initializerTypeNormalized = "initializerTypeNormalized"
 )
 
-func initializeParameter(x, y int, initializerType string) *tensor.Tensor {
+func initializeParameter(shape mat.Shape, initializerType string) *tensor.Tensor {
 	switch initializerType {
 	case initializerTypeZeros:
-		return initializeParameterZeros(x, y)
+		return initializeParameterZeros(shape)
 	case initializerTypeRandom:
-		return initializeParameterRandom(x, y)
+		return initializeParameterRandom(shape)
 	case initializerTypeNormalized:
-		return initializeParameterNormalized(x, y)
+		return initializeParameterNormalized(shape)
 	}
 
 	log.Fatalf("parameter initializer of type %s is unknown", initializerType)
 	return nil
 }
 
-func initializeParameterZeros(x, y int) *tensor.Tensor {
-	mat := make([][]float64, x)
-	for i := range mat {
-		mat[i] = make([]float64, y)
-		for j := range mat[i] {
-			mat[i][j] = 0
-		}
-	}
-	return tensor.Constant(mat)
+func initializeParameterZeros(shape mat.Shape) *tensor.Tensor {
+	return tensor.Constant(mat.NewMat32fZeros(shape))
 }
 
-func initializeParameterRandom(x, y int) *tensor.Tensor {
-	mat := make([][]float64, x)
-	for i := range mat {
-		mat[i] = make([]float64, y)
-		for j := range mat[i] {
-			mat[i][j] = rand.NormFloat64()
-		}
+func initializeParameterRandom(shape mat.Shape) *tensor.Tensor {
+	data := make([]float32, shape.X * shape.Y)
+	for i := range data {
+		data[i] = rand.Float32()
 	}
-	return tensor.Constant(mat)
+	return tensor.Constant(mat.NewMat32f(shape, data))
 }
 
-func initializeParameterNormalized(x, y int) *tensor.Tensor {
-	mat := make([][]float64, x)
-	for i := range mat {
-		mat[i] = make([]float64, y)
-		for j := range mat[i] {
-			mat[i][j] = rand.NormFloat64() / math.Sqrt(float64(x))
-		}
+func initializeParameterNormalized(shape mat.Shape) *tensor.Tensor {
+	data := make([]float32, shape.X * shape.Y)
+	for i := range data {
+		data[i] = rand.Float32() / float32(math.Sqrt(float64(shape.X)))
 	}
-	return tensor.Constant(mat)
+	return tensor.Constant(mat.NewMat32f(shape, data))
 }

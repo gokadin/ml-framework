@@ -9,7 +9,7 @@ type metricEvents struct {
 	trainingStarted chan bool
 	trainingFinished chan bool
 	epochStarted chan int
-	epochFinished chan float64
+	epochFinished chan float32
 	batchStarted chan int
 	batchFinished chan bool
 	forwardStarted chan bool
@@ -23,7 +23,7 @@ func makeMetricEvents() metricEvents {
 		trainingStarted: make(chan bool),
 		trainingFinished: make(chan bool),
 		epochStarted: make(chan int),
-		epochFinished: make(chan float64),
+		epochFinished: make(chan float32),
 		batchStarted: make(chan int),
 		batchFinished: make(chan bool),
 		forwardStarted: make(chan bool),
@@ -74,12 +74,12 @@ func (m *metric) receiveEvents() {
 			m.timings["epoch"].timeMs = time.Now().UnixNano()
 		case epochLoss := <- m.events.epochFinished:
 			epochTimeMs := (time.Now().UnixNano() - m.timings["epoch"].timeMs) / int64(time.Millisecond)
-			batchTimeAveMs := m.timings["batch"].timeAveMs / int64(m.timings["batch"].iteration)
+			batchTimeAveMs := m.timings["batch"].timeAveMs / (int64(m.timings["batch"].iteration) + 1)
 			m.timings["batch"].timeAveMs = 0
-			forwardTimeAveMs := m.timings["forward"].timeAveMs / int64(m.timings["forward"].iteration)
+			forwardTimeAveMs := m.timings["forward"].timeAveMs / (int64(m.timings["forward"].iteration) + 1)
 			m.timings["forward"].timeAveMs = 0
 			m.timings["forward"].iteration = 0
-			backwardTimeAveMs := m.timings["backward"].timeAveMs / int64(m.timings["backward"].iteration)
+			backwardTimeAveMs := m.timings["backward"].timeAveMs / (int64(m.timings["backward"].iteration) + 1)
 			m.timings["backward"].timeAveMs = 0
 			m.timings["backward"].iteration = 0
 			fmt.Printf("epoch %d finished in %dms with loss %f\n", m.timings["epoch"].iteration, epochTimeMs, epochLoss)

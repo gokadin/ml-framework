@@ -8,7 +8,7 @@ const operationDivScalar = "opDivScalar"
 
 type opDivScalar struct {
 	a *Tensor
-	scalar float64
+	scalar float32
 }
 
 func (opw *opDivScalar) name() string {
@@ -20,11 +20,7 @@ func (opw *opDivScalar) dependencies() []*Tensor {
 }
 
 func (opw *opDivScalar) forward(tensor *Tensor) {
-	for i := range opw.a.mat {
-		for j := range opw.a.mat[i] {
-			tensor.mat[i][j] = opw.a.mat[i][j] / opw.scalar
-		}
-	}
+	tensor.mat = mat.DivScalar(opw.a.mat, opw.scalar)
 }
 
 func (opw *opDivScalar) backward(tensor *Tensor) {
@@ -32,8 +28,8 @@ func (opw *opDivScalar) backward(tensor *Tensor) {
 	opw.a.grad = mat.MulScalar(tensor.grad, multiplier)
 }
 
-func DivScalar(a *Tensor, scalar float64) *Tensor {
-	result := Variable(len(a.mat), len(a.mat[0]))
+func DivScalar(a *Tensor, scalar float32) *Tensor {
+	result := Variable(a.mat.Shape())
 	result.op = &opDivScalar{a, scalar}
 	return result
 }

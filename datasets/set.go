@@ -1,22 +1,16 @@
 package datasets
 
+import "github.com/gokadin/ml-framework/mat"
+
 type set struct {
-	data [][]float64
+	data *mat.Mat32f
 }
 
-func (s *set) Data() [][]float64 {
+func (s *set) Data() *mat.Mat32f {
 	return s.data
 }
 
-func (s *set) ShapeX() int {
-	return len(s.data)
-}
-
-func (s *set) ShapeY() int {
-	return len(s.data[0])
-}
-
-func (s *set) Normalize(min, max float64) *set {
+func (s *set) Normalize(min, max float32) *set {
 	normalize(s.data, min, max)
 
 	return s

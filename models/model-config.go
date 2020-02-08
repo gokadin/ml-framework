@@ -10,11 +10,11 @@ const (
 
 type ModelConfig struct {
 	Epochs int
-	MaxError float64
-	ValidOutputRange float64
+	MaxError float32
+	ValidOutputRange float32
 	Optimizer string
-	OptimizerOverrides []float64
-	LearningRate float64
+	OptimizerOverrides []float32
+	LearningRate float32
 	Loss string
 }
 

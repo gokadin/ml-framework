@@ -2,7 +2,6 @@ package tensor
 
 import (
 	"github.com/gokadin/ml-framework/mat"
-	"math"
 )
 
 const operationLog = "opLog"
@@ -20,11 +19,7 @@ func (opw *opLog) dependencies() []*Tensor {
 }
 
 func (opw *opLog) forward(tensor *Tensor) {
-	for i := range tensor.mat {
-		for j := range tensor.mat[i] {
-			tensor.mat[i][j] = math.Log(opw.a.mat[i][j])
-		}
-	}
+	tensor.mat = mat.Log(opw.a.mat)
 }
 
 func (opw *opLog) backward(tensor *Tensor) {
@@ -32,7 +27,7 @@ func (opw *opLog) backward(tensor *Tensor) {
 }
 
 func Log(a *Tensor) *Tensor {
-	result := Variable(len(a.mat), len(a.mat[0]))
+	result := Variable(a.mat.Shape())
 	result.op = &opLog{a}
 	return result
 }

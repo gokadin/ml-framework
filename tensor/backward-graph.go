@@ -1,5 +1,7 @@
 package tensor
 
+import "github.com/gokadin/ml-framework/mat"
+
 type backwardGraph struct {
 	start     chan bool
 	done      chan bool
@@ -82,7 +84,7 @@ func (bg *backwardGraph) bootGraph() {
 }
 
 func (bg *backwardGraph) run() {
-	bg.root.grad = generateIdentityGradient(len(bg.root.mat), len(bg.root.mat[0]))
+	bg.root.grad = mat.NewMat32fOnes(bg.root.mat.Shape())
 	bg.start <- true
 
 	doneCounter := 0
@@ -101,15 +103,4 @@ func executeBackwardOp(tensor *Tensor, in chan bool, listeners []chan bool) {
 			listener <- true
 		}
 	}
-}
-
-func generateIdentityGradient(shapeX, shapeY int) [][]float64 {
-	grad := make([][]float64, shapeX)
-	for i := range grad {
-		grad[i] = make([]float64, shapeY)
-		for j := range grad[i] {
-			grad[i][j] = 1
-		}
-	}
-	return grad
 }

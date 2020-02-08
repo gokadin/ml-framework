@@ -2,14 +2,13 @@ package tensor
 
 import (
 	"github.com/gokadin/ml-framework/mat"
-	"math"
 )
 
 const operationPow = "opPow"
 
 type opPow struct {
 	a *Tensor
-	power float64
+	power float32
 }
 
 func (opw *opPow) name() string {
@@ -21,11 +20,7 @@ func (opw *opPow) dependencies() []*Tensor {
 }
 
 func (opw *opPow) forward(tensor *Tensor) {
-	for i := range tensor.mat {
-		for j := range tensor.mat[i] {
-			tensor.mat[i][j] = math.Pow(opw.a.mat[i][j], opw.power)
-		}
-	}
+	tensor.mat = mat.Pow(opw.a.mat, float64(opw.power))
 }
 
 func (opw *opPow) backward(tensor *Tensor) {
@@ -33,11 +28,11 @@ func (opw *opPow) backward(tensor *Tensor) {
 		opw.a.grad = mat.Mul(tensor.grad, mat.MulScalar(opw.a.mat, 2))
 		return
 	}
-	opw.a.grad = mat.Mul(tensor.grad, mat.MulScalar(mat.Pow(opw.a.mat, opw.power - 1), opw.power))
+	opw.a.grad = mat.Mul(tensor.grad, mat.MulScalar(mat.Pow(opw.a.mat, float64(opw.power) - 1), opw.power))
 }
 
-func Pow(a *Tensor, power float64) *Tensor {
-	result := Variable(len(a.mat), len(a.mat[0]))
+func Pow(a *Tensor, power float32) *Tensor {
+	result := Variable(a.mat.Shape())
 	result.op = &opPow{a, power}
 	return result
 }

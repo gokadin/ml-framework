@@ -1,6 +1,7 @@
 package modules
 
 import (
+	"github.com/gokadin/ml-framework/mat"
 	"github.com/gokadin/ml-framework/tensor"
 )
 
@@ -29,10 +30,10 @@ func Dense(unitCount int, activation string) *dense {
 
 func (d *dense) Forward(input *tensor.Tensor) *tensor.Tensor {
 	if d.weights == nil {
-		d.initialize(len(input.Data()[0]))
+		d.initialize(input.Shape().Y)
 	}
 
-	return activate(tensor.Add(tensor.Dot(input, d.weights), tensor.Expand(d.bias, 0, len(input.Data()))), d.activation)
+	return activate(tensor.Add(tensor.Dot(input, d.weights), tensor.Expand(d.bias, 0, input.Shape().X)), d.activation)
 }
 
 func (d *dense) GetParameters() []*tensor.Tensor {
@@ -40,6 +41,6 @@ func (d *dense) GetParameters() []*tensor.Tensor {
 }
 
 func (d *dense) initialize(inputSize int) {
-	d.weights = initializeParameter(inputSize, d.unitCount, d.weightInitializer).SetName("dense layer weights")
-	d.bias = initializeParameter(1, d.unitCount, d.biasInitializer).SetName("dense layer biases")
+	d.weights = initializeParameter(mat.WithShape(inputSize, d.unitCount), d.weightInitializer).SetName("dense layer weights")
+	d.bias = initializeParameter(mat.WithShape(1, d.unitCount), d.biasInitializer).SetName("dense layer biases")
 }
