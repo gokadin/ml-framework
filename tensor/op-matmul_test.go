@@ -9,7 +9,7 @@ import (
 func Test_dot_forward_simple(t *testing.T) {
 	a := Constant(mat.NewMat32f(mat.WithShape(2, 2), []float32{1, 2, 3, 4}))
 	b := Constant(mat.NewMat32f(mat.WithShape(2, 2), []float32{5, 6, 7, 8}))
-	c := Dot(a, b)
+	c := Matmul(a, b)
 
 	c.forward()
 
@@ -19,7 +19,7 @@ func Test_dot_forward_simple(t *testing.T) {
 func Test_dot_forward_differentSimple(t *testing.T) {
 	a := Constant(mat.NewMat32f(mat.WithShape(2, 2), []float32{1, 0, 0, 1}))
 	b := Constant(mat.NewMat32f(mat.WithShape(2, 2), []float32{4, 1, 2, 2}))
-	c := Dot(a, b)
+	c := Matmul(a, b)
 
 	c.forward()
 
@@ -31,7 +31,7 @@ func Test_dot_backward(t *testing.T) {
 	a.isGradientEnabled = true
 	b := Constant(mat.NewMat32f(mat.WithShape(2, 2), []float32{4, 1, 2, 2}))
 	b.isGradientEnabled = true
-	c := Dot(a, b)
+	c := Matmul(a, b)
 	c.grad = mat.NewMat32fOnes(c.mat.Shape())
 	c.forward()
 
@@ -44,7 +44,7 @@ func Test_dot_backward(t *testing.T) {
 func Test_dot_backward_isGradientsAreDisabled(t *testing.T) {
 	a := Constant(mat.NewMat32f(mat.WithShape(2, 2), []float32{1, 0, 0, 1}))
 	b := Constant(mat.NewMat32f(mat.WithShape(2, 2), []float32{4, 1, 2, 2}))
-	c := Dot(a, b)
+	c := Matmul(a, b)
 	c.grad = mat.NewMat32fOnes(c.mat.Shape())
 	c.forward()
 

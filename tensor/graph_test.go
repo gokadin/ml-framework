@@ -96,7 +96,7 @@ func Test_nonsnese4(t *testing.T) {
 func Test_nonsnese5(t *testing.T) {
 	a := Constant(mat.NewMat32f(mat.WithShape(2, 2), []float32{1, 2, 2, 1})).SetName("a")
 	b := Constant(mat.NewMat32f(mat.WithShape(2, 2), []float32{0, 3, 1, 1})).SetName("b")
-	e := Dot(a, b).SetName("e")
+	e := Matmul(a, b).SetName("e")
 	graph := NewGraph()
 	graph.Forward(e)
 
@@ -119,7 +119,7 @@ func Test_nonsnese6(t *testing.T) {
 func Test_nonsnese7(t *testing.T) {
 	a := Constant(mat.NewMat32f(mat.WithShape(2, 2), []float32{1, 2, 2, 1})).SetName("a")
 	b := Constant(mat.NewMat32f(mat.WithShape(2, 2), []float32{0, 3, 1, 1})).SetName("b")
-	e := Dot(a, b).SetName("e")
+	e := Matmul(a, b).SetName("e")
 	graph := NewGraph()
 	graph.Forward(e)
 
@@ -136,7 +136,7 @@ func Test_Autograd_Gradient_DerivativeOfDotSubAndPow2(t *testing.T) {
 	x := Constant(mat.NewMat32f(mat.WithShape(1, 2), []float32{0, 1})).SetName("x")
 	w := Constant(mat.NewMat32f(mat.WithShape(2, 2), []float32{1, 1, 1, 1})).SetName("w")
 	yHat := Constant(mat.NewMat32f(mat.WithShape(1, 2), []float32{2, 2})).SetName("yHat")
-	e := Pow(Sub(Dot(x, w), yHat), 2)
+	e := Pow(Sub(Matmul(x, w), yHat), 2)
 	graph := NewGraph()
 	graph.Forward(e)
 

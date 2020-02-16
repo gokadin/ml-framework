@@ -43,6 +43,5 @@ func newCrossEntropyCriterion() *crossEntropyCriterion {
 }
 
 func (cec *crossEntropyCriterion) forward(pred, target *tensor.Tensor) *tensor.Tensor {
-	//return tensor.DivScalar(tensor.Sum(tensor.MulScalar(tensor.Sum(tensor.Mul(target, tensor.Log(pred)), 1), -1), 0), float64(len(pred.Data())))
-	return nil
+	return tensor.CrossEntropy(pred, target)
 }

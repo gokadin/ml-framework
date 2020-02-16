@@ -351,7 +351,7 @@ func Expand(a *Mat32f, axis, copies int) *Mat32f {
 
 func expand0(a *Mat32f, copies int) *Mat32f {
 	if a.shape.X != 1 {
-		log.Fatalf("incompatible matrix size for Expand operation on X axis -> %d", a.shape.X)
+		log.Fatalf("incompatible matrix size for Expand operation on X axis -> %dx%d", a.shape.X, a.shape.Y)
 	}
 
 	result := make([]float32, copies * a.shape.Y)
@@ -365,7 +365,7 @@ func expand0(a *Mat32f, copies int) *Mat32f {
 
 func expand1(a *Mat32f, copies int) *Mat32f {
 	if a.shape.X == 0 || a.shape.Y != 1 {
-		log.Fatalf("incompatible matrix size for Expand operation on X axis -> %d", a.shape.X)
+		log.Fatalf("incompatible matrix size for Expand operation on Y axis -> %dx%d", a.shape.X, a.shape.Y)
 	}
 
 	result := make([]float32, a.shape.X * a.shape.Y * copies)
@@ -393,4 +393,19 @@ func Equals32f(a, b *Mat32f) bool {
 	}
 
 	return true
+}
+
+func Softmax(a *Mat32f) *Mat32f {
+	result := make([]float32, a.shape.X * a.shape.Y)
+	for i := 0; i < a.shape.X; i++ {
+		sum := 0.0
+		for j := 0; j < a.shape.Y; j++ {
+			sum += math.Exp(float64(a.data[i * a.shape.Y + j]))
+		}
+		for j := 0; j < a.shape.Y; j++ {
+			index := i * a.shape.Y + j
+			result[index] = float32(math.Exp(float64(a.data[index])) / sum)
+		}
+	}
+	return NewMat32f(a.shape, result)
 }

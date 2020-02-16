@@ -19,8 +19,7 @@ func activate(t *tensor.Tensor, activation string) *tensor.Tensor {
 	case ActivationRelu:
 		return tensor.Relu(t)
 	case ActivationSoftmax:
-		//return tensor.Softmax()
-		return nil
+		return tensor.Softmax(t)
 	}
 
 	log.Fatal("activation function is unknown:", activation)
