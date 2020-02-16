@@ -9,6 +9,7 @@ const operationSum = "opSum"
 type opSum struct {
 	a *Tensor
 	axis int
+	originalShape mat.Shape
 }
 
 func (ops *opSum) name() string {
@@ -48,7 +49,11 @@ func (ops *opSum) forward(tensor *Tensor) {
 }
 
 func (ops *opSum) backward(tensor *Tensor) {
-	ops.a.grad = mat.Expand(tensor.grad, 0, ops.a.mat.Shape().X)
+	if ops.axis == 0 {
+		ops.a.grad = mat.Expand(tensor.grad, 0, ops.originalShape.X)
+	} else if ops.axis == 1 {
+		ops.a.grad = mat.Expand(tensor.grad, 1, ops.originalShape.Y)
+	}
 }
 
 func Sum(a *Tensor, axis int) *Tensor {
@@ -56,6 +61,6 @@ func Sum(a *Tensor, axis int) *Tensor {
 	if axis == 1 {
 		result.Reshape(mat.WithShape(a.Shape().X, 1))
 	}
-	result.op = &opSum{a, axis}
+	result.op = &opSum{a, axis, a.mat.Shape()}
 	return result
 }

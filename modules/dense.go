@@ -33,7 +33,7 @@ func (d *dense) Forward(input *tensor.Tensor) *tensor.Tensor {
 		d.initialize(input.Shape().Y)
 	}
 
-	return activate(tensor.Add(tensor.Dot(input, d.weights), tensor.Expand(d.bias, 0, input.Shape().X)), d.activation)
+	return activate(tensor.Add(tensor.Matmul(input, d.weights), tensor.Expand(d.bias, 0, input.Shape().X)), d.activation)
 }
 
 func (d *dense) GetParameters() []*tensor.Tensor {
