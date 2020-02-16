@@ -19,6 +19,7 @@ type Model struct {
 	trainableVariables []*tensor.Tensor
 	graph *tensor.Graph
 	metric *metric
+	isInitialized bool
 }
 
 func NewModel() *Model {
@@ -32,7 +33,6 @@ func NewModel() *Model {
 	}
 	model.metric = newMetric(&model.configuration)
 	model.configuration.populateDefaults()
-	model.initialize()
 	model.metric.start()
 
 	return model
@@ -49,10 +49,25 @@ func (m *Model) Add(module modules.Module) *Model {
 	return m
 }
 
+func (m *Model) Initialize(inputSize int) {
+	if m.isInitialized {
+		return
+	}
+
+	for _, module := range m.modules {
+		module.Initialize(inputSize)
+		inputSize = module.GetParameters()[0].Shape().Y
+	}
+
+	m.criterion = newCriterion(m.configuration.Loss)
+	m.optimizer = newOptimizer(m.configuration.Optimizer)
+
+	m.isInitialized = true
+}
+
 func (m *Model) Configure(configuration ModelConfig) {
 	m.configuration = configuration
 	m.configuration.populateDefaults()
-	m.initialize()
 }
 
 func (m *Model) TrainableVariables() []*tensor.Tensor {
@@ -60,6 +75,7 @@ func (m *Model) TrainableVariables() []*tensor.Tensor {
 }
 
 func (m *Model) Fit(dataset *datasets.Dataset) {
+	m.Initialize(dataset.Shape().Y)
 	batchX := tensor.Variable(mat.WithShape(dataset.BatchSize(), dataset.Get(datasets.TrainingSetX).Data().Shape().Y)).SetName("batch x")
 	batchY := tensor.Variable(mat.WithShape(dataset.BatchSize(), dataset.Get(datasets.TrainingSetY).Data().Shape().Y)).SetName("batch y")
 	pred := m.buildModules(batchX).SetName("prediction")
@@ -113,6 +129,7 @@ func (m *Model) Fit(dataset *datasets.Dataset) {
 }
 
 func (m *Model) Run(dataset *datasets.Dataset) {
+	m.Initialize(dataset.Shape().Y)
 	x := tensor.Constant(dataset.Get(datasets.ValidationSetX).Data())
 	target := tensor.Constant(dataset.Get(datasets.ValidationSetY).Data())
 
@@ -121,12 +138,7 @@ func (m *Model) Run(dataset *datasets.Dataset) {
 
 	m.graph.Forward(loss)
 
-	fmt.Printf("Error: %f Accuracy: %.2f", averageLoss(loss), accuracy(y, target, m.configuration.ValidOutputRange))
-}
-
-func (m *Model) initialize() {
-	m.criterion = newCriterion(m.configuration.Loss)
-	m.optimizer = newOptimizer(m.configuration.Optimizer)
+	fmt.Printf("Error: %f Accuracy: %.2f", averageLoss(loss), accuracyOneHot(y, target, m.configuration.ValidOutputRange))
 }
 
 func (m *Model) buildModules(x *tensor.Tensor) *tensor.Tensor {
@@ -136,4 +148,8 @@ func (m *Model) buildModules(x *tensor.Tensor) *tensor.Tensor {
 		m.trainableVariables = append(m.trainableVariables, module.GetParameters()...)
 	}
 	return pred
+}
+
+func (m *Model) Save(name string) {
+	saveModel(m, name)
 }

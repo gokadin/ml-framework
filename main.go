@@ -9,11 +9,10 @@ import (
 func main() {
 	mnist()
 	//xor()
+	//persistenseTest()
 }
 
-func mnist() {
-	dataset := datasets.From("mnist").SetBatchSize(1000)
-
+func persistenseTest() {
 	model := models.Build(
 		modules.Dense(128, modules.ActivationRelu),
 		modules.Dense(10, modules.ActivationSoftmax))
@@ -22,8 +21,34 @@ func mnist() {
 		Epochs: 3,
 		Loss: models.LossCrossEntropy,
 	})
+	model.Initialize(784)
+	model.Save("mnist")
 
-	model.Fit(dataset)
+	// ...
+
+	m := models.Restore("mnist")
+
+	x := 3
+
+	_ = x
+	_ = m
+}
+
+func mnist() {
+	dataset := datasets.From("mnist").SetBatchSize(1000)
+
+	model := models.Restore("mnist")
+	//model := models.Build(
+	//	modules.Dense(128, modules.ActivationRelu),
+	//	modules.Dense(10, modules.ActivationSoftmax))
+	//
+	//model.Configure(models.ModelConfig{
+	//	Epochs: 1,
+	//	Loss: models.LossCrossEntropy,
+	//})
+	//
+	//model.Fit(dataset)
+	//model.Save("mnist")
 	model.Run(dataset)
 }
 
