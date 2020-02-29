@@ -6,8 +6,8 @@ import (
 )
 
 const (
-	LossMeanSquared = "LossMeanSquared"
-	LossCrossEntropy = "LossCrossEntropy"
+	LossMeanSquared         = "LossMeanSquared"
+	LossSoftmaxCrossEntropy = "LossSoftmaxCrossEntropy"
 )
 
 type criterion interface {
@@ -18,7 +18,7 @@ func newCriterion(loss string) criterion {
 	switch loss {
 	case LossMeanSquared:
 		return newMeanSquaredCriterion()
-	case LossCrossEntropy:
+	case LossSoftmaxCrossEntropy:
 		return newCrossEntropyCriterion()
 	}
 

@@ -42,8 +42,8 @@ func (d *dense) InitializeWith(weights, biases *mat.Mat32f) {
 		return
 	}
 
-	d.weights = tensor.Constant(weights)
-	d.bias = tensor.Constant(biases)
+	d.weights = tensor.Constant(weights).SetName("dense layer weights")
+	d.bias = tensor.Constant(biases).SetName("dense layer biases")
 }
 
 func (d *dense) Forward(input *tensor.Tensor) *tensor.Tensor {

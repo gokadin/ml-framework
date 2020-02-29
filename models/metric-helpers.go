@@ -20,7 +20,7 @@ func accuracy(y, target *tensor.Tensor, validOutputRange float32) float32 {
 	return float32(accuracyCounter * 100) / float32(y.Shape().X * y.Shape().Y)
 }
 
-func accuracyOneHot(y, target *tensor.Tensor, validOutputRange float32) float32 {
+func accuracyOneHot(y, target *tensor.Tensor) float32 {
 	accuracyCounter := 0
 	for i := 0; i < y.Shape().X; i++ {
 		var maxIndex int
@@ -37,9 +37,9 @@ func accuracyOneHot(y, target *tensor.Tensor, validOutputRange float32) float32 
 			}
 		}
 		if maxIndex == targetIndex {
-			accuracyCounter += y.Shape().Y
+			accuracyCounter ++
 		}
 	}
 
-	return float32(accuracyCounter * 100) / float32(y.Shape().X * y.Shape().Y)
+	return float32(accuracyCounter * 100) / float32(y.Shape().X)
 }

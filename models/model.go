@@ -138,7 +138,7 @@ func (m *Model) Run(dataset *datasets.Dataset) {
 
 	m.graph.Forward(loss)
 
-	fmt.Printf("Error: %f Accuracy: %.2f", averageLoss(loss), accuracyOneHot(y, target, m.configuration.ValidOutputRange))
+	fmt.Printf("Error: %f Accuracy: %.2f", averageLoss(loss), accuracyOneHot(y, target))
 }
 
 func (m *Model) buildModules(x *tensor.Tensor) *tensor.Tensor {

@@ -12,16 +12,17 @@ import (
 )
 
 const (
-	modelStoreRoot = ".cache/models"
-	persisterTypeKey = "TYPE"
-	persisterModelType = "MODEL"
-	persisterModelConfigKey = "CONFIG"
-	persisterModelModuleKey = "MODULE"
-	persisterModelModuleEndKey = "MODULE_END"
-	persisterModelModuleSHAPEKEY = "SHAPE"
+	modelStoreRoot                    = ".cache/models"
+	persisterTypeKey                  = "TYPE"
+	persisterModelType                = "MODEL"
+	persisterModelConfigCriterionKey  = "CRITERION"
+	persisterModelConfigEpochsKey     = "EPOCHS"
+	persisterModelModuleKey           = "MODULE"
+	persisterModelModuleEndKey        = "MODULE_END"
+	persisterModelModuleSHAPEKEY      = "SHAPE"
 	persisterModelModuleActivationKey = "ACTIVATION"
-	persisterModelModuleWeightsKey = "WEIGHTS"
-	persisterModelModuleBiasesKey = "BIASES"
+	persisterModelModuleWeightsKey    = "WEIGHTS"
+	persisterModelModuleBiasesKey     = "BIASES"
 )
 
 func saveModel(model *Model, name string) {
@@ -66,6 +67,12 @@ func Restore(name string) *Model {
 			continue
 		}
 		switch split[0] {
+		case persisterModelConfigCriterionKey:
+			model.configuration.Loss = strings.TrimSpace(split[1])
+			break
+		case persisterModelConfigEpochsKey:
+			model.configuration.Epochs, _ = strconv.Atoi(strings.TrimSpace(split[1]))
+			break
 		case persisterModelModuleKey:
 			break
 		case persisterModelModuleSHAPEKEY:
@@ -106,6 +113,10 @@ func Restore(name string) *Model {
 func modelToString(model *Model) string {
 	content := fmt.Sprintf("%s: %s\n\n", persisterTypeKey, persisterModelType)
 
+	content += fmt.Sprintf("%s: %s\n", persisterModelConfigCriterionKey, model.configuration.Loss)
+	content += fmt.Sprintf("%s: %d\n", persisterModelConfigEpochsKey, model.configuration.Epochs)
+	content += "\n"
+
 	for _, module := range model.modules {
 		parameters := module.GetParameters()
 
@@ -118,7 +129,7 @@ func modelToString(model *Model) string {
 		}
 		content += fmt.Sprintf("\n%s: ", persisterModelModuleBiasesKey, )
 		for _, value := range parameters[1].Data().Data() {
-			content += fmt.Sprintf("%f ", value)
+			content += fmt.Sprintf("%g ", value)
 		}
 		content += fmt.Sprintf("\n%s\n\n", persisterModelModuleEndKey)
 	}
