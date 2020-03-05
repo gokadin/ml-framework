@@ -4,11 +4,18 @@ import (
 	"github.com/gokadin/ml-framework/datasets"
 	"github.com/gokadin/ml-framework/models"
 	"github.com/gokadin/ml-framework/modules"
+	"github.com/gokadin/ml-framework/rl"
 )
 
 func main() {
-	mnist()
+	//mnist()
 	//xor()
+	rltest()
+}
+
+func rltest() {
+	ws := rl.NewWorkspace()
+	ws.Run()
 }
 
 func mnist() {
