@@ -2,6 +2,8 @@ package rl
 
 import (
 	"fmt"
+	"github.com/encryptio/alias"
+	"math"
 	"math/rand"
 	"runtime"
 	"time"
@@ -13,6 +15,7 @@ type Workspace struct {
 	bestArm int
 	eps float32
 	averageReward float32
+	softValues []float64
 }
 
 func NewWorkspace() *Workspace {
@@ -23,6 +26,7 @@ func NewWorkspace() *Workspace {
 		rewardHistory: make(map[action][]float32),
 		arms: make([]float32, 10),
 		eps: 0.1,
+		softValues: make([]float64, 0),
 	}
 
 	var bestProbability float32
@@ -36,6 +40,7 @@ func NewWorkspace() *Workspace {
 
 	for i := 0; i < len(ws.arms); i++ {
 		ws.rewardHistory[action(i)] = make([]float32, 0)
+		ws.softValues = append(ws.softValues, 1.0 / float64(len(ws.arms)))
 	}
 
 	return ws
@@ -43,16 +48,19 @@ func NewWorkspace() *Workspace {
 
 func (w *Workspace) Run() {
 	for i := 0; i < 500; i++ {
-		var choice action
-		if rand.Float32() > w.eps {
-			choice = action(w.getBestArm())
-		} else {
-			choice = action(rand.Intn(len(w.arms)))
-		}
+		x, _ := alias.New(w.softValues)
+		index  := x.Gen(rand.New(rand.NewSource(time.Now().UTC().UnixNano())))
+		choice := action(index)
 
 		w.rewardHistory[choice] = append(w.rewardHistory[choice], reward(w.arms[choice]))
 
 		percentCorrect := 100 * float32(len(w.rewardHistory[action(w.bestArm)])) / float32(i + 1)
+
+		averagesOfActions := make([]float32, len(w.arms))
+		for j := 0; j < len(w.arms); j++ {
+			averagesOfActions[j] = w.averageRewardOfAction(action(j))
+		}
+		w.softValues = softmax(averagesOfActions)
 
 		fmt.Println(fmt.Sprintf("Average %f   correct %f%%", w.rewardHistoryAverage(), percentCorrect))
 	}
@@ -118,4 +126,16 @@ func reward(probability float32) float32 {
 		}
 	}
 	return reward
+}
+
+func softmax(a []float32) []float64 {
+	result := make([]float64, len(a))
+	sum := 0.0
+	for i := 0; i < len(a); i++ {
+		sum += math.Exp(float64(a[i]))
+	}
+	for i := 0; i < len(a); i++ {
+		result[i] = math.Exp(float64(a[i])) / sum
+	}
+	return result
 }
