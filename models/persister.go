@@ -13,6 +13,7 @@ import (
 
 const (
 	modelStoreRoot                    = ".cache/models"
+	maxFloatsPerLine				  = 300
 	persisterTypeKey                  = "TYPE"
 	persisterModelType                = "MODEL"
 	persisterModelConfigCriterionKey  = "CRITERION"
@@ -21,7 +22,9 @@ const (
 	persisterModelModuleEndKey        = "MODULE_END"
 	persisterModelModuleSHAPEKEY      = "SHAPE"
 	persisterModelModuleActivationKey = "ACTIVATION"
+	persisterModelModuleWeightsBeginKey    = "WEIGHTS_BEGIN"
 	persisterModelModuleWeightsKey    = "WEIGHTS"
+	persisterModelModuleBiasesBeginKey     = "BIASES_BEGIN"
 	persisterModelModuleBiasesKey     = "BIASES"
 )
 
@@ -50,18 +53,15 @@ func Restore(name string) *Model {
 	defer file.Close()
 
 	model := NewModel()
-	reader := bufio.NewReader(file)
+	scanner := bufio.NewScanner(file)
 	var moduleShape mat.Shape
 	var moduleActivationFunction string
 	var moduleWeights []float32
+	var moduleWeightsIndex int
 	var moduleBiases []float32
-	for {
-		bytes, _, err := reader.ReadLine()
-		if err != nil {
-			break
-		}
-
-		line := string(bytes)
+	var moduleBiasesIndex int
+	for scanner.Scan() {
+		line := scanner.Text()
 		split := strings.Split(line, ":")
 		if line == "" || len(split) == 0 {
 			continue
@@ -83,20 +83,28 @@ func Restore(name string) *Model {
 		case persisterModelModuleActivationKey:
 			moduleActivationFunction = strings.TrimSpace(split[1])
 			break
-		case persisterModelModuleWeightsKey:
+		case persisterModelModuleWeightsBeginKey:
 			moduleWeights = make([]float32, moduleShape.X * moduleShape.Y)
+			moduleWeightsIndex = 0
+			break
+		case persisterModelModuleWeightsKey:
 			parameters := strings.Split(strings.TrimSpace(split[1]), " ")
-			for i, value := range parameters {
+			for _, value := range parameters {
 				parsed, _ := strconv.ParseFloat(value, 32)
-				moduleWeights[i] = float32(parsed)
+				moduleWeights[moduleWeightsIndex] = float32(parsed)
+				moduleWeightsIndex++
 			}
 			break
-		case persisterModelModuleBiasesKey:
+		case persisterModelModuleBiasesBeginKey:
 			moduleBiases = make([]float32, moduleShape.Y)
+			moduleBiasesIndex = 0
+			break
+		case persisterModelModuleBiasesKey:
 			parameters := strings.Split(strings.TrimSpace(split[1]), " ")
-			for i, value := range parameters {
+			for _, value := range parameters {
 				parsed, _ := strconv.ParseFloat(value, 32)
-				moduleBiases[i] = float32(parsed)
+				moduleBiases[moduleBiasesIndex] = float32(parsed)
+				moduleBiasesIndex++
 			}
 			break
 		case persisterModelModuleEndKey:
@@ -123,12 +131,18 @@ func modelToString(model *Model) string {
 		content += fmt.Sprintf("%s: DENSE\n", persisterModelModuleKey)
 		content += fmt.Sprintf("%s: %d %d\n", persisterModelModuleSHAPEKEY, parameters[0].Shape().X, parameters[0].Shape().Y)
 		content += fmt.Sprintf("%s: %s\n", persisterModelModuleActivationKey, module.GetActivation())
-		content += fmt.Sprintf("%s: ", persisterModelModuleWeightsKey, )
-		for _, value := range parameters[0].Data().Data() {
+		content += fmt.Sprintf("%s", persisterModelModuleWeightsBeginKey)
+		for i, value := range parameters[0].Data().Data() {
+			if i % maxFloatsPerLine == 0 {
+				content += fmt.Sprintf("\n%s: ", persisterModelModuleWeightsKey)
+			}
 			content += fmt.Sprintf("%g ", value)
 		}
-		content += fmt.Sprintf("\n%s: ", persisterModelModuleBiasesKey, )
-		for _, value := range parameters[1].Data().Data() {
+		content += fmt.Sprintf("\n%s", persisterModelModuleBiasesBeginKey)
+		for i, value := range parameters[1].Data().Data() {
+			if i % maxFloatsPerLine == 0 {
+				content += fmt.Sprintf("\n%s: ", persisterModelModuleBiasesKey)
+			}
 			content += fmt.Sprintf("%g ", value)
 		}
 		content += fmt.Sprintf("\n%s\n\n", persisterModelModuleEndKey)

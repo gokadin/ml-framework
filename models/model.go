@@ -138,10 +138,12 @@ func (m *Model) Run(dataset *datasets.Dataset) {
 
 	m.graph.Forward(loss)
 
-	fmt.Printf("Error: %f Accuracy: %.2f", averageLoss(loss), accuracyOneHot(y, target))
+	fmt.Printf("Error: %f Accuracy: %.2f\n", averageLoss(loss), accuracyOneHot(y, target))
 }
 
 func (m *Model) buildModules(x *tensor.Tensor) *tensor.Tensor {
+	m.trainableVariables = make([]*tensor.Tensor, 0)
+
 	pred := x
 	for _, module := range m.modules {
 		pred = module.Forward(pred)
