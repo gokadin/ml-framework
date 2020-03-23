@@ -17,6 +17,7 @@ const (
 	persisterTypeKey                  = "TYPE"
 	persisterModelType                = "MODEL"
 	persisterModelConfigCriterionKey  = "CRITERION"
+	persisterModelConfigOptimizerKey  = "OPTIMIZER"
 	persisterModelConfigEpochsKey     = "EPOCHS"
 	persisterModelModuleKey           = "MODULE"
 	persisterModelModuleEndKey        = "MODULE_END"
@@ -70,6 +71,9 @@ func Restore(name string) *Model {
 		case persisterModelConfigCriterionKey:
 			model.configuration.Loss = strings.TrimSpace(split[1])
 			break
+		case persisterModelConfigOptimizerKey:
+			model.configuration.Optimizer = strings.TrimSpace(split[1])
+			break
 		case persisterModelConfigEpochsKey:
 			model.configuration.Epochs, _ = strconv.Atoi(strings.TrimSpace(split[1]))
 			break
@@ -122,6 +126,7 @@ func modelToString(model *Model) string {
 	content := fmt.Sprintf("%s: %s\n\n", persisterTypeKey, persisterModelType)
 
 	content += fmt.Sprintf("%s: %s\n", persisterModelConfigCriterionKey, model.configuration.Loss)
+	content += fmt.Sprintf("%s: %s\n", persisterModelConfigOptimizerKey, model.configuration.Optimizer)
 	content += fmt.Sprintf("%s: %d\n", persisterModelConfigEpochsKey, model.configuration.Epochs)
 	content += "\n"
 
