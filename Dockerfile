@@ -8,5 +8,5 @@ ADD . .
 
 RUN go get -t ./...
 
-CMD [ "go", "run", "./..." ]
+CMD [ "go", "run", "main.go" ]
 #CMD [ "go", "test", "-cover", "./..." ]
