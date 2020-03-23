@@ -6,6 +6,7 @@ WORKDIR $SRC_DIR
 
 ADD . .
 
-RUN go get ./...
+RUN go get -t ./...
 
-CMD [ "go", "test", "-cover", "./..." ]
+CMD [ "go", "run", "./..." ]
+#CMD [ "go", "test", "-cover", "./..." ]
