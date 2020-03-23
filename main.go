@@ -14,22 +14,25 @@ func main() {
 func mnist() {
 	dataset := datasets.From("mnist").SetBatchSize(1000)
 
+	//models.Restore("mnist")
 	model := models.Build(
 		modules.Dense(128, modules.ActivationRelu),
 		modules.Dense(10, modules.ActivationSoftmax))
 
 	model.Configure(models.ModelConfig{
 		Epochs: 3,
-		Loss: models.LossCrossEntropy,
+		Loss: models.LossSoftmaxCrossEntropy,
 	})
 
 	model.Fit(dataset)
 	model.Run(dataset)
+	//model.Save("mnist")
 }
 
 func xor() {
 	dataset := datasets.From("xor").SetBatchSize(4)
 
+	//models.Restore("xor")
 	model := models.Build(
 		modules.Dense(2, modules.ActivationSigmoid),
 		modules.Dense(1, modules.ActivationIdentity))
@@ -41,4 +44,5 @@ func xor() {
 
 	model.Fit(dataset)
 	model.Run(dataset)
+	//model.Save("xor")
 }

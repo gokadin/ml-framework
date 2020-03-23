@@ -45,12 +45,13 @@ func (d *Dataset) Get(name string) *set {
 	return nil
 }
 
-func (d *Dataset) InputSize() int {
+func (d *Dataset) Shape() mat.Shape {
 	if set, ok := d.sets[TrainingSetX]; ok {
-		return set.data.Shape().X
+		return set.data.Shape()
 	}
 
-	return 0
+	log.Fatal("training set does not exist")
+	return mat.Shape{}
 }
 
 func (d *Dataset) Shuffle() *Dataset {
