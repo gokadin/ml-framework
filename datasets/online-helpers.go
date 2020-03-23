@@ -20,13 +20,12 @@ func downloadFile(baseUrl, filename string) []byte {
 	}
 	defer response.Body.Close()
 
-	addToCache(filename, response.Body)
-
-	bytes, err := ioutil.ReadAll(response.Body)
+	content, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		log.Fatal("Could not decode response message")
 	}
-	return bytes
+	addToCache(filename, content)
+	return content
 }
 
 func unzip(compressed []byte) []byte {
