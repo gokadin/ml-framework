@@ -43,6 +43,22 @@ func (m *Mat32f) Data() []float32 {
 	return m.data
 }
 
+func (m *Mat32f) ToFloat64() []float64 {
+	result := make([]float64, len(m.data))
+	for i := 0; i < len(m.data); i++ {
+		result[i] = float64(m.data[i])
+	}
+	return result
+}
+
+func (m *Mat32f) Copy() []float32 {
+	result := make([]float32, len(m.data))
+	for i := 0; i < len(m.data); i++ {
+		result[i] = m.data[i]
+	}
+	return result
+}
+
 func (m *Mat32f) At(i int) float32 {
 	return m.data[i]
 }

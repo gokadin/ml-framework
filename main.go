@@ -14,7 +14,9 @@ func main() {
 }
 
 func rltest() {
-	ws := rl.NewWorkspace()
+	//ws := rl.NewWorkspace()
+	//ws.Run()
+	ws := rl.NewW2()
 	ws.Run()
 }
 

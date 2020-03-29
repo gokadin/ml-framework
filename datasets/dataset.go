@@ -32,8 +32,9 @@ func (d *Dataset) SetName(name string) {
 	d.name = name
 }
 
-func (d *Dataset) AddData(name string, mat *mat.Mat32f) {
+func (d *Dataset) AddData(name string, mat *mat.Mat32f) *set {
 	d.sets[name] = &set{mat}
+	return d.sets[name]
 }
 
 func (d *Dataset) Get(name string) *set {

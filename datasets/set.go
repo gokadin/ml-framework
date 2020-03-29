@@ -17,7 +17,7 @@ func (s *set) Normalize(min, max float32) *set {
 }
 
 func (s *set) OneHot(depth int) *set {
-	oneHotEncode(s.data, depth)
+	s.data = oneHotEncode(s.data, depth)
 
 	return s
 }

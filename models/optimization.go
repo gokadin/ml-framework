@@ -23,7 +23,7 @@ const (
 )
 
 type optimizer interface {
-    update(tensor *tensor.Tensor, batchSize, counter int)
+    Update(tensor *tensor.Tensor, batchSize, counter int)
 }
 
 func newOptimizer(optimizerType string) optimizer {
@@ -54,7 +54,7 @@ func newDefaultOptimizer(overrides []float32) *defaultOptimizer {
     return o
 }
 
-func (do defaultOptimizer) update(tensor *tensor.Tensor, batchSize, counter int) {
+func (do defaultOptimizer) Update(tensor *tensor.Tensor, batchSize, counter int) {
     tensor.Reduce(mat.MulScalar(tensor.Gradient(), do.learningRate / float32(batchSize)))
 }
 
@@ -79,7 +79,7 @@ func newMomentumOptimizer(overrides []float32) *momentumOptimizer {
     return o
 }
 
-func (mo momentumOptimizer) update(tensor *tensor.Tensor, batchSize, counter int) {
+func (mo momentumOptimizer) Update(tensor *tensor.Tensor, batchSize, counter int) {
     if _, ok := mo.velocityMap[tensor.Id()]; !ok {
         mo.velocityMap[tensor.Id()] = mat.NewMat32fZeros(tensor.Shape())
     }
@@ -121,7 +121,7 @@ func newAdamOptimizer(overrides []float32) *adamOptimizer {
     return o
 }
 
-func (ao adamOptimizer) update(tensor *tensor.Tensor, batchSize, counter int) {
+func (ao adamOptimizer) Update(tensor *tensor.Tensor, batchSize, counter int) {
     if _, ok := ao.velocityMap[tensor.Id()]; !ok {
         ao.meanMap[tensor.Id()] = mat.NewMat32fZeros(tensor.Shape())
         ao.velocityMap[tensor.Id()] = mat.NewMat32fZeros(tensor.Shape())

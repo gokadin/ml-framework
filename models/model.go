@@ -70,6 +70,10 @@ func (m *Model) Configure(configuration ModelConfig) {
 	m.configuration.populateDefaults()
 }
 
+func (m *Model) Configuration() *ModelConfig {
+	return &m.configuration
+}
+
 func (m *Model) TrainableVariables() []*tensor.Tensor {
 	return m.trainableVariables
 }
@@ -78,7 +82,7 @@ func (m *Model) Fit(dataset *datasets.Dataset) {
 	m.Initialize(dataset.Shape().Y)
 	batchX := tensor.Variable(mat.WithShape(dataset.BatchSize(), dataset.Get(datasets.TrainingSetX).Data().Shape().Y)).SetName("batch x")
 	batchY := tensor.Variable(mat.WithShape(dataset.BatchSize(), dataset.Get(datasets.TrainingSetY).Data().Shape().Y)).SetName("batch y")
-	pred := m.buildModules(batchX).SetName("prediction")
+	pred := m.BuildModules(batchX).SetName("prediction")
 	loss := m.criterion.forward(pred, batchY).SetName("loss")
 
 	m.metric.events.trainingStarted <- true
@@ -110,7 +114,7 @@ func (m *Model) Fit(dataset *datasets.Dataset) {
 			epochLoss += batchLoss
 
 			for _, parameter := range m.TrainableVariables() {
-				m.optimizer.update(parameter, dataset.BatchSize(), epoch * dataset.BatchSize() + dataset.BatchCounter())
+				m.optimizer.Update(parameter, dataset.BatchSize(), epoch * dataset.BatchSize() + dataset.BatchCounter())
 			}
 
 			m.metric.events.batchFinished <- true
@@ -133,7 +137,7 @@ func (m *Model) Run(dataset *datasets.Dataset) {
 	x := tensor.Constant(dataset.Get(datasets.ValidationSetX).Data())
 	target := tensor.Constant(dataset.Get(datasets.ValidationSetY).Data())
 
-	y := m.buildModules(x)
+	y := m.BuildModules(x)
 	loss := m.criterion.forward(y, target)
 
 	m.graph.Forward(loss)
@@ -141,9 +145,8 @@ func (m *Model) Run(dataset *datasets.Dataset) {
 	fmt.Printf("Error: %f Accuracy: %.2f\n", averageLoss(loss), accuracyOneHot(y, target))
 }
 
-func (m *Model) buildModules(x *tensor.Tensor) *tensor.Tensor {
+func (m *Model) BuildModules(x *tensor.Tensor) *tensor.Tensor {
 	m.trainableVariables = make([]*tensor.Tensor, 0)
-
 	pred := x
 	for _, module := range m.modules {
 		pred = module.Forward(pred)
@@ -154,4 +157,16 @@ func (m *Model) buildModules(x *tensor.Tensor) *tensor.Tensor {
 
 func (m *Model) Save(name string) {
 	saveModel(m, name)
+}
+
+func (m *Model) BuildLoss(pred, batchY *tensor.Tensor) *tensor.Tensor {
+	return m.criterion.forward(pred, batchY)
+}
+
+func (m *Model) Graph() *tensor.Graph {
+	return m.graph
+}
+
+func (m *Model) Optimizer() optimizer {
+	return m.optimizer
 }

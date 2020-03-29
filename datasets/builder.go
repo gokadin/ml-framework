@@ -29,3 +29,7 @@ func fromNamed(datasetName string) *Dataset {
 
 	return &Dataset{}
 }
+
+func FromData(data []float32) *Dataset {
+	return &Dataset{}
+}
