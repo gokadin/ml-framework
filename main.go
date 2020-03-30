@@ -15,7 +15,8 @@ func main() {
 
 func rltest() {
 	ws := rl.NewW3()
-	ws.Run()
+	//ws.Run()
+	ws.RunSaved()
 }
 
 func mnist() {

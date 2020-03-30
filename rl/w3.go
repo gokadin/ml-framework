@@ -2,7 +2,6 @@ package rl
 
 import (
 	"fmt"
-	"github.com/faiface/pixel/pixelgl"
 	"github.com/gokadin/ml-framework/graphics2D"
 	"github.com/gokadin/ml-framework/mat"
 	"github.com/gokadin/ml-framework/models"
@@ -19,7 +18,7 @@ import (
 type W3 struct {
 	gridWorld *graphics2D.GridWorld
 	model *models.Model
-	epsilon float32
+	epsilon float64
 	gamma float32
 }
 
@@ -34,19 +33,22 @@ func NewW3() *W3 {
 }
 
 func (w *W3) Run() {
-	//pixelgl.Run(w.gridWorld.Run)
 	w.model = w.buildModel()
 	state := tensor.Variable(mat.WithShape(1, 64))
 	state2 := tensor.Variable(mat.WithShape(1, 64))
 	y := tensor.Variable(mat.WithShape(1, 4))
 	qval := w.model.Predict(state)
 	newQ := w.model.PredictNoGrad(state2)
+	loss := w.model.Loss(qval, y)
 	var lossSum float32
 	p, _ := plot.New()
 	p.X.Label.Text = "Epochs"
 	p.Y.Label.Text = "Loss"
 	line, _ := plotter.NewLine(plotter.XYs{})
 	gameCounter := 0
+	totalCounter := 0
+	successCounter := 0
+	gameAveMoves := 0
 	for i := 0; i < w.model.Configuration().Epochs; i++ {
 		w.createGame()
 		stateMat := w.gridWorld.GetState()
@@ -59,17 +61,18 @@ func (w *W3) Run() {
 
 			// choose action
 			var action int
-			if rand.Float32() < w.epsilon {
+			r := rand.Float64()
+			if r < w.epsilon {
 				action = rand.Intn(4)
 			} else {
 				action = maxIndex(qval.Data().Data())
 			}
+
 			w.gridWorld.MakeMove(action)
+			reward := w.gridWorld.GetReward()
 			nextStateMat := w.gridWorld.GetState()
 			w.addNoise(nextStateMat)
 			state2.SetData(nextStateMat)
-			reward := w.gridWorld.GetReward()
-
 			w.model.Graph().Forward(newQ)
 			maxQValue := maxValue(newQ.Data().Data())
 
@@ -82,29 +85,35 @@ func (w *W3) Run() {
 			y.SetData(mat.NewMat32f(mat.WithShape(1, 4), qval.Data().Copy()))
 			y.Data().Set(action, yValue)
 
-			loss := w.model.Loss(qval, y)
 			w.model.Graph().Forward(loss)
 			w.model.Graph().Backward(loss, w.model.TrainableVariables()...)
-			lossSum += averageLoss(loss)
+
+			lossSum += loss.Data().At(action)
 			line.XYs = append(line.XYs, plotter.XY{Y: float64(loss.Data().At(action)), X: float64(i)})
 
 			for _, parameter := range w.model.TrainableVariables() {
-				w.model.Optimizer().Update(parameter, 1, 1)
+				w.model.Optimizer().Update(parameter, 1, i + 2)
 			}
 
-			state.SetData(mat.NewMat32f(mat.WithShape(1, 64), state2.Data().Copy()))
+			state.SetData(nextStateMat)
 
 			if reward != -1 {
 				gameInProgress = false
+				if reward == 10 {
+					successCounter++
+				}
 			}
 		}
 
+		gameAveMoves += gameCounter
+		totalCounter += gameCounter
 		if i != 0 && i % 100 == 0 {
-			fmt.Println(fmt.Sprintf("loss %f", lossSum / float32(i + gameCounter)))
+			fmt.Println(fmt.Sprintf("epoch %d loss %f moves %d success %d%%", i, lossSum / float32(i + totalCounter), gameAveMoves / i, successCounter * 100 / i))
 		}
+		gameCounter = 0
 
 		if w.epsilon > 0.1 {
-			w.epsilon -= 1.0 / float32(w.model.Configuration().Epochs)
+			w.epsilon -= 1.0 / float64(w.model.Configuration().Epochs)
 		}
 	}
 
@@ -113,42 +122,79 @@ func (w *W3) Run() {
 		panic(err)
 	}
 
+	w.model.Save("experimental-rl")
+}
+
+func (w *W3) RunSaved() {
+	w.model = models.Restore("experimental-rl")
+
+	w.test()
 }
 
 func (w *W3) test() {
-	pixelgl.Run(w.gridWorld.Run)
 	w.createGame()
+	//pixelgl.Run(w.gridWorld.Run)
+	w.gridWorld.Print()
 	state := tensor.Variable(mat.WithShape(1, 64))
-	isGameRunning := true
 	qval := w.model.Predict(state)
+	counter := 0
+	isGameRunning := true
 	for isGameRunning {
-		state.SetData(w.gridWorld.GetState())
+		stateMat := w.gridWorld.GetState()
+		w.addNoise(stateMat)
+		state.SetData(stateMat)
+
 		w.model.Graph().Forward(qval)
 		action := maxIndex(qval.Data().Data())
 		w.gridWorld.MakeMove(action)
+		fmt.Println(fmt.Sprintf("taking action %d", action))
+
+		//nextStateMat := w.gridWorld.GetState()
+		//w.addNoise(nextStateMat)
+		reward := w.gridWorld.GetReward()
+
+		if reward != -1 {
+			isGameRunning = false
+			if reward > 0 {
+				fmt.Println("game won")
+			} else {
+				fmt.Println("game lost")
+			}
+		}
+
+		counter++
+		if counter > 15 {
+			fmt.Println("game lost... too many moves")
+			isGameRunning = false
+		}
+
+		w.gridWorld.Print()
+		time.Sleep(500 * time.Millisecond)
 	}
 }
 
 func (w *W3) buildModel() *models.Model {
 	model := models.Build(
-		modules.Dense(150, modules.ActivationRelu),
-		modules.Dense(100, modules.ActivationRelu),
+		modules.Dense(150, modules.ActivationSigmoid),
+		modules.Dense(100, modules.ActivationSigmoid),
 		modules.Dense(4, modules.ActivationIdentity))
 
 	model.Configure(models.ModelConfig{
-		Epochs: 1000,
+		Epochs: 5000,
 		Loss: models.LossMeanSquared,
 	})
+
+	model.Initialize(64)
 
 	return model
 }
 
 func (w *W3) createGame() {
 	w.gridWorld = graphics2D.NewGridWorld(1042, 768, 4)
-	w.gridWorld.PlaceAgent(0, 0)
-	w.gridWorld.PlaceWall(1, 1)
-	w.gridWorld.PlaceTarget(2, 3)
-	w.gridWorld.PlaceDanger(0, 2)
+	w.gridWorld.PlaceAgent(0, 3)
+	w.gridWorld.PlaceWall(1, 2)
+	w.gridWorld.PlaceTarget(2, 0)
+	w.gridWorld.PlaceDanger(0, 1)
 }
 
 func (w *W3) addNoise(mat *mat.Mat32f) {
@@ -158,7 +204,7 @@ func (w *W3) addNoise(mat *mat.Mat32f) {
 }
 
 func maxIndex(values []float32) int {
-	var max float32 = values[0]
+	max := values[0]
 	index := 0
 	for i := 1; i < len(values); i++ {
 		if values[i] > max {
@@ -170,7 +216,7 @@ func maxIndex(values []float32) int {
 }
 
 func maxValue(values []float32) float32 {
-	var max float32 = values[0]
+	max := values[0]
 	for i := 1; i < len(values); i++ {
 		if values[i] > max {
 			max = values[i]
