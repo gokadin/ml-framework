@@ -34,24 +34,24 @@ func (w *W2) Run() {
 	dataset.AddData(datasets.TrainingSetX, mat.NewMat32f(mat.WithShape(1, 1), []float32{float32(w.state.currentState())})).OneHot(10)
 	x := tensor.Variable(mat.WithShape(1, 10))
 
-	var rewardSum int
+	var rewardSum float32
 
 	for i := 0; i < w.model.Configuration().Epochs; i++ {
 		x.SetData(dataset.Get(datasets.TrainingSetX).Data())
-		pred := w.model.BuildModules(x)
+		pred := w.model.Predict(x)
 
 		w.model.Graph().Forward(pred)
 
 		aveSoftmax := softmax(pred.Data().Data())
 		action := w.agent.choose(aveSoftmax)
 		currentReward := w.state.takeAction(action)
-		rewardSum += int(currentReward)
+		rewardSum += currentReward
 		y := tensor.Variable(mat.WithShape(1, 10))
 		predMat := pred.Data().Copy()
 		predMat[action] = currentReward
 		y.SetData(mat.NewMat32f(mat.WithShape(1, 10), predMat))
 
-		loss := w.model.BuildLoss(pred, y)
+		loss := w.model.Loss(pred, y)
 		w.model.Graph().Forward(loss)
 		w.model.Graph().Backward(loss, w.model.TrainableVariables()...)
 
@@ -61,8 +61,8 @@ func (w *W2) Run() {
 
 		dataset.AddData(datasets.TrainingSetX, mat.NewMat32f(mat.WithShape(1, 1), []float32{float32(w.state.currentState())})).OneHot(10)
 
-		if i != 0 && i % 1000 == 0 {
-			fmt.Println(fmt.Sprintf("loss %f   reward %d", averageLoss(loss), rewardSum / i))
+		if i != 0 && i % 500 == 0 {
+			fmt.Println(fmt.Sprintf("loss %f   reward %f", averageLoss(loss), rewardSum / float32(i)))
 		}
 	}
 }
@@ -73,7 +73,7 @@ func buildModel() *models.Model {
 		modules.Dense(10, modules.ActivationRelu))
 
 	model.Configure(models.ModelConfig{
-		Epochs: 50000,
+		Epochs: 5000,
 		Loss: models.LossMeanSquared,
 	})
 
