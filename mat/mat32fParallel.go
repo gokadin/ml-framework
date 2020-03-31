@@ -7,6 +7,10 @@ import (
 )
 
 func MatMulParallel(a, b *Mat32f) *Mat32f {
+	if a.shape.X < 1000 && a.shape.Y < 1000 {
+		return MatMul(a, b)
+	}
+
 	if a.shape.X == 0 || a.shape.Y == 0 || b.shape.X == 0 || b.shape.Y == 0 || a.shape.Y != b.shape.X {
 		log.Fatalf("cannot multiply matrices of incompatible sizes -> %dx%d and %dx%d", a.shape.X, a.shape.Y, b.shape.X, b.shape.Y)
 	}

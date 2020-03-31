@@ -14,7 +14,7 @@ func main() {
 }
 
 func rltest() {
-	ws := rl.NewW3()
+	ws := rl.NewW4()
 	ws.Run()
 	//ws.RunSaved()
 }

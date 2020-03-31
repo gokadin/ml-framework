@@ -16,6 +16,7 @@ type metricEvents struct {
 	forwardFinished chan bool
 	backwardStarted chan bool
 	backwardFinished chan bool
+	gameWon chan bool
 }
 
 func makeMetricEvents() metricEvents {
