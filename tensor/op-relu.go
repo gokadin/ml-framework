@@ -2,7 +2,6 @@ package tensor
 
 import (
 	"github.com/gokadin/ml-framework/mat"
-	"math"
 )
 
 const operationRelu = "opRelu"
@@ -21,7 +20,10 @@ func (opw *opRelu) dependencies() []*Tensor {
 
 func (opw *opRelu) forward(tensor *Tensor) {
 	tensor.mat = mat.Apply(opw.a.mat, func(value float32) float32 {
-		return float32(math.Max(0, float64(value)))
+		if value > 0 {
+			return value
+		}
+		return 0
 	})
 }
 

@@ -175,13 +175,14 @@ func (w *W3) test() {
 
 func (w *W3) buildModel() *models.Model {
 	model := models.Build(
-		modules.Dense(150, modules.ActivationSigmoid),
-		modules.Dense(100, modules.ActivationSigmoid),
+		modules.Dense(164, modules.ActivationRelu),
+		modules.Dense(150, modules.ActivationRelu),
 		modules.Dense(4, modules.ActivationIdentity))
 
 	model.Configure(models.ModelConfig{
 		Epochs: 5000,
 		Loss: models.LossMeanSquared,
+		LearningRate: 0.0001,
 	})
 
 	model.Initialize(64)
