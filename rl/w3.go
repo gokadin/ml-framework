@@ -57,7 +57,7 @@ func (w *W3) Run() {
 		gameInProgress := true
 		for gameInProgress {
 			gameCounter++
-			w.model.Graph().Forward(qval)
+			w.model.Forward(qval)
 
 			// choose action
 			var action int
@@ -73,7 +73,7 @@ func (w *W3) Run() {
 			nextStateMat := w.gridWorld.GetState()
 			w.addNoise(nextStateMat)
 			state2.SetData(nextStateMat)
-			w.model.Graph().Forward(newQ)
+			w.model.Forward(newQ)
 			maxQValue := maxValue(newQ.Data().Data())
 
 			var yValue float32
@@ -85,8 +85,8 @@ func (w *W3) Run() {
 			y.SetData(mat.NewMat32f(mat.WithShape(1, 4), qval.Data().Copy()))
 			y.Data().Set(action, yValue)
 
-			w.model.Graph().Forward(loss)
-			w.model.Graph().Backward(loss, w.model.TrainableVariables()...)
+			w.model.Forward(loss)
+			w.model.Backward(loss, w.model.TrainableVariables()...)
 
 			lossSum += loss.Data().At(action)
 			line.XYs = append(line.XYs, plotter.XY{Y: float64(loss.Data().At(action)), X: float64(i)})
@@ -144,7 +144,7 @@ func (w *W3) test() {
 		w.addNoise(stateMat)
 		state.SetData(stateMat)
 
-		w.model.Graph().Forward(qval)
+		w.model.Forward(qval)
 		action := maxIndex(qval.Data().Data())
 		w.gridWorld.MakeMove(action)
 		fmt.Println(fmt.Sprintf("taking action %d", action))

@@ -171,8 +171,12 @@ func (m *Model) Loss(pred, batchY *tensor.Tensor) *tensor.Tensor {
 	return m.criterion.forward(pred, batchY)
 }
 
-func (m *Model) Graph() *tensor.Graph {
-	return m.graph
+func (m *Model) Forward(tensor *tensor.Tensor) {
+	m.graph.Forward(tensor)
+}
+
+func (m *Model) Backward(of *tensor.Tensor, derivatives ...*tensor.Tensor) {
+	m.graph.Backward(of, derivatives...)
 }
 
 func (m *Model) Optimizer() optimizer {

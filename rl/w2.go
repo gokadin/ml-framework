@@ -40,7 +40,7 @@ func (w *W2) Run() {
 		x.SetData(dataset.Get(datasets.TrainingSetX).Data())
 		pred := w.model.Predict(x)
 
-		w.model.Graph().Forward(pred)
+		w.model.Forward(pred)
 
 		aveSoftmax := softmax(pred.Data().Data())
 		action := w.agent.choose(aveSoftmax)
@@ -52,8 +52,8 @@ func (w *W2) Run() {
 		y.SetData(mat.NewMat32f(mat.WithShape(1, 10), predMat))
 
 		loss := w.model.Loss(pred, y)
-		w.model.Graph().Forward(loss)
-		w.model.Graph().Backward(loss, w.model.TrainableVariables()...)
+		w.model.Forward(loss)
+		w.model.Backward(loss, w.model.TrainableVariables()...)
 
 		for _, parameter := range w.model.TrainableVariables() {
 			w.model.Optimizer().Update(parameter, dataset.BatchSize(), (i + 1) * dataset.BatchSize() + dataset.BatchCounter())

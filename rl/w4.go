@@ -12,12 +12,20 @@ import (
 	"time"
 )
 
+/*
+	Implements experience learning using batches
+ */
 type W4 struct {
 	gridWorld *graphics2D.GridWorld
 	model *models.Model
 	metric *metric
 	epsilon float64
 	gamma float32
+	maxMoves int
+	batchSize int
+	memSize int
+	stateSize int
+	numActions int
 }
 
 func NewW4() *W4 {
@@ -27,6 +35,11 @@ func NewW4() *W4 {
 	return &W4{
 		epsilon: 1.0,
 		gamma: 0.9,
+		maxMoves: 75,
+		memSize: 80,
+		batchSize: 40,
+		stateSize: 64,
+		numActions: 4,
 		metric: newMetric(),
 	}
 }
@@ -34,53 +47,118 @@ func NewW4() *W4 {
 func (w *W4) Run() {
 	w.metric.start()
 	w.model = w.buildModel()
-	state := tensor.Variable(mat.WithShape(1, 64))
-	nextState := tensor.Variable(mat.WithShape(1, 64))
-	y := tensor.Variable(mat.WithShape(1, 4))
-	qval := w.model.Predict(state)
-	newQ := w.model.PredictNoGrad(nextState)
-	loss := w.model.Loss(qval, y)
+
+	replayBuffer := NewReplayBuffer(w.memSize, w.batchSize)
+
+	oldState := tensor.Variable(mat.WithShape(1, w.stateSize))
+	newState := tensor.Variable(mat.WithShape(1, w.stateSize))
+	oldQVal := w.model.PredictNoGrad(oldState)
+
+	batchOldState := tensor.Variable(mat.WithShape(w.batchSize, w.stateSize))
+	batchOldQVal := w.model.Predict(batchOldState)
+	batchNewState := tensor.Variable(mat.WithShape(w.batchSize, w.stateSize))
+	batchNewQVal := w.model.PredictNoGrad(batchNewState)
+
+	//xTrain := tensor.Variable(mat.WithShape(w.batchSize, w.numActions)) // ???
+	//batchX := tensor.Variable(mat.WithShape(w.batchSize, w.stateSize))
+	batchY := tensor.Variable(mat.WithShape(w.batchSize, w.numActions))
+	//pred := w.model.Predict(batchX)
+	loss := w.model.Loss(batchOldQVal, batchY)
+
 	w.metric.events.trainingStarted <- true
+
 	for i := 0; i < w.model.Configuration().Epochs; i++ {
 		w.metric.events.epochStarted <- true
-
+		//w.createRandomGame()
 		w.createGame()
-		stateMat := w.gridWorld.GetState()
-		w.addNoise(stateMat)
-		state.SetData(stateMat)
+
+		oldStateMat := w.addNoise(w.gridWorld.GetState())
+		oldState.SetData(oldStateMat)
+
+		moveCounter := 0
 		gameInProgress := true
 		for gameInProgress {
-			w.model.Graph().Forward(qval)
+			moveCounter++
 
-			action := w.selectAction(qval)
+			w.model.Forward(oldQVal)
+			action := w.selectAction(oldQVal)
 			w.gridWorld.MakeMove(action)
 			w.metric.events.gameActionTaken <- true
-
 			reward := w.gridWorld.GetReward()
 
-			nextStateMat := w.gridWorld.GetState()
-			w.addNoise(nextStateMat)
-			nextState.SetData(nextStateMat)
+			newStateMat := w.addNoise(w.gridWorld.GetState())
+			newState.SetData(newStateMat)
 
-			w.model.Graph().Forward(newQ)
-			maxQValue := maxValue(newQ.Data().Data())
+			oldStateMat = newStateMat
+			oldState.SetData(oldStateMat)
 
-			yValue := w.calculateYValue(maxQValue, reward)
-			y.SetData(mat.NewMat32f(mat.WithShape(1, 4), qval.Data().Copy()))
-			y.Data().Set(action, yValue)
+			replayBuffer.Append(oldStateMat, newStateMat, action, reward)
+			if replayBuffer.IsFull() {
+				// start
+				batchOldStateSlice := make([]float32, w.batchSize * w.stateSize)
+				batchNewStateSlice := make([]float32, w.batchSize * w.stateSize)
+				// end
+				//xTrainSlice := make([]float32, w.batchSize * w.numActions)
+				//batchYSlice := make([]float32, w.batchSize * w.numActions)
+				experienceBatch := replayBuffer.NextBatch()
+				for batchIndex, experience := range experienceBatch {
+					//batchOldState.SetData(experience.oldState)
+					//batchNewState.SetData(experience.newState)
+					//w.model.Forward(batchOldQVal)
+					//w.model.Forward(batchNewQVal)
+					//batchMaxQValue := maxValue(batchNewQVal.Data().Data())
 
-			w.model.Graph().Forward(loss)
-			w.metric.events.loss <- loss.Data().At(action)
-			w.model.Graph().Backward(loss, w.model.TrainableVariables()...)
+					// start
+					for stateIndex := 0; stateIndex < w.stateSize; stateIndex++ {
+						batchOldStateSlice[batchIndex * w.stateSize + stateIndex] = experience.oldState.At(stateIndex)
+						batchNewStateSlice[batchIndex * w.stateSize + stateIndex] = experience.newState.At(stateIndex)
+					}
+					// end
 
-			for _, parameter := range w.model.TrainableVariables() {
-				w.model.Optimizer().Update(parameter, 1, i + 2)
+					//for actionIndex := 0; actionIndex < w.numActions; actionIndex++ {
+						//xTrainSlice[batchIndex * w.numActions + actionIndex] = batchOldQVal.Data().At(actionIndex)
+					//	if actionIndex == experience.action {
+					//		batchYSlice[batchIndex * w.numActions + actionIndex] = w.calculateYValue(batchMaxQValue, experience.reward)
+					//		continue
+					//	}
+					//	batchYSlice[batchIndex * w.numActions + actionIndex] = batchOldQVal.Data().At(actionIndex)
+					//}
+				}
+				batchOldState.SetData(mat.NewMat32f(mat.WithShape(w.batchSize, w.stateSize), batchOldStateSlice))
+				batchNewState.SetData(mat.NewMat32f(mat.WithShape(w.batchSize, w.stateSize), batchNewStateSlice))
+				//xTrain.SetData(mat.NewMat32f(mat.WithShape(w.batchSize, w.numActions), xTrainSlice))
+				//batchY.SetData(mat.NewMat32f(mat.WithShape(w.batchSize, w.numActions), batchYSlice))
+
+				// start
+				w.model.Forward(batchOldQVal) // all of the old qvalues
+				w.model.Forward(batchNewQVal) // all of the old new q values
+
+				// replace max Q values
+				batchYSlice := make([]float32, w.batchSize * w.numActions)
+				for batchIndex, experience := range experienceBatch {
+					maxQValue := maxValue(batchNewQVal.Data().Data()[batchIndex * w.numActions:batchIndex * w.numActions + w.numActions])
+					for actionIndex := 0; actionIndex < w.numActions; actionIndex++ {
+						if actionIndex == experience.action {
+							batchYSlice[batchIndex * w.numActions + actionIndex] = w.calculateYValue(maxQValue, experience.reward)
+							continue
+						}
+						batchYSlice[batchIndex * w.numActions + actionIndex] = batchOldQVal.Data().At(batchIndex * w.numActions + actionIndex)
+					}
+				}
+				batchY.SetData(mat.NewMat32f(mat.WithShape(w.batchSize, w.numActions), batchYSlice))
+				// end
+
+				w.model.Forward(loss)
+				w.metric.events.loss <- loss.Data().At(action)
+				w.model.Backward(loss, w.model.TrainableVariables()...)
+				for _, parameter := range w.model.TrainableVariables() {
+					w.model.Optimizer().Update(parameter, 1, i + 2)
+				}
 			}
 
-			state.SetData(nextStateMat)
-
-			if reward != -1 {
+			if reward != -1 || moveCounter > w.maxMoves {
 				gameInProgress = false
+				moveCounter = 0
 				w.metric.events.gameFinished <- true
 				if reward == 10 {
 					w.metric.events.gameWon <- true
@@ -88,7 +166,7 @@ func (w *W4) Run() {
 			}
 		}
 
-		if i != 0 && i % 100 == 0 {
+		if i != 0 && i % 10 == 0 {
 			w.metric.events.statusUpdate <- true
 		}
 
@@ -126,6 +204,7 @@ func (w *W4) RunSaved() {
 }
 
 func (w *W4) test() {
+	//w.createRandomGame()
 	w.createGame()
 	w.gridWorld.Print()
 	state := tensor.Variable(mat.WithShape(1, 64))
@@ -137,7 +216,7 @@ func (w *W4) test() {
 		w.addNoise(stateMat)
 		state.SetData(stateMat)
 
-		w.model.Graph().Forward(qval)
+		w.model.Forward(qval)
 		action := maxIndex(qval.Data().Data())
 		w.gridWorld.MakeMove(action)
 		fmt.Println(fmt.Sprintf("taking action %d", action))
@@ -165,12 +244,15 @@ func (w *W4) test() {
 
 func (w *W4) buildModel() *models.Model {
 	model := models.Build(
+		//modules.Dense(200, modules.ActivationRelu),
+		//modules.Dense(150, modules.ActivationSigmoid),
+		//modules.Dense(100, modules.ActivationSigmoid),
 		modules.Dense(164, modules.ActivationRelu),
 		modules.Dense(150, modules.ActivationRelu),
 		modules.Dense(4, modules.ActivationIdentity))
 
 	model.Configure(models.ModelConfig{
-		Epochs: 5000,
+		Epochs: 1000,
 		Loss: models.LossMeanSquared,
 		LearningRate: 0.0001,
 	})
@@ -188,8 +270,67 @@ func (w *W4) createGame() {
 	w.gridWorld.PlaceDanger(0, 1)
 }
 
-func (w *W4) addNoise(mat *mat.Mat32f) {
+func (w *W4) createRandomGame() {
+	w.gridWorld = graphics2D.NewGridWorld(1042, 768, 4)
+	usedPositions := make([]struct{i int; j int}, 0)
+	agentI := rand.Intn(4)
+	agentJ := rand.Intn(4)
+	usedPositions = append(usedPositions, struct{i int; j int}{agentI, agentJ})
+	w.gridWorld.PlaceTarget(agentI, agentJ)
+	for {
+		i := rand.Intn(4)
+		j := rand.Intn(4)
+		if w.positionsContains(usedPositions, i, j) {
+			continue
+		}
+		w.gridWorld.PlaceWall(i, j)
+		usedPositions = append(usedPositions, struct{i int; j int}{i, j})
+		break
+	}
+	for {
+		i := rand.Intn(4)
+		j := rand.Intn(4)
+		if w.positionsContains(usedPositions, i, j) {
+			continue
+		}
+		w.gridWorld.PlaceTarget(i, j)
+		usedPositions = append(usedPositions, struct{i int; j int}{i, j})
+		break
+	}
+	for {
+		i := rand.Intn(4)
+		j := rand.Intn(4)
+		if w.positionsContains(usedPositions, i, j) {
+			continue
+		}
+		w.gridWorld.PlaceDanger(i, j)
+		usedPositions = append(usedPositions, struct{i int; j int}{i, j})
+		break
+	}
+	for {
+		i := rand.Intn(4)
+		j := rand.Intn(4)
+		if w.positionsContains(usedPositions, i, j) {
+			continue
+		}
+		w.gridWorld.PlaceAgent(i, j)
+		usedPositions = append(usedPositions, struct{i int; j int}{i, j})
+		break
+	}
+}
+
+func (w *W4) positionsContains(arr []struct{i int; j int}, i, j int) bool {
+	for k := 0; k < len(arr); k++ {
+		if arr[k].i == i && arr[k].j == j {
+			return true
+		}
+	}
+	return false
+}
+
+func (w *W4) addNoise(mat *mat.Mat32f) *mat.Mat32f {
 	mat.Apply(func(f float32) float32 {
 		return f + rand.Float32() / 10
 	})
+	return mat
 }
