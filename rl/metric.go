@@ -5,6 +5,7 @@ import (
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/vg"
+	"sync"
 	"time"
 )
 
@@ -90,10 +91,6 @@ func (m *metric) receiveEvents() {
 			fmt.Println("beginning training")
 		case <- m.events.trainingFinished:
 			fmt.Println("training finished")
-			m.p.Add(m.lossLine)
-			if err := m.p.Save(10*vg.Inch, 10*vg.Inch, "loss-per-epoch-w4.png"); err != nil {
-				panic(err)
-			}
 		case <- m.events.epochStarted:
 			m.timings["epoch"].timeMs = time.Now().UnixNano()
 		case <- m.events.epochFinished:
@@ -143,5 +140,14 @@ func (m *metric) receiveEvents() {
 				m.counters["gameActionsTotal"] / m.counters["epochs"],
 				m.counters["gameWins"] * 100 / m.counters["totalGames"]))
 		}
+	}
+}
+
+func (m *metric) finalize(wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	m.p.Add(m.lossLine)
+	if err := m.p.Save(10*vg.Inch, 10*vg.Inch, "loss-per-epoch-w4.png"); err != nil {
+		panic(err)
 	}
 }

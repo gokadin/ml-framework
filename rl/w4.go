@@ -9,6 +9,7 @@ import (
 	"github.com/gokadin/ml-framework/tensor"
 	"math/rand"
 	"runtime"
+	"sync"
 	"time"
 )
 
@@ -59,10 +60,7 @@ func (w *W4) Run() {
 	batchNewState := tensor.Variable(mat.WithShape(w.batchSize, w.stateSize))
 	batchNewQVal := w.model.PredictNoGrad(batchNewState)
 
-	//xTrain := tensor.Variable(mat.WithShape(w.batchSize, w.numActions)) // ???
-	//batchX := tensor.Variable(mat.WithShape(w.batchSize, w.stateSize))
 	batchY := tensor.Variable(mat.WithShape(w.batchSize, w.numActions))
-	//pred := w.model.Predict(batchX)
 	loss := w.model.Loss(batchOldQVal, batchY)
 
 	w.metric.events.trainingStarted <- true
@@ -72,8 +70,7 @@ func (w *W4) Run() {
 		//w.createRandomGame()
 		w.createGame()
 
-		oldStateMat := w.addNoise(w.gridWorld.GetState())
-		oldState.SetData(oldStateMat)
+		oldState.SetData(w.addNoise(w.gridWorld.GetState()))
 
 		moveCounter := 0
 		gameInProgress := true
@@ -86,54 +83,25 @@ func (w *W4) Run() {
 			w.metric.events.gameActionTaken <- true
 			reward := w.gridWorld.GetReward()
 
-			newStateMat := w.addNoise(w.gridWorld.GetState())
-			newState.SetData(newStateMat)
+			newState.SetData(w.addNoise(w.gridWorld.GetState()))
 
-			oldStateMat = newStateMat
-			oldState.SetData(oldStateMat)
-
-			replayBuffer.Append(oldStateMat, newStateMat, action, reward)
+			replayBuffer.Append(oldState.Data(), newState.Data(), action, reward)
 			if replayBuffer.IsFull() {
-				// start
 				batchOldStateSlice := make([]float32, w.batchSize * w.stateSize)
 				batchNewStateSlice := make([]float32, w.batchSize * w.stateSize)
-				// end
-				//xTrainSlice := make([]float32, w.batchSize * w.numActions)
-				//batchYSlice := make([]float32, w.batchSize * w.numActions)
 				experienceBatch := replayBuffer.NextBatch()
 				for batchIndex, experience := range experienceBatch {
-					//batchOldState.SetData(experience.oldState)
-					//batchNewState.SetData(experience.newState)
-					//w.model.Forward(batchOldQVal)
-					//w.model.Forward(batchNewQVal)
-					//batchMaxQValue := maxValue(batchNewQVal.Data().Data())
-
-					// start
 					for stateIndex := 0; stateIndex < w.stateSize; stateIndex++ {
 						batchOldStateSlice[batchIndex * w.stateSize + stateIndex] = experience.oldState.At(stateIndex)
 						batchNewStateSlice[batchIndex * w.stateSize + stateIndex] = experience.newState.At(stateIndex)
 					}
-					// end
-
-					//for actionIndex := 0; actionIndex < w.numActions; actionIndex++ {
-						//xTrainSlice[batchIndex * w.numActions + actionIndex] = batchOldQVal.Data().At(actionIndex)
-					//	if actionIndex == experience.action {
-					//		batchYSlice[batchIndex * w.numActions + actionIndex] = w.calculateYValue(batchMaxQValue, experience.reward)
-					//		continue
-					//	}
-					//	batchYSlice[batchIndex * w.numActions + actionIndex] = batchOldQVal.Data().At(actionIndex)
-					//}
 				}
 				batchOldState.SetData(mat.NewMat32f(mat.WithShape(w.batchSize, w.stateSize), batchOldStateSlice))
 				batchNewState.SetData(mat.NewMat32f(mat.WithShape(w.batchSize, w.stateSize), batchNewStateSlice))
-				//xTrain.SetData(mat.NewMat32f(mat.WithShape(w.batchSize, w.numActions), xTrainSlice))
-				//batchY.SetData(mat.NewMat32f(mat.WithShape(w.batchSize, w.numActions), batchYSlice))
 
-				// start
-				w.model.Forward(batchOldQVal) // all of the old qvalues
-				w.model.Forward(batchNewQVal) // all of the old new q values
+				w.model.Forward(batchOldQVal)
+				w.model.Forward(batchNewQVal)
 
-				// replace max Q values
 				batchYSlice := make([]float32, w.batchSize * w.numActions)
 				for batchIndex, experience := range experienceBatch {
 					maxQValue := maxValue(batchNewQVal.Data().Data()[batchIndex * w.numActions:batchIndex * w.numActions + w.numActions])
@@ -146,7 +114,6 @@ func (w *W4) Run() {
 					}
 				}
 				batchY.SetData(mat.NewMat32f(mat.WithShape(w.batchSize, w.numActions), batchYSlice))
-				// end
 
 				w.model.Forward(loss)
 				w.metric.events.loss <- loss.Data().At(action)
@@ -163,6 +130,8 @@ func (w *W4) Run() {
 				if reward == 10 {
 					w.metric.events.gameWon <- true
 				}
+			} else {
+				oldState.SetData(newState.Data())
 			}
 		}
 
@@ -178,6 +147,10 @@ func (w *W4) Run() {
 	}
 
 	w.metric.events.trainingFinished <- true
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	w.metric.finalize(wg)
+	wg.Wait()
 	w.model.Save("experimental-rl-batch")
 }
 
@@ -244,9 +217,7 @@ func (w *W4) test() {
 
 func (w *W4) buildModel() *models.Model {
 	model := models.Build(
-		//modules.Dense(200, modules.ActivationRelu),
-		//modules.Dense(150, modules.ActivationSigmoid),
-		//modules.Dense(100, modules.ActivationSigmoid),
+		modules.Dense(200, modules.ActivationRelu),
 		modules.Dense(164, modules.ActivationRelu),
 		modules.Dense(150, modules.ActivationRelu),
 		modules.Dense(4, modules.ActivationIdentity))

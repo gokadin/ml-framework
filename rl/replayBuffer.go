@@ -42,8 +42,11 @@ func (rb *ReplayBuffer) IsFull() bool {
 
 func (rb *ReplayBuffer) NextBatch() []*replayExperience {
 	batch := make([]*replayExperience, rb.batchSize)
-	for i, randomIndex := range rand.Perm(rb.batchSize) {
+	for i, randomIndex := range rand.Perm(rb.bufferSize) {
 		batch[i] = rb.experiences[randomIndex]
+		if i == rb.batchSize - 1 {
+			break
+		}
 	}
 	return batch
 }
