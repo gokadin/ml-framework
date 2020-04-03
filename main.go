@@ -12,9 +12,9 @@ import (
 func main() {
 	//mnist()
 	//xor()
-	//rltest()
+	rltest()
 
-	startServer()
+	//startServer()
 }
 
 func startServer() {

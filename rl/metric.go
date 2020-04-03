@@ -25,6 +25,10 @@ type metricEvents struct {
 	gameFinished chan bool
 	statusUpdate chan bool
 	loss chan float32
+	moduleWeightAverage chan struct{int; float32}
+	moduleWeightGradientAverage chan struct{int; float32}
+	moduleBiasAverage chan struct{int; float32}
+	moduleBiasGradientAverage chan struct{int; float32}
 }
 
 func makeMetricEvents() metricEvents {
@@ -44,6 +48,10 @@ func makeMetricEvents() metricEvents {
 		gameFinished: make(chan bool),
 		statusUpdate: make(chan bool),
 		loss: make(chan float32),
+		moduleWeightAverage: make(chan struct{int; float32}),
+		moduleWeightGradientAverage: make(chan struct{int; float32}),
+		moduleBiasAverage: make(chan struct{int; float32}),
+		moduleBiasGradientAverage: make(chan struct{int; float32}),
 	}
 }
 
@@ -133,14 +141,80 @@ func (m *metric) receiveEvents() {
 		case loss := <- m.events.loss:
 			m.counters["lossTotal"] += float64(loss)
 			m.lossLine.XYs = append(m.lossLine.XYs, plotter.XY{Y: float64(loss), X: m.counters["epochs"]})
+		case data := <- m.events.moduleWeightAverage:
+			m.counters["m" + string(data.int) + "wAverage"] = float64(data.float32)
+			if float64(data.int + 1) > m.counters["numModules"] {
+				m.counters["numModules"] = float64(data.int + 1)
+			}
+		case data := <- m.events.moduleWeightGradientAverage:
+			m.counters["m" + string(data.int) + "wgAverage"] = float64(data.float32)
+		case data := <- m.events.moduleBiasAverage:
+			m.counters["m" + string(data.int) + "bAverage"] = float64(data.float32)
+		case data := <- m.events.moduleBiasGradientAverage:
+			m.counters["m" + string(data.int) + "bgAverage"] = float64(data.float32)
 		case <- m.events.statusUpdate:
-			fmt.Println(fmt.Sprintf("epoch %d   loss %f   aveMoves %2.f   success %2.f%%",
+			width := 20
+			s := m.spaces(width) + "|"
+			for i := 0; i < int(m.counters["numModules"]); i++ {
+				s += fmt.Sprintf(" M%d%s|", i, m.spaces(width - 3))
+			}
+			s += "\n"
+			s += "W" + m.spaces(width - 1) + "|"
+			for i := 0; i < int(m.counters["numModules"]); i++ {
+				value := m.counters["m" + string(i) + "wAverage"]
+				spaceCount := width - 9
+				if value < 0 {
+					spaceCount--
+				}
+				s += fmt.Sprintf(" %f%s|", value, m.spaces(spaceCount))
+			}
+			s += "\n"
+			s += "W grad" + m.spaces(width - 6) + "|"
+			for i := 0; i < int(m.counters["numModules"]); i++ {
+				value := m.counters["m" + string(i) + "wgAverage"]
+				spaceCount := width - 9
+				if value < 0 {
+					spaceCount--
+				}
+				s += fmt.Sprintf(" %f%s|", value, m.spaces(spaceCount))
+			}
+			s += "\n"
+			s += "B" + m.spaces(width - 1) + "|"
+			for i := 0; i < int(m.counters["numModules"]); i++ {
+				value := m.counters["m" + string(i) + "bAverage"]
+				spaceCount := width - 9
+				if value < 0 {
+					spaceCount--
+				}
+				s += fmt.Sprintf(" %f%s|", value, m.spaces(spaceCount))
+			}
+			s += "\n"
+			s += "B grad" + m.spaces(width - 6) + "|"
+			for i := 0; i < int(m.counters["numModules"]); i++ {
+				value := m.counters["m" + string(i) + "bgAverage"]
+				spaceCount := width - 9
+				if value < 0 {
+					spaceCount--
+				}
+				s += fmt.Sprintf(" %f%s|", value, m.spaces(spaceCount))
+			}
+			s += "\n"
+			fmt.Print(s)
+			fmt.Print(fmt.Sprintf("epoch %d   loss %f   aveMoves %2.f   success %2.f%%",
 				int(m.counters["epochs"]),
 				m.counters["lossTotal"] / m.counters["gameActionsTotal"],
 				m.counters["gameActionsTotal"] / m.counters["epochs"],
 				m.counters["gameWins"] * 100 / m.counters["totalGames"]))
 		}
 	}
+}
+
+func (m *metric) spaces(count int) string {
+	s := ""
+	for i := 0; i < count; i++ {
+		s += " "
+	}
+	return s
 }
 
 func (m *metric) finalize(wg *sync.WaitGroup) {

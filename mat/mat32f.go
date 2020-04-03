@@ -43,6 +43,14 @@ func (m *Mat32f) Data() []float32 {
 	return m.data
 }
 
+func (m *Mat32f) Average() float32 {
+	var sum float32
+	for i := 0; i < len(m.data); i++ {
+		sum += m.data[i]
+	}
+	return sum / float32(len(m.data))
+}
+
 func (m *Mat32f) ToFloat64() []float64 {
 	result := make([]float64, len(m.data))
 	for i := 0; i < len(m.data); i++ {

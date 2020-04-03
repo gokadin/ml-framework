@@ -182,3 +182,7 @@ func (m *Model) Backward(of *tensor.Tensor, derivatives ...*tensor.Tensor) {
 func (m *Model) Optimizer() optimizer {
 	return m.optimizer
 }
+
+func (m *Model) Modules() []modules.Module {
+	return m.modules
+}

@@ -118,7 +118,7 @@ func (w *W4) Run() {
 				w.model.Forward(loss)
 				w.metric.events.loss <- loss.Data().At(action)
 				w.model.Backward(loss, w.model.TrainableVariables()...)
-				for _, parameter := range w.model.TrainableVariables() {
+				for i, parameter := range w.model.TrainableVariables() {
 					w.model.Optimizer().Update(parameter, 1, i + 2)
 				}
 			}
@@ -136,6 +136,13 @@ func (w *W4) Run() {
 		}
 
 		if i != 0 && i % 10 == 0 {
+			for i, module := range w.model.Modules() {
+				w.metric.events.moduleWeightAverage <- struct{int; float32}{i, module.GetParameters()[0].Data().Average()}
+				w.metric.events.moduleBiasAverage <- struct{int; float32}{i, module.GetParameters()[1].Data().Average()}
+				w.metric.events.moduleWeightGradientAverage <- struct{int; float32}{i, module.GetParameters()[0].Gradient().Average()}
+				w.metric.events.moduleBiasGradientAverage <- struct{int; float32}{i, module.GetParameters()[1].Gradient().Average()}
+			}
+
 			w.metric.events.statusUpdate <- true
 		}
 
@@ -218,10 +225,8 @@ func (w *W4) test() {
 func (w *W4) buildModel() *models.Model {
 	model := models.Build(
 		//modules.Dense(200, modules.ActivationRelu),
-		//modules.Dense(164, modules.ActivationRelu),
-		//modules.Dense(150, modules.ActivationRelu),
-		modules.Dense(30, modules.ActivationRelu),
-		modules.Dense(10, modules.ActivationRelu),
+		modules.Dense(164, modules.ActivationSigmoid),
+		modules.Dense(150, modules.ActivationSigmoid),
 		modules.Dense(4, modules.ActivationIdentity))
 
 	model.Configure(models.ModelConfig{
