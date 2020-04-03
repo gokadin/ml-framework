@@ -36,9 +36,9 @@ func NewW4() *W4 {
 	return &W4{
 		epsilon: 1.0,
 		gamma: 0.9,
-		maxMoves: 75,
-		memSize: 80,
-		batchSize: 40,
+		maxMoves: 50,
+		memSize: 1000,
+		batchSize: 200,
 		stateSize: 64,
 		numActions: 4,
 		metric: newMetric(),
@@ -48,6 +48,7 @@ func NewW4() *W4 {
 func (w *W4) Run() {
 	w.metric.start()
 	w.model = w.buildModel()
+	//w.model = models.Restore("experimental-rl-batch")
 
 	replayBuffer := NewReplayBuffer(w.memSize, w.batchSize)
 
@@ -67,8 +68,8 @@ func (w *W4) Run() {
 
 	for i := 0; i < w.model.Configuration().Epochs; i++ {
 		w.metric.events.epochStarted <- true
-		//w.createRandomGame()
-		w.createGame()
+		w.createRandomGame()
+		//w.createGame()
 
 		oldState.SetData(w.addNoise(w.gridWorld.GetState()))
 
@@ -135,7 +136,7 @@ func (w *W4) Run() {
 			}
 		}
 
-		if i != 0 && i % 10 == 0 {
+		if i != 0 && i % 100 == 0 {
 			for i, module := range w.model.Modules() {
 				w.metric.events.moduleWeightAverage <- struct{int; float32}{i, module.GetParameters()[0].Data().Average()}
 				w.metric.events.moduleBiasAverage <- struct{int; float32}{i, module.GetParameters()[1].Data().Average()}
@@ -177,16 +178,29 @@ func (w *W4) calculateYValue(maxQValue float32, reward int) float32 {
 	return float32(reward)
 }
 
-func (w *W4) RunSaved() {
+func (w *W4) TestPercentage() {
 	w.model = models.Restore("experimental-rl-batch")
 
+	runs := 1000
+	numWins := 0
+	for i := 0; i < runs; i++ {
+		if w.test() {
+			numWins++
+		}
+	}
+
+	fmt.Println(fmt.Sprintf("gridworld performance %2.f%%", float32(numWins) * 100 / float32(runs)))
+}
+
+func (w *W4) TestSingle() {
+	w.model = models.Restore("experimental-rl-batch")
 	w.test()
 }
 
-func (w *W4) test() {
-	//w.createRandomGame()
-	w.createGame()
-	w.gridWorld.Print()
+func (w *W4) test() bool {
+	w.createRandomGame()
+	//w.createGame()
+	//w.gridWorld.Print()
 	state := tensor.Variable(mat.WithShape(1, 64))
 	qval := w.model.Predict(state)
 	counter := 0
@@ -199,38 +213,42 @@ func (w *W4) test() {
 		w.model.Forward(qval)
 		action := maxIndex(qval.Data().Data())
 		w.gridWorld.MakeMove(action)
-		fmt.Println(fmt.Sprintf("taking action %d", action))
-
 		reward := w.gridWorld.GetReward()
+		//fmt.Println(fmt.Sprintf("action %d reward %d", action, reward))
+
 		if reward != -1 {
 			isGameRunning = false
 			if reward > 0 {
-				fmt.Println("game won")
+				//fmt.Println("game won")
+				return true
 			} else {
-				fmt.Println("game lost")
+				//fmt.Println("game lost")
 			}
 		}
 
 		counter++
 		if counter > 15 {
-			fmt.Println("game lost... too many moves")
+			//fmt.Println("game lost... too many moves")
 			isGameRunning = false
 		}
 
-		w.gridWorld.Print()
-		time.Sleep(500 * time.Millisecond)
+		//w.gridWorld.Print()
+		//time.Sleep(500 * time.Millisecond)
 	}
+
+	return false
 }
 
 func (w *W4) buildModel() *models.Model {
 	model := models.Build(
 		//modules.Dense(200, modules.ActivationRelu),
-		modules.Dense(164, modules.ActivationSigmoid),
-		modules.Dense(150, modules.ActivationSigmoid),
+		//modules.Dense(164, modules.ActivationRelu),
+		modules.Dense(150, modules.ActivationRelu),
+		modules.Dense(100, modules.ActivationRelu),
 		modules.Dense(4, modules.ActivationIdentity))
 
 	model.Configure(models.ModelConfig{
-		Epochs: 100,
+		Epochs: 1500,
 		Loss: models.LossMeanSquared,
 		LearningRate: 0.0001,
 	})
@@ -254,7 +272,7 @@ func (w *W4) createRandomGame() {
 	agentI := rand.Intn(4)
 	agentJ := rand.Intn(4)
 	usedPositions = append(usedPositions, struct{i int; j int}{agentI, agentJ})
-	w.gridWorld.PlaceTarget(agentI, agentJ)
+	w.gridWorld.PlaceAgent(agentI, agentJ)
 	for {
 		i := rand.Intn(4)
 		j := rand.Intn(4)
@@ -282,16 +300,6 @@ func (w *W4) createRandomGame() {
 			continue
 		}
 		w.gridWorld.PlaceDanger(i, j)
-		usedPositions = append(usedPositions, struct{i int; j int}{i, j})
-		break
-	}
-	for {
-		i := rand.Intn(4)
-		j := rand.Intn(4)
-		if w.positionsContains(usedPositions, i, j) {
-			continue
-		}
-		w.gridWorld.PlaceAgent(i, j)
 		usedPositions = append(usedPositions, struct{i int; j int}{i, j})
 		break
 	}

@@ -5,7 +5,7 @@ import (
 	"github.com/gokadin/ml-framework/tensor"
 )
 
-const defaultWeightInitializer = initializerTypeNormalized
+const defaultWeightInitializer = initializerTypeXavier
 const defaultBiasInitializer = initializerTypeZeros
 
 type dense struct {

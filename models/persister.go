@@ -19,6 +19,7 @@ const (
 	persisterModelConfigCriterionKey  = "CRITERION"
 	persisterModelConfigOptimizerKey  = "OPTIMIZER"
 	persisterModelConfigEpochsKey     = "EPOCHS"
+	persisterModelConfigLearningRateKey     = "LEARNING_RATE"
 	persisterModelModuleKey           = "MODULE"
 	persisterModelModuleEndKey        = "MODULE_END"
 	persisterModelModuleSHAPEKEY      = "SHAPE"
@@ -70,12 +71,18 @@ func Restore(name string) *Model {
 		switch split[0] {
 		case persisterModelConfigCriterionKey:
 			model.configuration.Loss = strings.TrimSpace(split[1])
+			model.criterion = newCriterion(model.configuration.Loss)
 			break
 		case persisterModelConfigOptimizerKey:
 			model.configuration.Optimizer = strings.TrimSpace(split[1])
+			model.optimizer = newOptimizer(model.configuration.Optimizer)
 			break
 		case persisterModelConfigEpochsKey:
 			model.configuration.Epochs, _ = strconv.Atoi(strings.TrimSpace(split[1]))
+			break
+		case persisterModelConfigLearningRateKey:
+			learningRate64, _ := strconv.ParseFloat(strings.TrimSpace(split[1]), 32)
+			model.configuration.LearningRate = float32(learningRate64)
 			break
 		case persisterModelModuleKey:
 			break
@@ -128,6 +135,7 @@ func modelToString(model *Model) string {
 	content += fmt.Sprintf("%s: %s\n", persisterModelConfigCriterionKey, model.configuration.Loss)
 	content += fmt.Sprintf("%s: %s\n", persisterModelConfigOptimizerKey, model.configuration.Optimizer)
 	content += fmt.Sprintf("%s: %d\n", persisterModelConfigEpochsKey, model.configuration.Epochs)
+	content += fmt.Sprintf("%s: %g\n", persisterModelConfigLearningRateKey, model.configuration.LearningRate)
 	content += "\n"
 
 	for _, module := range model.modules {

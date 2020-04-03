@@ -200,11 +200,13 @@ func (m *metric) receiveEvents() {
 			}
 			s += "\n"
 			fmt.Print(s)
-			fmt.Print(fmt.Sprintf("epoch %d   loss %f   aveMoves %2.f   success %2.f%%",
+			fmt.Print(fmt.Sprintf("epoch %d   loss %f   aveMoves %2.f   success %2.f%%\n",
 				int(m.counters["epochs"]),
 				m.counters["lossTotal"] / m.counters["gameActionsTotal"],
 				m.counters["gameActionsTotal"] / m.counters["epochs"],
 				m.counters["gameWins"] * 100 / m.counters["totalGames"]))
+			m.counters["gameWins"] = 0
+			m.counters["totalGames"] = 0
 		}
 	}
 }
