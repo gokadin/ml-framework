@@ -1,16 +1,25 @@
 package main
 
 import (
+	"github.com/gokadin/ml-framework/api"
 	"github.com/gokadin/ml-framework/datasets"
 	"github.com/gokadin/ml-framework/models"
 	"github.com/gokadin/ml-framework/modules"
 	"github.com/gokadin/ml-framework/rl"
 )
 
+
 func main() {
 	//mnist()
 	//xor()
-	rltest()
+	//rltest()
+
+	startServer()
+}
+
+func startServer() {
+	server := api.NewMLServer()
+	server.Start()
 }
 
 func rltest() {

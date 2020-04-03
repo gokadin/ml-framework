@@ -217,13 +217,15 @@ func (w *W4) test() {
 
 func (w *W4) buildModel() *models.Model {
 	model := models.Build(
-		modules.Dense(200, modules.ActivationRelu),
-		modules.Dense(164, modules.ActivationRelu),
-		modules.Dense(150, modules.ActivationRelu),
+		//modules.Dense(200, modules.ActivationRelu),
+		//modules.Dense(164, modules.ActivationRelu),
+		//modules.Dense(150, modules.ActivationRelu),
+		modules.Dense(30, modules.ActivationRelu),
+		modules.Dense(10, modules.ActivationRelu),
 		modules.Dense(4, modules.ActivationIdentity))
 
 	model.Configure(models.ModelConfig{
-		Epochs: 1000,
+		Epochs: 100,
 		Loss: models.LossMeanSquared,
 		LearningRate: 0.0001,
 	})
