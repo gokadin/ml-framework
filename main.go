@@ -25,8 +25,8 @@ func startServer() {
 func rltest() {
 	ws := rl.NewW4()
 	//ws.Run()
-	ws.TestPercentage()
-	//ws.TestSingle()
+	//ws.TestPercentage()
+	ws.TestSingle()
 }
 
 func mnist() {

@@ -200,7 +200,7 @@ func (w *W4) TestSingle() {
 func (w *W4) test() bool {
 	w.createRandomGame()
 	//w.createGame()
-	//w.gridWorld.Print()
+	w.gridWorld.Print()
 	state := tensor.Variable(mat.WithShape(1, 64))
 	qval := w.model.Predict(state)
 	counter := 0
@@ -214,26 +214,26 @@ func (w *W4) test() bool {
 		action := maxIndex(qval.Data().Data())
 		w.gridWorld.MakeMove(action)
 		reward := w.gridWorld.GetReward()
-		//fmt.Println(fmt.Sprintf("action %d reward %d", action, reward))
+		fmt.Println(fmt.Sprintf("action %d reward %d", action, reward))
 
 		if reward != -1 {
 			isGameRunning = false
 			if reward > 0 {
-				//fmt.Println("game won")
+				fmt.Println("game won")
 				return true
 			} else {
-				//fmt.Println("game lost")
+				fmt.Println("game lost")
 			}
 		}
 
 		counter++
 		if counter > 15 {
-			//fmt.Println("game lost... too many moves")
+			fmt.Println("game lost... too many moves")
 			isGameRunning = false
 		}
 
-		//w.gridWorld.Print()
-		//time.Sleep(500 * time.Millisecond)
+		w.gridWorld.Print()
+		time.Sleep(500 * time.Millisecond)
 	}
 
 	return false
