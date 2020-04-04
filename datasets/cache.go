@@ -2,7 +2,6 @@ package datasets
 
 import (
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"os"
@@ -19,14 +18,18 @@ func isCached(filename string) bool {
 	return !os.IsNotExist(err)
 }
 
-func addToCache(filename string, reader io.Reader) {
+func addToCache(filename string, content []byte) {
 	out, err := os.Create(fmt.Sprintf("%s/%s", cacheRootDir, filename))
 	if err != nil {
 		log.Fatal("Could not write to cache")
 	}
 	defer out.Close()
 
-	_, err = io.Copy(out, reader)
+	bytesWritten, err := out.Write(content)
+	_ = bytesWritten
+	if err != nil {
+		log.Fatal("Could not write to cache file")
+	}
 }
 
 func getCachedFile(filename string) []byte {
