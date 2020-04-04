@@ -6,6 +6,7 @@ import (
 )
 
 type Module interface {
+	Type() string
 	Forward(input *tensor.Tensor) *tensor.Tensor
 	GetParameters() []*tensor.Tensor
 	GetActivation() string

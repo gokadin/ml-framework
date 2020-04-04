@@ -30,6 +30,7 @@ func NewModel() *Model {
 		configuration: ModelConfig{},
 		graph: tensor.NewGraph(),
 		trainableVariables: make([]*tensor.Tensor, 0),
+		modules: make([]modules.Module, 0),
 	}
 	model.metric = newMetric(&model.configuration)
 	model.configuration.populateDefaults()
@@ -185,4 +186,40 @@ func (m *Model) Optimizer() optimizer {
 
 func (m *Model) Modules() []modules.Module {
 	return m.modules
+}
+
+func (m *Model) Copy() *Model {
+	duplicate := NewModel()
+
+	duplicate.configuration.LearningRate = m.configuration.LearningRate
+	duplicate.configuration.Epochs = m.configuration.Epochs
+	duplicate.configuration.Optimizer = m.configuration.Optimizer
+	duplicate.configuration.Loss = m.configuration.Loss
+	duplicate.configuration.ValidOutputRange = m.configuration.ValidOutputRange
+	duplicate.configuration.MaxError = m.configuration.MaxError
+
+	for _, module := range m.modules {
+		var duplicateModule modules.Module
+		switch module.Type() {
+		case "dense":
+			duplicateModule = modules.Dense(module.GetParameters()[0].Shape().Y, module.GetActivation())
+			break
+		}
+		duplicateModule.InitializeWith(
+			mat.NewMat32f(module.GetParameters()[0].Shape(), module.GetParameters()[0].Data().Copy()),
+			mat.NewMat32f(module.GetParameters()[1].Shape(), module.GetParameters()[1].Data().Copy()))
+		duplicate.Add(duplicateModule)
+	}
+
+	duplicate.Initialize(m.modules[0].GetParameters()[0].Shape().Y)
+
+	return duplicate
+}
+
+func (m *Model) SyncFrom(target *Model) {
+	for i, module := range target.modules {
+		for j, parameter := range module.GetParameters() {
+			m.modules[i].GetParameters()[j].SetData(mat.NewMat32f(parameter.Data().Shape(), parameter.Data().Copy()))
+		}
+	}
 }

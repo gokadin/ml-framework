@@ -28,6 +28,10 @@ func Dense(unitCount int, activation string) *dense {
 	}
 }
 
+func (d *dense) Type() string {
+	return "dense"
+}
+
 func (d *dense) Initialize(inputSize int) {
 	if d.weights != nil {
 		return
