@@ -1,5 +1,10 @@
 package tensor
 
+//#cgo CFLAGS: -I.
+//#cgo LDFLAGS: -L${SRCDIR} -Wl,-rpath,${SRCDIR}  -lrelu
+//#include <relu.h>
+import "C"
+
 import (
 	"github.com/gokadin/ml-framework/mat"
 )
@@ -19,12 +24,8 @@ func (opw *opRelu) dependencies() []*Tensor {
 }
 
 func (opw *opRelu) forward(tensor *Tensor) {
-	tensor.mat = mat.Apply(opw.a.mat, func(value float32) float32 {
-		if value > 0 {
-			return value
-		}
-		return 0
-	})
+	C.relu(opw.a._tensor, tensor._tensor)
+	tensor.SetData(tensor.TempData())
 }
 
 func (opw *opRelu) backward(tensor *Tensor) {

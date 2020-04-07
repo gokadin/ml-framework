@@ -20,7 +20,7 @@ func (opw *opDivScalar) dependencies() []*Tensor {
 }
 
 func (opw *opDivScalar) forward(tensor *Tensor) {
-	tensor.mat = mat.DivScalar(opw.a.mat, opw.scalar)
+	tensor.SetData(mat.DivScalar(opw.a.mat, opw.scalar).Data())
 }
 
 func (opw *opDivScalar) backward(tensor *Tensor) {

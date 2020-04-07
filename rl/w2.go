@@ -37,7 +37,7 @@ func (w *W2) Run() {
 	var rewardSum float32
 
 	for i := 0; i < w.model.Configuration().Epochs; i++ {
-		x.SetData(dataset.Get(datasets.TrainingSetX).Data())
+		x.SetData(dataset.Get(datasets.TrainingSetX).Data().Data())
 		pred := w.model.Predict(x)
 
 		w.model.Forward(pred)
@@ -49,7 +49,7 @@ func (w *W2) Run() {
 		y := tensor.Variable(mat.WithShape(1, 10))
 		predMat := pred.Data().Copy()
 		predMat[action] = currentReward
-		y.SetData(mat.NewMat32f(mat.WithShape(1, 10), predMat))
+		y.SetData(predMat)
 
 		loss := w.model.Loss(pred, y)
 		w.model.Forward(loss)

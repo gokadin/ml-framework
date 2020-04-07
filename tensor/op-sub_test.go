@@ -7,8 +7,8 @@ import (
 )
 
 func Test_sub_forward(t *testing.T) {
-	a := Constant(mat.NewMat32f(mat.WithShape(1, 2), []float32{3, 4}))
-	b := Constant(mat.NewMat32f(mat.WithShape(1, 2), []float32{1, 2}))
+	a := Variable(mat.WithShape(1, 2)).SetData([]float32{3, 4})
+	b := Variable(mat.WithShape(1, 2)).SetData([]float32{1, 2})
 	c := Sub(a, b)
 
 	c.forward()
@@ -17,9 +17,9 @@ func Test_sub_forward(t *testing.T) {
 }
 
 func Test_sub_backward(t *testing.T) {
-	a := Constant(mat.NewMat32f(mat.WithShape(2, 2), []float32{3, 4, 5, 3}))
+	a := Variable(mat.WithShape(2, 2)).SetData([]float32{3, 4, 5, 3})
 	a.isGradientEnabled = true
-	b := Constant(mat.NewMat32f(mat.WithShape(2, 2), []float32{1, 2, 1, 4}))
+	b := Variable(mat.WithShape(2, 2)).SetData([]float32{1, 2, 1, 4})
 	b.isGradientEnabled = true
 	c := Sub(a, b)
 	c.grad = mat.NewMat32fOnes(c.mat.Shape())
@@ -32,8 +32,8 @@ func Test_sub_backward(t *testing.T) {
 }
 
 func Test_sub_backward_isGradientsAreDisabled(t *testing.T) {
-	a := Constant(mat.NewMat32f(mat.WithShape(2, 2), []float32{3, 4, 5, 3}))
-	b := Constant(mat.NewMat32f(mat.WithShape(2, 2), []float32{1, 2, 1, 4}))
+	a := Variable(mat.WithShape(2, 2)).SetData([]float32{3, 4, 5, 3})
+	b := Variable(mat.WithShape(2, 2)).SetData([]float32{1, 2, 1, 4})
 	c := Sub(a, b)
 	c.grad = mat.NewMat32fOnes(c.mat.Shape())
 	c.forward()

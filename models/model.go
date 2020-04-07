@@ -101,8 +101,8 @@ func (m *Model) Fit(dataset *datasets.Dataset) {
 			m.metric.events.batchStarted <- dataset.BatchCounter()
 
 			batchDataX, batchDataY := dataset.NextBatch()
-			batchX.SetData(batchDataX)
-			batchY.SetData(batchDataY)
+			batchX.SetData(batchDataX.Data())
+			batchY.SetData(batchDataY.Data())
 
 			m.metric.events.forwardStarted <- true
 			m.graph.Forward(loss)
@@ -135,8 +135,8 @@ func (m *Model) Fit(dataset *datasets.Dataset) {
 
 func (m *Model) Run(dataset *datasets.Dataset) {
 	m.Initialize(dataset.Shape().Y)
-	x := tensor.Constant(dataset.Get(datasets.ValidationSetX).Data())
-	target := tensor.Constant(dataset.Get(datasets.ValidationSetY).Data())
+	x := tensor.Variable(dataset.Get(datasets.ValidationSetX).Data().Shape()).SetData(dataset.Get(datasets.ValidationSetX).Data().Data())
+	target := tensor.Variable(dataset.Get(datasets.ValidationSetY).Data().Shape()).SetData(dataset.Get(datasets.ValidationSetY).Data().Data())
 
 	y := m.Predict(x)
 	loss := m.criterion.forward(y, target)
@@ -219,7 +219,7 @@ func (m *Model) Copy() *Model {
 func (m *Model) SyncFrom(target *Model) {
 	for i, module := range target.modules {
 		for j, parameter := range module.GetParameters() {
-			m.modules[i].GetParameters()[j].SetData(mat.NewMat32f(parameter.Data().Shape(), parameter.Data().Copy()))
+			m.modules[i].GetParameters()[j].SetData(parameter.Data().Copy())
 		}
 	}
 }

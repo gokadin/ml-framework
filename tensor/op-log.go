@@ -19,7 +19,7 @@ func (opw *opLog) dependencies() []*Tensor {
 }
 
 func (opw *opLog) forward(tensor *Tensor) {
-	tensor.mat = mat.Log(opw.a.mat)
+	tensor.SetData(mat.Log(opw.a.mat).Data())
 }
 
 func (opw *opLog) backward(tensor *Tensor) {

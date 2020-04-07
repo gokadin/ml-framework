@@ -20,9 +20,9 @@ func (opw *opSigmoid) dependencies() []*Tensor {
 }
 
 func (opw *opSigmoid) forward(tensor *Tensor) {
-	tensor.mat = mat.Apply(opw.a.mat, func(value float32) float32 {
+	tensor.SetData(mat.Apply(opw.a.mat, func(value float32) float32 {
 		return float32(1 / (math.Exp(-float64(value)) + 1))
-	})
+	}).Data())
 }
 
 func (opw *opSigmoid) backward(tensor *Tensor) {

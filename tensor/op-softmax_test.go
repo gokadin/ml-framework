@@ -7,8 +7,8 @@ import (
 )
 
 func Test_softmax_forward(t *testing.T) {
-	a := Constant(mat.NewMat32f(mat.WithShape(2, 4), []float32{0.2, 0.4, 0.3, 0.8,
-															   0.1, 2.4, 0.2, 0.9}))
+	a := Variable(mat.WithShape(2, 4)).SetData([]float32{0.2, 0.4, 0.3, 0.8,
+															   0.1, 2.4, 0.2, 0.9})
 	c := Softmax(a)
 
 	c.forward()

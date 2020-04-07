@@ -20,7 +20,7 @@ func (opw *opPow) dependencies() []*Tensor {
 }
 
 func (opw *opPow) forward(tensor *Tensor) {
-	tensor.mat = mat.Pow(opw.a.mat, float64(opw.power))
+	tensor.SetData(mat.Pow(opw.a.mat, float64(opw.power)).Data())
 }
 
 func (opw *opPow) backward(tensor *Tensor) {

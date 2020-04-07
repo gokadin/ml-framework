@@ -53,7 +53,7 @@ func (w *W3) Run() {
 		w.createGame()
 		stateMat := w.gridWorld.GetState()
 		w.addNoise(stateMat)
-		state.SetData(stateMat)
+		state.SetData(stateMat.Data())
 		gameInProgress := true
 		for gameInProgress {
 			gameCounter++
@@ -72,7 +72,7 @@ func (w *W3) Run() {
 			reward := w.gridWorld.GetReward()
 			nextStateMat := w.gridWorld.GetState()
 			w.addNoise(nextStateMat)
-			state2.SetData(nextStateMat)
+			state2.SetData(nextStateMat.Data())
 			w.model.Forward(newQ)
 			maxQValue := maxValue(newQ.Data().Data())
 
@@ -82,7 +82,7 @@ func (w *W3) Run() {
 			} else {
 				yValue = float32(reward)
 			}
-			y.SetData(mat.NewMat32f(mat.WithShape(1, 4), qval.Data().Copy()))
+			y.SetData(qval.Data().Copy())
 			y.Data().Set(action, yValue)
 
 			w.model.Forward(loss)
@@ -95,7 +95,7 @@ func (w *W3) Run() {
 				w.model.Optimizer().Update(parameter, 1, i + 2)
 			}
 
-			state.SetData(nextStateMat)
+			state.SetData(nextStateMat.Data())
 
 			if reward != -1 {
 				gameInProgress = false
@@ -142,7 +142,7 @@ func (w *W3) test() {
 	for isGameRunning {
 		stateMat := w.gridWorld.GetState()
 		w.addNoise(stateMat)
-		state.SetData(stateMat)
+		state.SetData(stateMat.Data())
 
 		w.model.Forward(qval)
 		action := maxIndex(qval.Data().Data())

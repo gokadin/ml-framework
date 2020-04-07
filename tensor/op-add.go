@@ -1,6 +1,9 @@
 package tensor
 
-import "github.com/gokadin/ml-framework/mat"
+//#cgo CFLAGS: -I.
+//#cgo LDFLAGS: -L${SRCDIR} -Wl,-rpath,${SRCDIR}  -ladd
+//#include <add.h>
+import "C"
 
 const operationAdd = "opAdd"
 
@@ -17,9 +20,9 @@ func (oa *opAdd) dependencies() []*Tensor {
 }
 
 func (oa *opAdd) forward(tensor *Tensor) {
-	tensor.mat = mat.Add(oa.a.mat, oa.b.mat)
+	C.add(oa.a._tensor, oa.b._tensor, tensor._tensor)
+	tensor.SetData(tensor.TempData())
 }
-
 
 func (oa *opAdd) backward(tensor *Tensor) {
 	if oa.a.isGradientEnabled {

@@ -17,7 +17,7 @@ func (om *opMul) dependencies() []*Tensor {
 }
 
 func (om *opMul) forward(tensor *Tensor) {
-	tensor.mat = mat.Mul(om.a.mat, om.b.mat)
+	tensor.SetData(mat.Mul(om.a.mat, om.b.mat).Data())
 }
 
 

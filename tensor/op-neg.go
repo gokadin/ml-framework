@@ -19,7 +19,7 @@ func (opn *opNeg) dependencies() []*Tensor {
 }
 
 func (opn *opNeg) forward(tensor *Tensor) {
-	tensor.mat = mat.Neg(opn.a.mat)
+	tensor.SetData(mat.Neg(opn.a.mat).Data())
 }
 
 func (opn *opNeg) backward(tensor *Tensor) {

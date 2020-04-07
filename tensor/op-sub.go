@@ -17,7 +17,7 @@ func (os *opSub) dependencies() []*Tensor {
 }
 
 func (os *opSub) forward(tensor *Tensor) {
-	tensor.mat = mat.Sub(os.a.mat, os.b.mat)
+	tensor.SetData(mat.Sub(os.a.mat, os.b.mat).Data())
 }
 
 func (os *opSub) backward(tensor *Tensor) {

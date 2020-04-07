@@ -19,7 +19,7 @@ func (opw *opSoftmax) dependencies() []*Tensor {
 }
 
 func (opw *opSoftmax) forward(tensor *Tensor) {
-	tensor.mat = mat.Softmax(opw.a.mat)
+	tensor.SetData(mat.Softmax(opw.a.mat).Data())
 }
 
 func (opw *opSoftmax) backward(tensor *Tensor) {

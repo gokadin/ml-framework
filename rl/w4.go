@@ -71,7 +71,7 @@ func (w *W4) Run() {
 		w.createRandomGame()
 		//w.createGame()
 
-		oldState.SetData(w.addNoise(w.gridWorld.GetState()))
+		oldState.SetData(w.addNoise(w.gridWorld.GetState()).Data())
 
 		moveCounter := 0
 		gameInProgress := true
@@ -84,7 +84,7 @@ func (w *W4) Run() {
 			w.metric.events.gameActionTaken <- true
 			reward := w.gridWorld.GetReward()
 
-			newState.SetData(w.addNoise(w.gridWorld.GetState()))
+			newState.SetData(w.addNoise(w.gridWorld.GetState()).Data())
 
 			replayBuffer.Append(oldState.Data(), newState.Data(), action, reward)
 			if replayBuffer.IsFull() {
@@ -97,8 +97,8 @@ func (w *W4) Run() {
 						batchNewStateSlice[batchIndex * w.stateSize + stateIndex] = experience.newState.At(stateIndex)
 					}
 				}
-				batchOldState.SetData(mat.NewMat32f(mat.WithShape(w.batchSize, w.stateSize), batchOldStateSlice))
-				batchNewState.SetData(mat.NewMat32f(mat.WithShape(w.batchSize, w.stateSize), batchNewStateSlice))
+				batchOldState.SetData(batchOldStateSlice)
+				batchNewState.SetData(batchNewStateSlice)
 
 				w.model.Forward(batchOldQVal)
 				w.model.Forward(batchNewQVal)
@@ -114,7 +114,7 @@ func (w *W4) Run() {
 						batchYSlice[batchIndex * w.numActions + actionIndex] = batchOldQVal.Data().At(batchIndex * w.numActions + actionIndex)
 					}
 				}
-				batchY.SetData(mat.NewMat32f(mat.WithShape(w.batchSize, w.numActions), batchYSlice))
+				batchY.SetData(batchYSlice)
 
 				w.model.Forward(loss)
 				w.metric.events.loss <- loss.Data().At(action)
@@ -132,7 +132,7 @@ func (w *W4) Run() {
 					w.metric.events.gameWon <- true
 				}
 			} else {
-				oldState.SetData(newState.Data())
+				oldState.SetData(newState.Data().Data())
 			}
 		}
 
@@ -208,7 +208,7 @@ func (w *W4) test() bool {
 	for isGameRunning {
 		stateMat := w.gridWorld.GetState()
 		w.addNoise(stateMat)
-		state.SetData(stateMat)
+		state.SetData(stateMat.Data())
 
 		w.model.Forward(qval)
 		action := maxIndex(qval.Data().Data())

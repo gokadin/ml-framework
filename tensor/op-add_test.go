@@ -7,18 +7,18 @@ import (
 )
 
 func Test_add_forward(t *testing.T) {
-	a := Constant(mat.NewMat32f(mat.WithShape(1, 2),[]float32{1, 2}))
-	b := Constant(mat.NewMat32f(mat.WithShape(1, 2), []float32{2, 3}))
+	a := Variable(mat.WithShape(1, 2)).SetData([]float32{1, 2})
+	b := Variable(mat.WithShape(1, 2)).SetData([]float32{2, 3})
 	c := Add(a, b)
 
 	c.forward()
 
-	assert.True(t, mat.NewMat32f(a.Shape(), []float32{3, 5}).Equals32f(c.mat))
+	assert.Equal(t, []float32{3, 5}, c.TempData())
 }
 
 func Test_add_forward_multipleAssociations(t *testing.T) {
-	a := Constant(mat.NewMat32f(mat.WithShape(2, 2), []float32{1, 2, 2, 3}))
-	b := Constant(mat.NewMat32f(mat.WithShape(2, 2), []float32{2, 3, 1, 2}))
+	a := Variable(mat.WithShape(2, 2)).SetData([]float32{1, 2, 2, 3})
+	b := Variable(mat.WithShape(2, 2)).SetData([]float32{2, 3, 1, 2})
 	c := Add(a, b)
 
 	c.forward()
@@ -27,9 +27,9 @@ func Test_add_forward_multipleAssociations(t *testing.T) {
 }
 
 func Test_add_backward(t *testing.T) {
-	a := Constant(mat.NewMat32f(mat.WithShape(2, 2), []float32{1, 2, 2, 3}))
+	a := Variable(mat.WithShape(2, 2)).SetData([]float32{1, 2, 2, 3})
 	a.isGradientEnabled = true
-	b := Constant(mat.NewMat32f(mat.WithShape(2, 2), []float32{2, 3, 1, 2}))
+	b := Variable(mat.WithShape(2, 2)).SetData([]float32{2, 3, 1, 2})
 	b.isGradientEnabled = true
 	c := Add(a, b)
 	c.forward()
@@ -42,8 +42,8 @@ func Test_add_backward(t *testing.T) {
 }
 
 func Test_add_backward_isGradientsAreDisabled(t *testing.T) {
-	a := Constant(mat.NewMat32f(mat.WithShape(2, 2), []float32{1, 2, 2, 3}))
-	b := Constant(mat.NewMat32f(mat.WithShape(2, 2), []float32{2, 3, 1, 2}))
+	a := Variable(mat.WithShape(2, 2)).SetData([]float32{1, 2, 2, 3})
+	b := Variable(mat.WithShape(2, 2)).SetData([]float32{2, 3, 1, 2})
 	c := Add(a, b)
 	c.forward()
 	c.grad = mat.NewMat32fOnes(c.mat.Shape())

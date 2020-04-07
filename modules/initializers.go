@@ -32,7 +32,7 @@ func initializeParameter(shape mat.Shape, initializerType string) *tensor.Tensor
 }
 
 func initializeParameterZeros(shape mat.Shape) *tensor.Tensor {
-	return tensor.Constant(mat.NewMat32fZeros(shape))
+	return tensor.Variable(shape).SetData(mat.NewMat32fZeros(shape).Data())
 }
 
 func initializeParameterRandom(shape mat.Shape) *tensor.Tensor {
@@ -40,7 +40,7 @@ func initializeParameterRandom(shape mat.Shape) *tensor.Tensor {
 	for i := range data {
 		data[i] = rand.Float32()
 	}
-	return tensor.Constant(mat.NewMat32f(shape, data))
+	return tensor.Variable(shape).SetData(mat.NewMat32f(shape, data).Data())
 }
 
 func initializeParameterNormalized(shape mat.Shape) *tensor.Tensor {
@@ -48,7 +48,7 @@ func initializeParameterNormalized(shape mat.Shape) *tensor.Tensor {
 	for i := range data {
 		data[i] = rand.Float32() / float32(math.Sqrt(float64(shape.X)))
 	}
-	return tensor.Constant(mat.NewMat32f(shape, data))
+	return tensor.Variable(shape).SetData(mat.NewMat32f(shape, data).Data())
 }
 
 func initializeParameterXavier(shape mat.Shape) *tensor.Tensor {
@@ -57,5 +57,5 @@ func initializeParameterXavier(shape mat.Shape) *tensor.Tensor {
 	for i := range data {
 		data[i] = -limit + rand.Float32()  * (limit + limit)
 	}
-	return tensor.Constant(mat.NewMat32f(shape, data))
+	return tensor.Variable(shape).SetData(mat.NewMat32f(shape, data).Data())
 }
