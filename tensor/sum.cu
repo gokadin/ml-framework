@@ -32,6 +32,7 @@ __global__ void sum1(float *a, float *target, int size_a_x, int size_a_y)
 
     for (int s = mid; s > 0; s /= 2) {
         if (index - sectionBeginIndex < s) {
+    printf("%d ", index - sectionBeginIndex);
             sdata[localIndex] += sdata[localIndex + s];
         }
 
