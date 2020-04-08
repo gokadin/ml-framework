@@ -23,7 +23,7 @@ func startServer() {
 }
 
 func rltest() {
-	ws := rl.NewW5()
+	ws := rl.NewReinforce()
 	ws.Run()
 	//ws.TestSingle()
 	//ws.TestPercentage()
