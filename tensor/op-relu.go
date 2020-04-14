@@ -24,8 +24,14 @@ func (opw *opRelu) dependencies() []*Tensor {
 }
 
 func (opw *opRelu) forward(tensor *Tensor) {
-	C.relu(opw.a._tensor, tensor._tensor)
-	tensor.SetData(tensor.TempData())
+	//C.relu(opw.a._tensor, tensor._tensor)
+	//tensor.SetData(tensor.TempData())
+	tensor.mat = mat.Apply(tensor.mat, func(value float32) float32 {
+		if value > 0 {
+			return value
+		}
+		return 0
+	})
 }
 
 func (opw *opRelu) backward(tensor *Tensor) {

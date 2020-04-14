@@ -53,9 +53,7 @@ func Test_dot_forward_squareNotExponentialOfTwo(t *testing.T) {
 
 	c.forward()
 
-	fmt.Println(c.Data().Data())
 	expected := mat.MatMulParallel(mat.NewMat32f(mat.WithShape(size, size), aMat), mat.NewMat32f(mat.WithShape(size, size), bMat))
-	fmt.Println(expected.Data())
 	assert.True(t, expected.Equals32f(c.mat))
 }
 
@@ -78,9 +76,7 @@ func Test_dot_forward_simple2(t *testing.T) {
 
 	c.forward()
 
-	fmt.Println(c.Data().Data())
 	expected := mat.MatMulParallel(mat.NewMat32f(mat.WithShape(size, size2), aMat), mat.NewMat32f(mat.WithShape(size2, size), bMat))
-	fmt.Println(expected.Data())
 	assert.True(t, expected.Equals32f(c.mat))
 }
 

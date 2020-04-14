@@ -26,8 +26,9 @@ func (ops *opSum) dependencies() []*Tensor {
 }
 
 func (ops *opSum) forward(tensor *Tensor) {
-	C.sum(ops.a._tensor, C.int(ops.axis), tensor._tensor)
-	tensor.SetData(tensor.TempData())
+	//C.sum(ops.a._tensor, C.int(ops.axis), tensor._tensor)
+	//tensor.SetData(tensor.TempData())
+	tensor.SetData(mat.Sum(ops.a.mat, ops.axis).Data())
 }
 
 func (ops *opSum) backward(tensor *Tensor) {
