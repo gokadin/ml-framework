@@ -1,7 +1,6 @@
 package tensor
 
 import (
-	"fmt"
 	"github.com/gokadin/ml-framework/mat"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -70,8 +69,6 @@ func Test_dot_forward_simple2(t *testing.T) {
 	}
 	a := Variable(mat.WithShape(size, size2)).SetData(aMat)
 	b := Variable(mat.WithShape(size2, size)).SetData(bMat)
-	fmt.Println("ax", a.Shape().X)
-	fmt.Println("by", b.Shape().Y)
 	c := Matmul(a, b)
 
 	c.forward()
@@ -98,6 +95,28 @@ func Test_dot_forward_differentSizes(t *testing.T) {
 	c.forward()
 
 	assert.True(t, mat.NewMat32f(mat.WithShape(2, 2), []float32{4, 1, 8, 8}).Equals32f(c.mat))
+}
+
+func Test_dot_forward_allDifferentBigSizes(t *testing.T) {
+	size := 1000
+	size2 := 784
+	size3 := 128
+	aMat := make([]float32, size * size2)
+	for i := 0; i < len(aMat); i++ {
+		aMat[i] = 2.8
+	}
+	bMat := make([]float32, size2 * size3)
+	for i := 0; i < len(bMat); i++ {
+		bMat[i] = 3.5
+	}
+	a := Variable(mat.WithShape(size, size2)).SetData(aMat)
+	b := Variable(mat.WithShape(size2, size3)).SetData(bMat)
+	c := Matmul(a, b)
+
+	c.forward()
+
+	expected := mat.MatMulParallel(mat.NewMat32f(mat.WithShape(size, size2), aMat), mat.NewMat32f(mat.WithShape(size2, size3), bMat))
+	assert.True(t, expected.Equals32f(c.mat))
 }
 
 func Test_dot_backward(t *testing.T) {

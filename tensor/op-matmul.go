@@ -24,9 +24,9 @@ func (omm *opMatmul) dependencies() []*Tensor {
 }
 
 func (omm *opMatmul) forward(tensor *Tensor) {
-	//C.matmul(omm.a._tensor, omm.b._tensor, tensor._tensor)
-	//tensor.SetData(tensor.TempData())
-	tensor.SetData(mat.MatMulParallel(omm.a.mat, omm.b.mat).Data())
+	C.matmul(omm.a._tensor, omm.b._tensor, tensor._tensor)
+	tensor.ConvertToRegularData()
+	//tensor.SetData(mat.MatMulParallel(omm.a.mat, omm.b.mat).Data())
 }
 
 func (omm *opMatmul) backward(tensor *Tensor) {

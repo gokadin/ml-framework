@@ -49,10 +49,14 @@ func (t *Tensor) Id() string {
 
 func (t *Tensor) SetData(data []float32) *Tensor {
 	t.mat = mat.NewMat32f(t.Shape(), data)
-	for i := 0; i < len(data); i++ {
-		t._data[i] = C.float(data[i])
-	}
+	t.convertToNativeData()
 	return t
+}
+
+func (t *Tensor) convertToNativeData() {
+	for i := 0; i < len(t.mat.Data()); i++ {
+		t._data[i] = C.float(t.mat.Data()[i])
+	}
 }
 
 func (t *Tensor) Name() string {
@@ -68,12 +72,12 @@ func (t *Tensor) Data() *mat.Mat32f {
 	return t.mat
 }
 
-func (t *Tensor) TempData() []float32 {
+func (t *Tensor) ConvertToRegularData() {
 	result := make([]float32, t.Shape().X * t.Shape().Y)
 	for i := 0; i < len(result); i++ {
 		result[i] = float32(t._data[i])
 	}
-	return result
+	t.mat = mat.NewMat32f(t.Shape(), result)
 }
 
 func (t *Tensor) Gradient() *mat.Mat32f {
@@ -82,6 +86,7 @@ func (t *Tensor) Gradient() *mat.Mat32f {
 
 func (t *Tensor) Reduce(grad *mat.Mat32f) {
 	t.mat.Sub(grad)
+	t.convertToNativeData()
 }
 
 func (t *Tensor) Shape() mat.Shape {

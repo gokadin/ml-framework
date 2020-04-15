@@ -21,7 +21,7 @@ func (oa *opAdd) dependencies() []*Tensor {
 
 func (oa *opAdd) forward(tensor *Tensor) {
 	C.add(oa.a._tensor, oa.b._tensor, tensor._tensor)
-	tensor.SetData(tensor.TempData())
+	tensor.ConvertToRegularData()
 }
 
 func (oa *opAdd) backward(tensor *Tensor) {
