@@ -25,15 +25,17 @@ func (omm *opMatmul) dependencies() []*Tensor {
 
 func (omm *opMatmul) forward(tensor *Tensor) {
 	C.matmul(omm.a._tensor, omm.b._tensor, tensor._tensor)
-	tensor.ConvertToRegularData()
+	//tensor.ConvertToRegularData()
 	//tensor.SetData(mat.MatMulParallel(omm.a.mat, omm.b.mat).Data())
 }
 
 func (omm *opMatmul) backward(tensor *Tensor) {
 	if omm.a.isGradientEnabled {
+		omm.b.ConvertToRegularData()
 		omm.a.grad = mat.MatMulParallel(tensor.grad, mat.Transpose(omm.b.mat))
 	}
 	if omm.b.isGradientEnabled {
+		omm.a.ConvertToRegularData()
 		omm.b.grad = mat.Transpose(mat.MatMulParallel(mat.Transpose(tensor.grad), omm.a.mat))
 	}
 }

@@ -27,7 +27,7 @@ func (ops *opSum) dependencies() []*Tensor {
 
 func (ops *opSum) forward(tensor *Tensor) {
 	C.sum(ops.a._tensor, C.int(ops.axis), tensor._tensor)
-	tensor.ConvertToRegularData()
+	//tensor.ConvertToRegularData()
 	//tensor.SetData(mat.Sum(ops.a.mat, ops.axis).Data())
 }
 

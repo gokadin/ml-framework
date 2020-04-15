@@ -25,7 +25,7 @@ func (opw *opRelu) dependencies() []*Tensor {
 
 func (opw *opRelu) forward(tensor *Tensor) {
 	C.relu(opw.a._tensor, tensor._tensor)
-	tensor.ConvertToRegularData()
+	//tensor.ConvertToRegularData()
 	//tensor.mat = mat.Apply(tensor.mat, func(value float32) float32 {
 	//	if value > 0 {
 	//		return value

@@ -27,7 +27,7 @@ func (ope *opExpand) dependencies() []*Tensor {
 
 func (ope *opExpand) forward(tensor *Tensor) {
 	C.expand(ope.a._tensor, C.int(ope.axis), C.int(ope.copies), tensor._tensor)
-	tensor.ConvertToRegularData()
+	//tensor.ConvertToRegularData()
 	//tensor.SetData(mat.Expand(ope.a.mat, ope.axis, ope.copies).Data())
 }
 
