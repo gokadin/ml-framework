@@ -1,6 +1,13 @@
 package tensor
 
-import "github.com/gokadin/ml-framework/mat"
+//#cgo CFLAGS: -I.
+//#cgo LDFLAGS: -L${SRCDIR} -Wl,-rpath,${SRCDIR}  -lmul
+//#include <mul.h>
+import "C"
+
+import (
+	"github.com/gokadin/ml-framework/mat"
+)
 
 const operationMul = "opMul"
 
@@ -17,7 +24,9 @@ func (om *opMul) dependencies() []*Tensor {
 }
 
 func (om *opMul) forward(tensor *Tensor) {
-	tensor.SetData(mat.Mul(om.a.mat, om.b.mat).Data())
+	C.mul(om.a._tensor, om.b._tensor, tensor._tensor)
+	tensor.ConvertToRegularData()
+	//tensor.SetData(mat.Mul(om.a.mat, om.b.mat).Data())
 }
 
 

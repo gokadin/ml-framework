@@ -18,13 +18,13 @@ func Test_mul_simple(t *testing.T) {
 }
 
 func Test_mul_big(t *testing.T) {
-	width := 1000
-	height := 2000
+	width := 500
+	height := 1000
 	aMat := make([]float32, width * height)
 	bMat := make([]float32, width * height)
 	for i := 0; i < len(aMat); i++ {
 		aMat[i] = 2
-		bMat[i] = 2
+		bMat[i] = 3
 	}
 	a := Variable(mat.WithShape(width, height)).SetData(aMat)
 	b := Variable(mat.WithShape(width, height)).SetData(bMat)
