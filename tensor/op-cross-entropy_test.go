@@ -14,8 +14,7 @@ func Test_crossEntropy_forward(t *testing.T) {
 	c.forward()
 
 	expected := mat.DivScalar(mat.Sum(mat.Neg(mat.Log(mat.Sum(mat.Mul(a.mat, b.mat), 1))), 0), float32(a.mat.Shape().X)).Data()
-
-	assert.Equal(t, expected, c.TempData())
+	assert.Equal(t, expected, c.Data().Data())
 }
 
 func Test_crossEntropy_forwardSumOfSum(t *testing.T) {
@@ -26,7 +25,6 @@ func Test_crossEntropy_forwardSumOfSum(t *testing.T) {
 	c.forward()
 
 	expected := mat.Sum(a.mat, 1).Data()
-
-	assert.Equal(t, expected, c.TempData())
+	assert.Equal(t, expected, c.Data().Data())
 }
 

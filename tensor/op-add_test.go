@@ -13,7 +13,7 @@ func Test_add_forward(t *testing.T) {
 
 	c.forward()
 
-	assert.Equal(t, []float32{3, 5}, c.TempData())
+	assert.Equal(t, []float32{3, 5}, c.Data().Data())
 }
 
 func Test_add_forward_multipleAssociations(t *testing.T) {

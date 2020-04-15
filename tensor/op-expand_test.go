@@ -12,7 +12,7 @@ func Test_Expand_forward(t *testing.T) {
 
 	c.forward()
 
-	assert.Equal(t, []float32{1, 2, 3, 1, 2, 3, 1, 2, 3}, c.TempData())
+	assert.Equal(t, []float32{1, 2, 3, 1, 2, 3, 1, 2, 3}, c.Data().Data())
 }
 
 func Test_Expand_forwardLargeNumbers(t *testing.T) {
@@ -27,7 +27,7 @@ func Test_Expand_forwardLargeNumbers(t *testing.T) {
 		expected[i + 1] = 2
 		expected[i + 2] = 3
 	}
-	assert.Equal(t, expected, c.TempData())
+	assert.Equal(t, expected, c.Data().Data())
 }
 
 func Test_Expand_forwardLargeNumbersEvenBigger(t *testing.T) {
@@ -46,5 +46,5 @@ func Test_Expand_forwardLargeNumbersEvenBigger(t *testing.T) {
 			expected[i * 6000 + j] = aMat[j]
 		}
 	}
-	assert.Equal(t, expected, c.TempData())
+	assert.Equal(t, expected, c.Data().Data())
 }
