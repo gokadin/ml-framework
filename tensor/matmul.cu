@@ -94,17 +94,21 @@ extern "C" {
         float* gpu_b_transpose;
         cudaMalloc((void**)&gpu_b_transpose, b_size);
 
+        cudaStream_t streamA, streamB;
+        cudaStreamCreate(&streamA);
+        cudaStreamCreate(&streamB);
+
         // B TRANSPOSE
 
         dim3 blockSize(BLOCK_SIZE, BLOCK_SIZE);
         dim3 gridSize((b->shapeY + BLOCK_SIZE - 1) / BLOCK_SIZE, (b->shapeX + BLOCK_SIZE - 1) / BLOCK_SIZE);
-        transpose<<<gridSize, blockSize>>>(gpu_b, gpu_b_transpose, b->shapeX, b->shapeY);
+        transpose<<<gridSize, blockSize, 0, streamA>>>(gpu_b, gpu_b_transpose, b->shapeX, b->shapeY);
 
         // A GRAD
 
         blockSize = dim3(BLOCK_SIZE, BLOCK_SIZE);
         gridSize = dim3((b->shapeX + BLOCK_SIZE - 1) / BLOCK_SIZE, (tensor->shapeX + BLOCK_SIZE - 1) / BLOCK_SIZE);
-        matmul<<<gridSize, blockSize>>>(gpu_tensor_grad, gpu_b_transpose, gpu_a_grad, tensor->shapeX, tensor->shapeY, b->shapeX);
+        matmul<<<gridSize, blockSize, 0, streamA>>>(gpu_tensor_grad, gpu_b_transpose, gpu_a_grad, tensor->shapeX, tensor->shapeY, b->shapeX);
 
         cudaMemcpy(&a->grad[0], gpu_a_grad, a_size, cudaMemcpyDeviceToHost);
 
@@ -112,19 +116,19 @@ extern "C" {
 
         blockSize = dim3(BLOCK_SIZE, BLOCK_SIZE);
         gridSize = dim3((tensor->shapeY + BLOCK_SIZE - 1) / BLOCK_SIZE, (tensor->shapeX + BLOCK_SIZE - 1) / BLOCK_SIZE);
-        transpose<<<gridSize, blockSize>>>(gpu_tensor_grad, gpu_tensor_grad_transpose, tensor->shapeX, tensor->shapeY);
+        transpose<<<gridSize, blockSize, 0, streamB>>>(gpu_tensor_grad, gpu_tensor_grad_transpose, tensor->shapeX, tensor->shapeY);
 
         // B GRAD
 
         blockSize = dim3(BLOCK_SIZE, BLOCK_SIZE);
         gridSize = dim3((a->shapeY + BLOCK_SIZE - 1) / BLOCK_SIZE, (tensor->shapeY + BLOCK_SIZE - 1) / BLOCK_SIZE);
-        matmul<<<gridSize, blockSize>>>(gpu_tensor_grad_transpose, gpu_a, gpu_b_grad, tensor->shapeY, tensor->shapeX, a->shapeY);
+        matmul<<<gridSize, blockSize, 0, streamB>>>(gpu_tensor_grad_transpose, gpu_a, gpu_b_grad, tensor->shapeY, tensor->shapeX, a->shapeY);
 
         // B GRAD TRANSPOSE
 
         blockSize = dim3(BLOCK_SIZE, BLOCK_SIZE);
         gridSize = dim3((b->shapeX + BLOCK_SIZE - 1) / BLOCK_SIZE, (b->shapeY + BLOCK_SIZE - 1) / BLOCK_SIZE);
-        transpose<<<gridSize, blockSize>>>(gpu_b_grad, gpu_b_grad_transpose, b->shapeY, b->shapeX);
+        transpose<<<gridSize, blockSize, 0, streamB>>>(gpu_b_grad, gpu_b_grad_transpose, b->shapeY, b->shapeX);
 
         cudaMemcpy(&b->grad[0], gpu_b_grad_transpose, b_size, cudaMemcpyDeviceToHost);
 
