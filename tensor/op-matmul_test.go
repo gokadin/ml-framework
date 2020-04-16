@@ -13,7 +13,9 @@ func Test_dot_forward_simple(t *testing.T) {
 
 	c.forward()
 
-	assert.True(t, mat.NewMat32f(a.Shape(), []float32{19, 22, 43, 50}).Equals32f(c.mat))
+	expected := []float32{19, 22, 43, 50}
+	c.ConvertToRegularData()
+	assert.Equal(t, expected, c.mat.Data())
 }
 
 func Test_dot_forward_square(t *testing.T) {
@@ -130,8 +132,39 @@ func Test_dot_backward(t *testing.T) {
 
 	c.backward()
 
-	assert.True(t, mat.MatMul(c.grad, mat.Transpose(b.mat)).Equals32f(a.grad))
-	assert.True(t, mat.Transpose(mat.MatMul(mat.Transpose(c.grad), a.mat)).Equals32f(b.grad))
+	expectedAGrad := mat.MatMul(c.grad, mat.Transpose(b.mat)).Data()
+	assert.Equal(t, expectedAGrad, a.Gradient().Data())
+	expectedBGrad := mat.Transpose(mat.MatMul(mat.Transpose(c.grad), a.mat)).Data()
+	assert.Equal(t, expectedBGrad, b.grad.Data())
+}
+
+func Test_dot_backward_big(t *testing.T) {
+	aMat := make([]float32, 1000 * 128)
+	for i := 0; i < len(aMat); i++ {
+		if i == 10 {
+			aMat[i] = 6
+		} else {
+			aMat[i] = 2
+		}
+	}
+	bMat := make([]float32, 128 * 10)
+	for i := 0; i < len(bMat); i++ {
+		bMat[i] = 3
+	}
+	a := Variable(mat.WithShape(1000, 128)).SetData(aMat)
+	a.isGradientEnabled = true
+	b := Variable(mat.WithShape(128, 10)).SetData(bMat)
+	b.isGradientEnabled = true
+	c := Matmul(a, b)
+	c.grad = mat.NewMat32fOnes(c.mat.Shape())
+	c.forward()
+
+	c.backward()
+
+	expectedAGrad := mat.MatMul(c.grad, mat.Transpose(b.mat)).Data()
+	assert.Equal(t, expectedAGrad, a.grad.Data())
+	expectedBGrad := mat.Transpose(mat.MatMul(mat.Transpose(c.grad), a.mat)).Data()
+	assert.Equal(t, expectedBGrad, b.grad.Data())
 }
 
 func Test_dot_backward_isGradientsAreDisabled(t *testing.T) {

@@ -27,9 +27,11 @@ func Variable(shape mat.Shape) *Tensor {
 		id:   uuid.New().String(),
 		mat:  mat.NewMat32f(shape, nil),
 		_data: make([]C.float, shape.X * shape.Y),
+		_grad: make([]C.float, shape.X * shape.Y),
 	}
 
 	t._tensor = C.alloc_tensor()
+	t._tensor.grad = &t._grad[0]
 	t._tensor.data = &t._data[0]
 	t._tensor.shapeX = C.int(shape.X)
 	t._tensor.shapeY = C.int(shape.Y)
@@ -59,6 +61,12 @@ func (t *Tensor) convertToNativeData() {
 	}
 }
 
+func (t *Tensor) convertToNativeGrad() {
+	for i := 0; i < len(t.grad.Data()); i++ {
+		t._grad[i] = C.float(t.grad.Data()[i])
+	}
+}
+
 func (t *Tensor) Name() string {
 	return t.name
 }
@@ -78,6 +86,14 @@ func (t *Tensor) ConvertToRegularData() {
 		result[i] = float32(t._data[i])
 	}
 	t.mat = mat.NewMat32f(t.Shape(), result)
+}
+
+func (t *Tensor) ConvertToRegularGrad() {
+	result := make([]float32, t.Shape().X * t.Shape().Y)
+	for i := 0; i < len(result); i++ {
+		result[i] = float32(t._grad[i])
+	}
+	t.grad = mat.NewMat32f(t.Shape(), result)
 }
 
 func (t *Tensor) Gradient() *mat.Mat32f {

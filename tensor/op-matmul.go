@@ -30,13 +30,18 @@ func (omm *opMatmul) forward(tensor *Tensor) {
 }
 
 func (omm *opMatmul) backward(tensor *Tensor) {
+	tensor.convertToNativeGrad()
+	C.matmul_backward(tensor._tensor, omm.a._tensor, omm.b._tensor)
+
 	if omm.a.isGradientEnabled {
-		omm.b.ConvertToRegularData()
-		omm.a.grad = mat.MatMulParallel(tensor.grad, mat.Transpose(omm.b.mat))
+		omm.a.ConvertToRegularGrad()
+		//omm.b.ConvertToRegularData()
+		//omm.a.grad = mat.MatMulParallel(tensor.grad, mat.Transpose(omm.b.mat))
 	}
 	if omm.b.isGradientEnabled {
-		omm.a.ConvertToRegularData()
-		omm.b.grad = mat.Transpose(mat.MatMulParallel(mat.Transpose(tensor.grad), omm.a.mat))
+		omm.b.ConvertToRegularGrad()
+		//omm.a.ConvertToRegularData()
+		//omm.b.grad = mat.Transpose(mat.MatMulParallel(mat.Transpose(tensor.grad), omm.a.mat))
 	}
 }
 

@@ -35,7 +35,8 @@ func (opw *opRelu) forward(tensor *Tensor) {
 }
 
 func (opw *opRelu) backward(tensor *Tensor) {
-	d := mat.Apply(tensor.mat, func(value float32) float32 {
+	tensor.ConvertToRegularData()
+	d := mat.Apply(tensor.Data(), func(value float32) float32 {
 		if value > 0 {
 			return 1
 		}
