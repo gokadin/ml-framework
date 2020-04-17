@@ -14,6 +14,22 @@ func NewMat32f(shape Shape, data []float32) *Mat32f {
 	return &Mat32f{shape, data}
 }
 
+func Ones32f(size int) []float32 {
+	return initialValues32f(size, 1)
+}
+
+func Zeros32f(size int) []float32 {
+	return initialValues32f(size, 0)
+}
+
+func initialValues32f(size int, initialValue float32) []float32 {
+	result := make([]float32, size)
+	for i := 0; i < size; i++ {
+		result[i] = initialValue
+	}
+	return result
+}
+
 func NewMat32fOnes(shape Shape) *Mat32f {
 	return newMat32fWithInitialValue(shape, 1)
 }

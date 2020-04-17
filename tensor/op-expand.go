@@ -32,13 +32,13 @@ func (ope *opExpand) forward(tensor *Tensor) {
 }
 
 func (ope *opExpand) backward(tensor *Tensor) {
-	ope.a.grad = mat.Sum(tensor.grad, 0)
+	ope.a.SetGradient(mat.Sum(tensor.GradientToMat32(), 0).Data())
 }
 
 func Expand(a *Tensor, axis, copies int) *Tensor {
-	result := Variable(mat.WithShape(copies, a.mat.Shape().Y))
+	result := Variable(copies, a.shape.Y)
 	if axis == 1 {
-		result.mat.Reshape(mat.WithShape(a.mat.Shape().X, a.mat.Shape().Y * copies))
+		result.Reshape(a.shape.X, a.shape.Y * copies)
 	}
 	result.op = &opExpand{a, axis, copies}
 	return result

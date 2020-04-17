@@ -20,17 +20,17 @@ func (opw *opSigmoid) dependencies() []*Tensor {
 }
 
 func (opw *opSigmoid) forward(tensor *Tensor) {
-	tensor.SetData(mat.Apply(opw.a.mat, func(value float32) float32 {
+	tensor.SetData(mat.Apply(opw.a.ToMat32f(), func(value float32) float32 {
 		return float32(1 / (math.Exp(-float64(value)) + 1))
 	}).Data())
 }
 
 func (opw *opSigmoid) backward(tensor *Tensor) {
-	opw.a.grad = mat.Mul(tensor.grad, mat.Mul(tensor.mat, mat.SubFromScalar(tensor.mat, 1)))
+	opw.a.SetGradient(mat.Mul(tensor.GradientToMat32(), mat.Mul(tensor.ToMat32f(), mat.SubFromScalar(tensor.ToMat32f(), 1))).Data())
 }
 
 func Sigmoid(a *Tensor) *Tensor {
-	result := Variable(a.mat.Shape())
+	result := Variable(a.shape.X, a.shape.Y)
 	result.op = &opSigmoid{a}
 	return result
 }

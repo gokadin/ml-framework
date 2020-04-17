@@ -21,21 +21,20 @@ func (oa *opAdd) dependencies() []*Tensor {
 
 func (oa *opAdd) forward(tensor *Tensor) {
 	C.add(oa.a._tensor, oa.b._tensor, tensor._tensor)
-	tensor.ConvertToRegularData()
 }
 
 func (oa *opAdd) backward(tensor *Tensor) {
 	if oa.a.isGradientEnabled {
-		oa.a.grad = tensor.grad
+		oa.a.SetGradient(tensor.GradientToFloat32())
 	}
 
 	if oa.b.isGradientEnabled {
-		oa.b.grad = tensor.grad
+		oa.b.SetGradient(tensor.GradientToFloat32())
 	}
 }
 
 func Add(a, b *Tensor) *Tensor {
-	result := Variable(a.mat.Shape())
+	result := Variable(a.shape.ToArray()...)
 	result.op = &opAdd{a, b}
 	return result
 }

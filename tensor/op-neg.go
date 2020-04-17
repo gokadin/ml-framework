@@ -19,15 +19,15 @@ func (opn *opNeg) dependencies() []*Tensor {
 }
 
 func (opn *opNeg) forward(tensor *Tensor) {
-	tensor.SetData(mat.Neg(opn.a.mat).Data())
+	tensor.SetData(mat.Neg(opn.a.ToMat32f()).Data())
 }
 
 func (opn *opNeg) backward(tensor *Tensor) {
-	opn.a.grad = tensor.grad
+	opn.a.SetGradient(tensor.GradientToFloat32())
 }
 
 func Neg(a *Tensor) *Tensor {
-	result := Variable(a.mat.Shape())
+	result := Variable(a.shape.X, a.shape.Y)
 	result.op = &opNeg{a}
 	return result
 }

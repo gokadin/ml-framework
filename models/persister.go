@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gokadin/ml-framework/mat"
 	"github.com/gokadin/ml-framework/modules"
+	"github.com/gokadin/ml-framework/tensor"
 	"log"
 	"os"
 	"strconv"
@@ -120,7 +121,7 @@ func Restore(name string) *Model {
 			break
 		case persisterModelModuleEndKey:
 			module := modules.Dense(moduleShape.Y, moduleActivationFunction)
-			module.InitializeWith(mat.NewMat32f(moduleShape, moduleWeights), mat.NewMat32f(mat.WithShape(1, moduleShape.Y), moduleBiases))
+			module.InitializeWith(tensor.Variable(moduleShape.X, moduleShape.Y).SetData(moduleWeights), tensor.Variable(1, moduleShape.Y).SetData(moduleBiases))
 			model.Add(module)
 			break
 		}
@@ -145,14 +146,14 @@ func modelToString(model *Model) string {
 		content += fmt.Sprintf("%s: %d %d\n", persisterModelModuleSHAPEKEY, parameters[0].Shape().X, parameters[0].Shape().Y)
 		content += fmt.Sprintf("%s: %s\n", persisterModelModuleActivationKey, module.GetActivation())
 		content += fmt.Sprintf("%s", persisterModelModuleWeightsBeginKey)
-		for i, value := range parameters[0].Data().Data() {
+		for i, value := range parameters[0].ToFloat32() {
 			if i % maxFloatsPerLine == 0 {
 				content += fmt.Sprintf("\n%s: ", persisterModelModuleWeightsKey)
 			}
 			content += fmt.Sprintf("%g ", value)
 		}
 		content += fmt.Sprintf("\n%s", persisterModelModuleBiasesBeginKey)
-		for i, value := range parameters[1].Data().Data() {
+		for i, value := range parameters[1].ToFloat32() {
 			if i % maxFloatsPerLine == 0 {
 				content += fmt.Sprintf("\n%s: ", persisterModelModuleBiasesKey)
 			}

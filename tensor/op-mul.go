@@ -32,16 +32,16 @@ func (om *opMul) forward(tensor *Tensor) {
 
 func (om *opMul) backward(tensor *Tensor) {
 	if om.a.isGradientEnabled {
-		om.a.grad = mat.Mul(tensor.grad, om.b.mat)
+		om.a.SetGradient(mat.Mul(tensor.GradientToMat32(), om.b.ToMat32f()).Data())
 	}
 
 	if om.b.isGradientEnabled {
-		om.b.grad = mat.Mul(tensor.grad, om.a.mat)
+		om.b.SetGradient(mat.Mul(tensor.GradientToMat32(), om.a.ToMat32f()).Data())
 	}
 }
 
 func Mul(a, b *Tensor) *Tensor {
-	result := Variable(a.mat.Shape())
+	result := Variable(a.shape.X, a.shape.Y)
 	result.op = &opMul{a, b}
 	return result
 }

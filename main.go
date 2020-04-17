@@ -38,7 +38,7 @@ func mnist() {
 		modules.Dense(10, modules.ActivationSoftmax))
 
 	model.Configure(models.ModelConfig{
-		Epochs: 10,
+		Epochs: 1,
 		Loss: models.LossSoftmaxCrossEntropy,
 	})
 

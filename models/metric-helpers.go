@@ -6,13 +6,13 @@ import (
 )
 
 func averageLoss(loss *tensor.Tensor) float32 {
-	return mat.Sum(loss.Data(), 1).At(0) / float32(loss.Shape().Y)
+	return mat.Sum(loss.ToMat32f(), 1).At(0) / float32(loss.Shape().Y)
 }
 
 func accuracy(y, target *tensor.Tensor, validOutputRange float32) float32 {
 	accuracyCounter := 0
 	for i := 0; i < y.Shape().X * y.Shape().Y; i++ {
-		if y.Data().At(i) <= target.Data().At(i) + validOutputRange && y.Data().At(i) >= target.Data().At(i) - validOutputRange {
+		if y.ToFloat32()[i] <= target.ToFloat32()[i] + validOutputRange && y.ToFloat32()[i] >= target.ToFloat32()[i] - validOutputRange {
 			accuracyCounter++
 		}
 	}
@@ -28,11 +28,11 @@ func accuracyOneHot(y, target *tensor.Tensor) float32 {
 		var targetIndex int
 		for j := 0; j < y.Shape().Y; j++ {
 			index := i * y.Shape().Y + j
-			if y.Data().At(index) > maxValue {
-				maxValue = y.Data().At(index)
+			if y.ToFloat32()[index] > maxValue {
+				maxValue = y.ToFloat32()[index]
 				maxIndex = j
 			}
-			if target.Data().At(index) == 1 {
+			if target.ToFloat32()[index] == 1 {
 				targetIndex = j
 			}
 		}

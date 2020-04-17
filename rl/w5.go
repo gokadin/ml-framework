@@ -56,16 +56,16 @@ func (w *W5) Run() {
 
 	replayBuffer := NewReplayBuffer(w.memSize, w.batchSize)
 
-	oldState := tensor.Variable(mat.WithShape(1, w.stateSize))
-	newState := tensor.Variable(mat.WithShape(1, w.stateSize))
+	oldState := tensor.Variable(1, w.stateSize)
+	newState := tensor.Variable(1, w.stateSize)
 	oldQVal := w.model.PredictNoGrad(oldState)
 
-	batchOldState := tensor.Variable(mat.WithShape(w.batchSize, w.stateSize))
+	batchOldState := tensor.Variable(w.batchSize, w.stateSize)
 	batchOldQVal := w.model.Predict(batchOldState)
-	batchNewState := tensor.Variable(mat.WithShape(w.batchSize, w.stateSize))
+	batchNewState := tensor.Variable(w.batchSize, w.stateSize)
 	batchNewQVal := w.targetModel.PredictNoGrad(batchNewState)
 
-	batchY := tensor.Variable(mat.WithShape(w.batchSize, w.numActions))
+	batchY := tensor.Variable(w.batchSize, w.numActions)
 	loss := w.model.Loss(batchOldQVal, batchY)
 
 	w.metric.events.trainingStarted <- true
@@ -100,7 +100,7 @@ func (w *W5) Run() {
 				reward = -5
 			}
 
-			replayBuffer.Append(oldState.Data(), newState.Data(), action, reward)
+			replayBuffer.Append(oldState.ToMat32f(), newState.ToMat32f(), action, reward)
 			if replayBuffer.IsFull() {
 				batchOldStateSlice := make([]float32, w.batchSize * w.stateSize)
 				batchNewStateSlice := make([]float32, w.batchSize * w.stateSize)
@@ -119,19 +119,19 @@ func (w *W5) Run() {
 
 				batchYSlice := make([]float32, w.batchSize * w.numActions)
 				for batchIndex, experience := range experienceBatch {
-					maxQValue := maxValue(batchNewQVal.Data().Data()[batchIndex * w.numActions:batchIndex * w.numActions + w.numActions])
+					maxQValue := maxValue(batchNewQVal.ToFloat32()[batchIndex * w.numActions:batchIndex * w.numActions + w.numActions])
 					for actionIndex := 0; actionIndex < w.numActions; actionIndex++ {
 						if actionIndex == experience.action {
 							batchYSlice[batchIndex * w.numActions + actionIndex] = w.calculateYValue(maxQValue, experience.reward)
 							continue
 						}
-						batchYSlice[batchIndex * w.numActions + actionIndex] = batchOldQVal.Data().At(batchIndex * w.numActions + actionIndex)
+						batchYSlice[batchIndex * w.numActions + actionIndex] = batchOldQVal.ToMat32f().At(batchIndex * w.numActions + actionIndex)
 					}
 				}
 				batchY.SetData(batchYSlice)
 
 				w.model.Forward(loss)
-				w.metric.events.loss <- loss.Data().At(action)
+				w.metric.events.loss <- loss.ToMat32f().At(action)
 				w.model.Backward(loss, w.model.TrainableVariables()...)
 				for i, parameter := range w.model.TrainableVariables() {
 					w.model.Optimizer().Update(parameter, 1, i + 2)
@@ -146,17 +146,17 @@ func (w *W5) Run() {
 					w.metric.events.gameWon <- true
 				}
 			} else {
-				oldState.SetData(newState.Data().Data())
+				oldState.SetData(newState.ToFloat32())
 			}
 		}
 
 		if i != 0 && i % 10 == 0 {
 			if i > 200 {
 				for i, module := range w.model.Modules() {
-					w.metric.events.moduleWeightAverage <- struct{int; float32}{i, module.GetParameters()[0].Data().Average()}
-					w.metric.events.moduleBiasAverage <- struct{int; float32}{i, module.GetParameters()[1].Data().Average()}
-					w.metric.events.moduleWeightGradientAverage <- struct{int; float32}{i, module.GetParameters()[0].Gradient().Average()}
-					w.metric.events.moduleBiasGradientAverage <- struct{int; float32}{i, module.GetParameters()[1].Gradient().Average()}
+					w.metric.events.moduleWeightAverage <- struct{int; float32}{i, module.GetParameters()[0].ToMat32f().Average()}
+					w.metric.events.moduleBiasAverage <- struct{int; float32}{i, module.GetParameters()[1].ToMat32f().Average()}
+					w.metric.events.moduleWeightGradientAverage <- struct{int; float32}{i, module.GetParameters()[0].GradientToMat32().Average()}
+					w.metric.events.moduleBiasGradientAverage <- struct{int; float32}{i, module.GetParameters()[1].GradientToMat32().Average()}
 				}
 			}
 
@@ -183,7 +183,7 @@ func (w *W5) selectAction(qval *tensor.Tensor) int {
 		return rand.Intn(4)
 	}
 
-	return maxIndex(qval.Data().Data())
+	return maxIndex(qval.ToFloat32())
 }
 
 func (w *W5) calculateYValue(maxQValue float32, reward int) float32 {
@@ -218,7 +218,7 @@ func (w *W5) test(visualize bool) bool {
 	if visualize {
 		w.gridWorld.Print()
 	}
-	state := tensor.Variable(mat.WithShape(1, 64))
+	state := tensor.Variable(1, 64)
 	qval := w.model.Predict(state)
 	counter := 0
 	isGameRunning := true
@@ -228,7 +228,7 @@ func (w *W5) test(visualize bool) bool {
 		state.SetData(stateMat.Data())
 
 		w.model.Forward(qval)
-		action := maxIndex(qval.Data().Data())
+		action := maxIndex(qval.ToFloat32())
 		w.gridWorld.MakeMove(action)
 		reward := w.gridWorld.GetReward()
 		if visualize {

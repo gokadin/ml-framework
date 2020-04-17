@@ -5,10 +5,6 @@ package tensor
 //#include <matmul.h>
 import "C"
 
-import (
-	"github.com/gokadin/ml-framework/mat"
-)
-
 const operationMatmul = "opMatmul"
 
 type opMatmul struct {
@@ -30,23 +26,20 @@ func (omm *opMatmul) forward(tensor *Tensor) {
 }
 
 func (omm *opMatmul) backward(tensor *Tensor) {
-	tensor.convertToNativeGrad()
 	C.matmul_backward(tensor._tensor, omm.a._tensor, omm.b._tensor)
 
 	if omm.a.isGradientEnabled {
-		omm.a.ConvertToRegularGrad()
 		//omm.b.ConvertToRegularData()
 		//omm.a.grad = mat.MatMulParallel(tensor.grad, mat.Transpose(omm.b.mat))
 	}
 	if omm.b.isGradientEnabled {
-		omm.b.ConvertToRegularGrad()
 		//omm.a.ConvertToRegularData()
 		//omm.b.grad = mat.Transpose(mat.MatMulParallel(mat.Transpose(tensor.grad), omm.a.mat))
 	}
 }
 
 func Matmul(a, b *Tensor) *Tensor {
-	result := Variable(mat.WithShape(a.mat.Shape().X, b.mat.Shape().Y))
+	result := Variable(a.shape.X, b.shape.Y)
 	result.op = &opMatmul{a, b}
 	return result
 }

@@ -34,9 +34,9 @@ func NewW3() *W3 {
 
 func (w *W3) Run() {
 	w.model = w.buildModel()
-	state := tensor.Variable(mat.WithShape(1, 64))
-	state2 := tensor.Variable(mat.WithShape(1, 64))
-	y := tensor.Variable(mat.WithShape(1, 4))
+	state := tensor.Variable(1, 64)
+	state2 := tensor.Variable(1, 64)
+	y := tensor.Variable(1, 4)
 	qval := w.model.Predict(state)
 	newQ := w.model.PredictNoGrad(state2)
 	loss := w.model.Loss(qval, y)
@@ -65,7 +65,7 @@ func (w *W3) Run() {
 			if r < w.epsilon {
 				action = rand.Intn(4)
 			} else {
-				action = maxIndex(qval.Data().Data())
+				action = maxIndex(qval.ToFloat32())
 			}
 
 			w.gridWorld.MakeMove(action)
@@ -74,7 +74,7 @@ func (w *W3) Run() {
 			w.addNoise(nextStateMat)
 			state2.SetData(nextStateMat.Data())
 			w.model.Forward(newQ)
-			maxQValue := maxValue(newQ.Data().Data())
+			maxQValue := maxValue(newQ.ToFloat32())
 
 			var yValue float32
 			if reward == -1 {
@@ -82,14 +82,14 @@ func (w *W3) Run() {
 			} else {
 				yValue = float32(reward)
 			}
-			y.SetData(qval.Data().Copy())
-			y.Data().Set(action, yValue)
+			y.SetData(qval.ToFloat32())
+			y.Set(action, yValue)
 
 			w.model.Forward(loss)
 			w.model.Backward(loss, w.model.TrainableVariables()...)
 
-			lossSum += loss.Data().At(action)
-			line.XYs = append(line.XYs, plotter.XY{Y: float64(loss.Data().At(action)), X: float64(i)})
+			lossSum += loss.ToFloat32()[action]
+			line.XYs = append(line.XYs, plotter.XY{Y: float64(loss.ToFloat32()[action]), X: float64(i)})
 
 			for _, parameter := range w.model.TrainableVariables() {
 				w.model.Optimizer().Update(parameter, 1, i + 2)
@@ -135,7 +135,7 @@ func (w *W3) test() {
 	w.createGame()
 	//pixelgl.Run(w.gridWorld.Run)
 	w.gridWorld.Print()
-	state := tensor.Variable(mat.WithShape(1, 64))
+	state := tensor.Variable(1, 64)
 	qval := w.model.Predict(state)
 	counter := 0
 	isGameRunning := true
@@ -145,7 +145,7 @@ func (w *W3) test() {
 		state.SetData(stateMat.Data())
 
 		w.model.Forward(qval)
-		action := maxIndex(qval.Data().Data())
+		action := maxIndex(qval.ToFloat32())
 		w.gridWorld.MakeMove(action)
 		fmt.Println(fmt.Sprintf("taking action %d", action))
 

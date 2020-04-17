@@ -84,7 +84,7 @@ func (bg *backwardGraph) bootGraph() {
 }
 
 func (bg *backwardGraph) run() {
-	bg.root.grad = mat.NewMat32fOnes(bg.root.mat.Shape())
+	bg.root.SetGradient(mat.Ones32f(bg.root.shape.X * bg.root.shape.Y))
 	bg.start <- true
 
 	doneCounter := 0

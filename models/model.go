@@ -3,7 +3,6 @@ package models
 import (
 	"fmt"
 	"github.com/gokadin/ml-framework/datasets"
-	"github.com/gokadin/ml-framework/mat"
 	"github.com/gokadin/ml-framework/modules"
 	"github.com/gokadin/ml-framework/tensor"
 	"math/rand"
@@ -81,8 +80,8 @@ func (m *Model) TrainableVariables() []*tensor.Tensor {
 
 func (m *Model) Fit(dataset *datasets.Dataset) {
 	m.Initialize(dataset.Shape().Y)
-	batchX := tensor.Variable(mat.WithShape(dataset.BatchSize(), dataset.Get(datasets.TrainingSetX).Data().Shape().Y)).SetName("batch x")
-	batchY := tensor.Variable(mat.WithShape(dataset.BatchSize(), dataset.Get(datasets.TrainingSetY).Data().Shape().Y)).SetName("batch y")
+	batchX := tensor.Variable(dataset.BatchSize(), dataset.Get(datasets.TrainingSetX).Data().Shape().Y).SetName("batch x")
+	batchY := tensor.Variable(dataset.BatchSize(), dataset.Get(datasets.TrainingSetY).Data().Shape().Y).SetName("batch y")
 	pred := m.Predict(batchX).SetName("prediction")
 	loss := m.criterion.forward(pred, batchY).SetName("loss")
 
@@ -135,8 +134,10 @@ func (m *Model) Fit(dataset *datasets.Dataset) {
 
 func (m *Model) Run(dataset *datasets.Dataset) {
 	m.Initialize(dataset.Shape().Y)
-	x := tensor.Variable(dataset.Get(datasets.ValidationSetX).Data().Shape()).SetData(dataset.Get(datasets.ValidationSetX).Data().Data())
-	target := tensor.Variable(dataset.Get(datasets.ValidationSetY).Data().Shape()).SetData(dataset.Get(datasets.ValidationSetY).Data().Data())
+	x := tensor.Variable(dataset.Get(datasets.ValidationSetX).Data().Shape().X, dataset.Get(datasets.ValidationSetX).Data().Shape().Y).
+		SetData(dataset.Get(datasets.ValidationSetX).Data().Data())
+	target := tensor.Variable(dataset.Get(datasets.ValidationSetY).Data().Shape().X, dataset.Get(datasets.ValidationSetY).Data().Shape().Y).
+		SetData(dataset.Get(datasets.ValidationSetY).Data().Data())
 
 	y := m.Predict(x)
 	loss := m.criterion.forward(y, target)
@@ -206,8 +207,8 @@ func (m *Model) Copy() *Model {
 			break
 		}
 		duplicateModule.InitializeWith(
-			mat.NewMat32f(module.GetParameters()[0].Shape(), module.GetParameters()[0].Data().Copy()),
-			mat.NewMat32f(module.GetParameters()[1].Shape(), module.GetParameters()[1].Data().Copy()))
+			tensor.Variable(module.GetParameters()[0].Shape().X, module.GetParameters()[0].Shape().Y).SetData(module.GetParameters()[0].ToFloat32()),
+			tensor.Variable(module.GetParameters()[1].Shape().X, module.GetParameters()[1].Shape().Y).SetData(module.GetParameters()[1].ToFloat32()))
 		duplicate.Add(duplicateModule)
 	}
 
@@ -219,7 +220,7 @@ func (m *Model) Copy() *Model {
 func (m *Model) SyncFrom(target *Model) {
 	for i, module := range target.modules {
 		for j, parameter := range module.GetParameters() {
-			m.modules[i].GetParameters()[j].SetData(parameter.Data().Copy())
+			m.modules[i].GetParameters()[j].SetData(parameter.ToFloat32())
 		}
 	}
 }

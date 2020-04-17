@@ -3,6 +3,7 @@ package tensor
 import (
 	"github.com/gokadin/ml-framework/mat"
 	"github.com/google/uuid"
+	"log"
 	"runtime"
 )
 
@@ -13,19 +14,23 @@ import "C"
 type Tensor struct {
 	id                string
 	name              string
+	shape 			  Shape
 	op                op
-	mat               *mat.Mat32f
-	grad              *mat.Mat32f
 	isGradientEnabled bool
 	_data              []C.float
 	_grad              []C.float
 	_tensor           *C.TENSOR
 }
 
-func Variable(shape mat.Shape) *Tensor {
+func Variable(shapeArray ...int) *Tensor {
+	if len(shapeArray) != 2 {
+		log.Fatal("only shapes of 2 dimensions are supported for the moment")
+	}
+	shape := Shape{X: shapeArray[0], Y: shapeArray[1]}
+
 	t := &Tensor {
 		id:   uuid.New().String(),
-		mat:  mat.NewMat32f(shape, nil),
+		shape: shape,
 		_data: make([]C.float, shape.X * shape.Y),
 		_grad: make([]C.float, shape.X * shape.Y),
 	}
@@ -49,24 +54,6 @@ func (t *Tensor) Id() string {
 	return t.id
 }
 
-func (t *Tensor) SetData(data []float32) *Tensor {
-	t.mat = mat.NewMat32f(t.Shape(), data)
-	t.convertToNativeData()
-	return t
-}
-
-func (t *Tensor) convertToNativeData() {
-	for i := 0; i < len(t.mat.Data()); i++ {
-		t._data[i] = C.float(t.mat.Data()[i])
-	}
-}
-
-func (t *Tensor) convertToNativeGrad() {
-	for i := 0; i < len(t.grad.Data()); i++ {
-		t._grad[i] = C.float(t.grad.Data()[i])
-	}
-}
-
 func (t *Tensor) Name() string {
 	return t.name
 }
@@ -76,41 +63,71 @@ func (t *Tensor) SetName(name string) *Tensor {
 	return t
 }
 
-func (t *Tensor) Data() *mat.Mat32f {
-	return t.mat
+func (t *Tensor) SetData(data []float32) *Tensor {
+	for i := 0; i < len(data); i++ {
+		t._data[i] = C.float(data[i])
+	}
+	return t
 }
 
-func (t *Tensor) ConvertToRegularData() {
-	result := make([]float32, t.Shape().X * t.Shape().Y)
+func (t *Tensor) Set(index int, value float32) {
+	t._data[index] = C.float(value)
+}
+
+func (t *Tensor) SetGradient(grad []float32) {
+	for i := 0; i < len(grad); i++ {
+		t._grad[i] = C.float(grad[i])
+	}
+}
+
+func (t *Tensor) ToFloat32() []float32 {
+	result := make([]float32, t.shape.X * t.shape.Y)
 	for i := 0; i < len(result); i++ {
 		result[i] = float32(t._data[i])
 	}
-	t.mat = mat.NewMat32f(t.Shape(), result)
+	return result
 }
 
-func (t *Tensor) ConvertToRegularGrad() {
-	result := make([]float32, t.Shape().X * t.Shape().Y)
+func (t *Tensor) ToMat32f() *mat.Mat32f {
+	result := make([]float32, t.shape.X * t.shape.Y)
+	for i := 0; i < len(result); i++ {
+		result[i] = float32(t._data[i])
+	}
+	return mat.NewMat32f(mat.WithShape(t.shape.X, t.shape.Y), result)
+}
+
+func (t *Tensor) GradientToFloat32() []float32 {
+	result := make([]float32, t.shape.X * t.shape.Y)
 	for i := 0; i < len(result); i++ {
 		result[i] = float32(t._grad[i])
 	}
-	t.grad = mat.NewMat32f(t.Shape(), result)
+	return result
 }
 
-func (t *Tensor) Gradient() *mat.Mat32f {
-	return t.grad
+func (t *Tensor) GradientToMat32() *mat.Mat32f {
+	result := make([]float32, t.shape.X * t.shape.Y)
+	for i := 0; i < len(result); i++ {
+		result[i] = float32(t._grad[i])
+	}
+	return mat.NewMat32f(mat.WithShape(t.shape.X, t.shape.Y), result)
 }
 
 func (t *Tensor) Reduce(grad *mat.Mat32f) {
-	t.mat.Sub(grad)
-	t.convertToNativeData()
+	for i := 0; i < len(t._data); i++ {
+		t._data[i] -= C.float(grad.Data()[i])
+	}
 }
 
-func (t *Tensor) Shape() mat.Shape {
-	return t.mat.Shape()
+func (t *Tensor) Shape() Shape {
+	return t.shape
 }
 
-func (t *Tensor) Reshape(shape mat.Shape) {
-	t.mat.Reshape(shape)
+func (t *Tensor) Size() int {
+	return t.shape.X * t.shape.Y
+}
+
+func (t *Tensor) Reshape(shape ...int) {
+	t.shape = Shape{X: shape[0], Y: shape[1]}
 }
 
 func (t *Tensor) forward() {

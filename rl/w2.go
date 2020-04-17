@@ -32,7 +32,7 @@ func NewW2() *W2 {
 func (w *W2) Run() {
 	dataset := datasets.NewDataset()
 	dataset.AddData(datasets.TrainingSetX, mat.NewMat32f(mat.WithShape(1, 1), []float32{float32(w.state.currentState())})).OneHot(10)
-	x := tensor.Variable(mat.WithShape(1, 10))
+	x := tensor.Variable(1, 10)
 
 	var rewardSum float32
 
@@ -42,12 +42,12 @@ func (w *W2) Run() {
 
 		w.model.Forward(pred)
 
-		aveSoftmax := softmax(pred.Data().Data())
+		aveSoftmax := softmax(pred.ToFloat32())
 		action := w.agent.choose(aveSoftmax)
 		currentReward := w.state.takeAction(action)
 		rewardSum += currentReward
-		y := tensor.Variable(mat.WithShape(1, 10))
-		predMat := pred.Data().Copy()
+		y := tensor.Variable(1, 10)
+		predMat := pred.ToFloat32()
 		predMat[action] = currentReward
 		y.SetData(predMat)
 
@@ -81,5 +81,5 @@ func buildModel() *models.Model {
 }
 
 func averageLoss(loss *tensor.Tensor) float32 {
-	return mat.Sum(loss.Data(), 1).At(0) / float32(loss.Shape().Y)
+	return mat.Sum(loss.ToMat32f(), 1).At(0) / float32(loss.Shape().Y)
 }

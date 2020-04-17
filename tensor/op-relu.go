@@ -35,18 +35,17 @@ func (opw *opRelu) forward(tensor *Tensor) {
 }
 
 func (opw *opRelu) backward(tensor *Tensor) {
-	tensor.ConvertToRegularData()
-	d := mat.Apply(tensor.Data(), func(value float32) float32 {
+	d := mat.Apply(tensor.ToMat32f(), func(value float32) float32 {
 		if value > 0 {
 			return 1
 		}
 		return 0
 	})
-	opw.a.grad = mat.Mul(tensor.grad, d)
+	opw.a.SetGradient(mat.Mul(tensor.GradientToMat32(), d).Data())
 }
 
 func Relu(a *Tensor) *Tensor {
-	result := Variable(a.mat.Shape())
+	result := Variable(a.shape.X, a.shape.Y)
 	result.op = &opRelu{a}
 	return result
 }

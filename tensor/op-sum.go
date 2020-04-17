@@ -14,7 +14,7 @@ const operationSum = "opSum"
 type opSum struct {
 	a *Tensor
 	axis int
-	originalShape mat.Shape
+	originalShape Shape
 }
 
 func (ops *opSum) name() string {
@@ -27,27 +27,25 @@ func (ops *opSum) dependencies() []*Tensor {
 
 func (ops *opSum) forward(tensor *Tensor) {
 	C.sum(ops.a._tensor, C.int(ops.axis), tensor._tensor)
-	//tensor.ConvertToRegularData()
-	//tensor.SetData(mat.Sum(ops.a.mat, ops.axis).Data())
 }
 
 func (ops *opSum) backward(tensor *Tensor) {
 	if ops.axis == 0 {
-		ops.a.grad = mat.Expand(tensor.grad, 0, ops.originalShape.X)
+		ops.a.SetGradient(mat.Expand(tensor.GradientToMat32(), 0, ops.originalShape.X).Data())
 	} else if ops.axis == 1 {
-		ops.a.grad = mat.Expand(tensor.grad, 1, ops.originalShape.Y)
+		ops.a.SetGradient(mat.Expand(tensor.GradientToMat32(), 1, ops.originalShape.Y).Data())
 	}
 }
 
 func Sum(a *Tensor, axis int) *Tensor {
 	var result *Tensor
 	if axis == 0 {
-		result = Variable(mat.WithShape(1, a.Shape().Y))
+		result = Variable(1, a.Shape().Y)
 	} else if axis == 1 {
-		result = Variable(mat.WithShape(a.Shape().X, 1))
+		result = Variable(a.Shape().X, 1)
 	} else {
 		log.Fatal("axis unknown: " + string(axis))
 	}
-	result.op = &opSum{a, axis, a.mat.Shape()}
+	result.op = &opSum{a, axis, a.shape}
 	return result
 }
