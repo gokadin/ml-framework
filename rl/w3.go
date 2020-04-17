@@ -34,6 +34,7 @@ func NewW3() *W3 {
 
 func (w *W3) Run() {
 	w.model = w.buildModel()
+	graph := tensor.NewGraph()
 	state := tensor.Variable(1, 64)
 	state2 := tensor.Variable(1, 64)
 	y := tensor.Variable(1, 4)
@@ -57,7 +58,7 @@ func (w *W3) Run() {
 		gameInProgress := true
 		for gameInProgress {
 			gameCounter++
-			w.model.Forward(qval)
+			graph.Forward(qval)
 
 			// choose action
 			var action int
@@ -73,7 +74,7 @@ func (w *W3) Run() {
 			nextStateMat := w.gridWorld.GetState()
 			w.addNoise(nextStateMat)
 			state2.SetData(nextStateMat.Data())
-			w.model.Forward(newQ)
+			graph.Forward(newQ)
 			maxQValue := maxValue(newQ.ToFloat32())
 
 			var yValue float32
@@ -85,8 +86,8 @@ func (w *W3) Run() {
 			y.SetData(qval.ToFloat32())
 			y.Set(action, yValue)
 
-			w.model.Forward(loss)
-			w.model.Backward(loss, w.model.TrainableVariables()...)
+			graph.Forward(loss)
+			graph.Backward(loss, w.model.TrainableVariables()...)
 
 			lossSum += loss.ToFloat32()[action]
 			line.XYs = append(line.XYs, plotter.XY{Y: float64(loss.ToFloat32()[action]), X: float64(i)})
@@ -132,6 +133,7 @@ func (w *W3) RunSaved() {
 }
 
 func (w *W3) test() {
+	graph := tensor.NewGraph()
 	w.createGame()
 	//pixelgl.Run(w.gridWorld.Run)
 	w.gridWorld.Print()
@@ -144,7 +146,7 @@ func (w *W3) test() {
 		w.addNoise(stateMat)
 		state.SetData(stateMat.Data())
 
-		w.model.Forward(qval)
+		graph.Forward(qval)
 		action := maxIndex(qval.ToFloat32())
 		w.gridWorld.MakeMove(action)
 		fmt.Println(fmt.Sprintf("taking action %d", action))

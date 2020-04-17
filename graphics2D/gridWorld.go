@@ -2,18 +2,12 @@ package graphics2D
 
 import (
 	"fmt"
-	"github.com/faiface/pixel"
-	"github.com/faiface/pixel/imdraw"
-	"github.com/faiface/pixel/pixelgl"
 	"github.com/gokadin/ml-framework/mat"
-	"golang.org/x/image/colornames"
 )
 
 type GridWorld struct {
-	window *pixelgl.Window
 	width int
 	height int
-	imd *imdraw.IMDraw
 	gridSize int
 	gridLengthPx float64
 	gridHeightPx float64
@@ -30,7 +24,6 @@ func NewGridWorld(width, height, gridSize int) *GridWorld {
 	w := &GridWorld{
 		width: width,
 		height: height,
-		imd: imdraw.New(nil),
 		gridSize: gridSize,
 		gridLengthPx: float64(width) / float64(gridSize),
 		gridHeightPx: float64(height) / float64(gridSize),
@@ -39,26 +32,6 @@ func NewGridWorld(width, height, gridSize int) *GridWorld {
 	w.rewardGrid = w.makeGrid(gridSize, -1)
 
 	return w
-}
-
-func (gw *GridWorld) Run() {
-	cfg := pixelgl.WindowConfig{
-		Title: "GridWorld",
-		Bounds: pixel.R(0, 0, 1024, 768),
-		VSync: true,
-	}
-	win, err := pixelgl.NewWindow(cfg)
-	if err != nil {
-		panic(err)
-	}
-	gw.window = win
-
-	for !gw.window.Closed() {
-		gw.window.Clear(colornames.Black)
-		gw.drawGrid()
-		gw.imd.Draw(gw.window)
-		gw.window.Update()
-	}
 }
 
 func (gw *GridWorld) makeGrid(size, defaultValue int) [][]int {
@@ -215,46 +188,4 @@ func (gw *GridWorld) MakeMove(action int) {
 		return
 	}
 	gw.PlaceAgent(newI, newJ)
-}
-
-func (gw *GridWorld) drawGrid() {
-	lineThickness := 2.0
-	gw.imd.Color = pixel.RGB(1, 1, 1)
-	for i := 0; i < gw.gridSize + 1; i++ {
-		gw.imd.Push(pixel.V(float64(i) * gw.gridLengthPx, 0)) // vertical
-		gw.imd.Push(pixel.V(float64(i) * gw.gridLengthPx, float64(gw.height)))
-		gw.imd.Line(lineThickness)
-
-		gw.imd.Push(pixel.V(0, float64(i) * gw.gridHeightPx)) // horizontal
-		gw.imd.Push(pixel.V(float64(gw.width), float64(i) * gw.gridHeightPx))
-		gw.imd.Line(lineThickness)
-	}
-
-	for i := 0; i < gw.gridSize; i++ {
-		for j := 0; j < gw.gridSize; j++ {
-			if gw.playerGrid[i][j] == 1 {
-				gw.imd.Color = pixel.RGB(0, 1, 0)
-				gw.imd.Push(pixel.V(float64(i) * gw.gridLengthPx + gw.gridLengthPx / 2, float64(j) * gw.gridHeightPx + gw.gridHeightPx / 2))
-				gw.imd.Circle(15, 0)
-			}
-			if gw.targetGrid[i][j] == 1 {
-				gw.imd.Color = pixel.RGB(0, 1, 0)
-				gw.imd.Push(pixel.V(float64(i) * gw.gridLengthPx, float64(j) * gw.gridHeightPx))
-				gw.imd.Push(pixel.V(float64(i) * gw.gridLengthPx + gw.gridLengthPx, float64(j) * gw.gridHeightPx + gw.gridHeightPx))
-				gw.imd.Rectangle(0)
-			}
-			if gw.dangerGrid[i][j] == 1 {
-				gw.imd.Color = pixel.RGB(1, 0, 0)
-				gw.imd.Push(pixel.V(float64(i) * gw.gridLengthPx, float64(j) * gw.gridHeightPx))
-				gw.imd.Push(pixel.V(float64(i) * gw.gridLengthPx + gw.gridLengthPx, float64(j) * gw.gridHeightPx + gw.gridHeightPx))
-				gw.imd.Rectangle(0)
-			}
-			if gw.wallGrid[i][j] == 1 {
-				gw.imd.Color = pixel.RGB(0.5, 0.5, 0.5)
-				gw.imd.Push(pixel.V(float64(i) * gw.gridLengthPx, float64(j) * gw.gridHeightPx))
-				gw.imd.Push(pixel.V(float64(i) * gw.gridLengthPx + gw.gridLengthPx, float64(j) * gw.gridHeightPx + gw.gridHeightPx))
-				gw.imd.Rectangle(0)
-			}
-		}
-	}
 }

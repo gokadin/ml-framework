@@ -33,6 +33,7 @@ func (w *W2) Run() {
 	dataset := datasets.NewDataset()
 	dataset.AddData(datasets.TrainingSetX, mat.NewMat32f(mat.WithShape(1, 1), []float32{float32(w.state.currentState())})).OneHot(10)
 	x := tensor.Variable(1, 10)
+	graph := tensor.NewGraph()
 
 	var rewardSum float32
 
@@ -40,7 +41,7 @@ func (w *W2) Run() {
 		x.SetData(dataset.Get(datasets.TrainingSetX).Data().Data())
 		pred := w.model.Predict(x)
 
-		w.model.Forward(pred)
+		graph.Forward(pred)
 
 		aveSoftmax := softmax(pred.ToFloat32())
 		action := w.agent.choose(aveSoftmax)
@@ -52,8 +53,8 @@ func (w *W2) Run() {
 		y.SetData(predMat)
 
 		loss := w.model.Loss(pred, y)
-		w.model.Forward(loss)
-		w.model.Backward(loss, w.model.TrainableVariables()...)
+		graph.Forward(loss)
+		graph.Backward(loss, w.model.TrainableVariables()...)
 
 		for _, parameter := range w.model.TrainableVariables() {
 			w.model.Optimizer().Update(parameter, dataset.BatchSize(), (i + 1) * dataset.BatchSize() + dataset.BatchCounter())

@@ -53,6 +53,7 @@ func (w *W5) Run() {
 	w.metric.start()
 	w.model = w.buildModel()
 	w.targetModel = w.model.Copy()
+	graph := tensor.NewGraph()
 
 	replayBuffer := NewReplayBuffer(w.memSize, w.batchSize)
 
@@ -88,7 +89,7 @@ func (w *W5) Run() {
 
 			moveCounter++
 
-			w.model.Forward(oldQVal)
+			graph.Forward(oldQVal)
 			action := w.selectAction(oldQVal)
 			w.gridWorld.MakeMove(action)
 			w.metric.events.gameActionTaken <- true
@@ -114,8 +115,8 @@ func (w *W5) Run() {
 				batchOldState.SetData(batchOldStateSlice)
 				batchNewState.SetData(batchNewStateSlice)
 
-				w.model.Forward(batchOldQVal)
-				w.targetModel.Forward(batchNewQVal)
+				graph.Forward(batchOldQVal)
+				graph.Forward(batchNewQVal)
 
 				batchYSlice := make([]float32, w.batchSize * w.numActions)
 				for batchIndex, experience := range experienceBatch {
@@ -130,9 +131,9 @@ func (w *W5) Run() {
 				}
 				batchY.SetData(batchYSlice)
 
-				w.model.Forward(loss)
+				graph.Forward(loss)
 				w.metric.events.loss <- loss.ToMat32f().At(action)
-				w.model.Backward(loss, w.model.TrainableVariables()...)
+				graph.Backward(loss, w.model.TrainableVariables()...)
 				for i, parameter := range w.model.TrainableVariables() {
 					w.model.Optimizer().Update(parameter, 1, i + 2)
 				}
@@ -214,6 +215,7 @@ func (w *W5) TestSingle() {
 }
 
 func (w *W5) test(visualize bool) bool {
+	graph := tensor.NewGraph()
 	w.createRandomGame()
 	if visualize {
 		w.gridWorld.Print()
@@ -227,7 +229,7 @@ func (w *W5) test(visualize bool) bool {
 		w.addNoise(stateMat)
 		state.SetData(stateMat.Data())
 
-		w.model.Forward(qval)
+		graph.Forward(qval)
 		action := maxIndex(qval.ToFloat32())
 		w.gridWorld.MakeMove(action)
 		reward := w.gridWorld.GetReward()

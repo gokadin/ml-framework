@@ -16,7 +16,6 @@ type Model struct {
 	criterion criterion
 	optimizer optimizer
 	trainableVariables []*tensor.Tensor
-	graph *tensor.Graph
 	metric *metric
 	isInitialized bool
 }
@@ -27,7 +26,6 @@ func NewModel() *Model {
 
 	model := &Model{
 		configuration: ModelConfig{},
-		graph: tensor.NewGraph(),
 		trainableVariables: make([]*tensor.Tensor, 0),
 		modules: make([]modules.Module, 0),
 	}
@@ -80,6 +78,7 @@ func (m *Model) TrainableVariables() []*tensor.Tensor {
 
 func (m *Model) Fit(dataset *datasets.Dataset) {
 	m.Initialize(dataset.Shape().Y)
+	graph := tensor.NewGraph()
 	batchX := tensor.Variable(dataset.BatchSize(), dataset.Get(datasets.TrainingSetX).Data().Shape().Y).SetName("batch x")
 	batchY := tensor.Variable(dataset.BatchSize(), dataset.Get(datasets.TrainingSetY).Data().Shape().Y).SetName("batch y")
 	pred := m.Predict(batchX).SetName("prediction")
@@ -104,10 +103,10 @@ func (m *Model) Fit(dataset *datasets.Dataset) {
 			batchY.SetData(batchDataY.Data())
 
 			m.metric.events.forwardStarted <- true
-			m.graph.Forward(loss)
+			graph.Forward(loss)
 			m.metric.events.forwardFinished <- true
 			m.metric.events.backwardStarted <- true
-			m.graph.Backward(loss, m.trainableVariables...)
+			graph.Backward(loss, m.trainableVariables...)
 			m.metric.events.backwardFinished <- true
 
 			batchLoss := averageLoss(loss)
@@ -133,6 +132,7 @@ func (m *Model) Fit(dataset *datasets.Dataset) {
 }
 
 func (m *Model) Run(dataset *datasets.Dataset) {
+	graph := tensor.NewGraph()
 	m.Initialize(dataset.Shape().Y)
 	x := tensor.Variable(dataset.Get(datasets.ValidationSetX).Data().Shape().X, dataset.Get(datasets.ValidationSetX).Data().Shape().Y).
 		SetData(dataset.Get(datasets.ValidationSetX).Data().Data())
@@ -142,7 +142,7 @@ func (m *Model) Run(dataset *datasets.Dataset) {
 	y := m.Predict(x)
 	loss := m.criterion.forward(y, target)
 
-	m.graph.Forward(loss)
+	graph.Forward(loss)
 
 	fmt.Printf("Error: %f Accuracy: %.2f\n", averageLoss(loss), accuracyOneHot(y, target))
 }
@@ -171,14 +171,6 @@ func (m *Model) PredictNoGrad(x *tensor.Tensor) *tensor.Tensor {
 
 func (m *Model) Loss(pred, batchY *tensor.Tensor) *tensor.Tensor {
 	return m.criterion.forward(pred, batchY)
-}
-
-func (m *Model) Forward(tensor *tensor.Tensor) {
-	m.graph.Forward(tensor)
-}
-
-func (m *Model) Backward(of *tensor.Tensor, derivatives ...*tensor.Tensor) {
-	m.graph.Backward(of, derivatives...)
 }
 
 func (m *Model) Optimizer() optimizer {

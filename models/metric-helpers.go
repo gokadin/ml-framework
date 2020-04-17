@@ -11,8 +11,10 @@ func averageLoss(loss *tensor.Tensor) float32 {
 
 func accuracy(y, target *tensor.Tensor, validOutputRange float32) float32 {
 	accuracyCounter := 0
+	yData := y.ToFloat32()
+	targetData := target.ToFloat32()
 	for i := 0; i < y.Shape().X * y.Shape().Y; i++ {
-		if y.ToFloat32()[i] <= target.ToFloat32()[i] + validOutputRange && y.ToFloat32()[i] >= target.ToFloat32()[i] - validOutputRange {
+		if yData[i] <= targetData[i] + validOutputRange && yData[i] >= targetData[i] - validOutputRange {
 			accuracyCounter++
 		}
 	}
@@ -22,17 +24,19 @@ func accuracy(y, target *tensor.Tensor, validOutputRange float32) float32 {
 
 func accuracyOneHot(y, target *tensor.Tensor) float32 {
 	accuracyCounter := 0
+	yData := y.ToFloat32()
+	targetData := target.ToFloat32()
 	for i := 0; i < y.Shape().X; i++ {
 		var maxIndex int
 		var maxValue float32
 		var targetIndex int
 		for j := 0; j < y.Shape().Y; j++ {
 			index := i * y.Shape().Y + j
-			if y.ToFloat32()[index] > maxValue {
-				maxValue = y.ToFloat32()[index]
+			if yData[index] > maxValue {
+				maxValue = yData[index]
 				maxIndex = j
 			}
-			if target.ToFloat32()[index] == 1 {
+			if targetData[index] == 1 {
 				targetIndex = j
 			}
 		}

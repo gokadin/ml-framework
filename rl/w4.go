@@ -67,6 +67,7 @@ func (w *W4) Run() {
 	w.metric.events.trainingStarted <- true
 
 	for i := 0; i < w.model.Configuration().Epochs; i++ {
+		graph := tensor.NewGraph()
 		w.metric.events.epochStarted <- true
 		w.createRandomGame()
 		//w.createGame()
@@ -78,7 +79,7 @@ func (w *W4) Run() {
 		for gameInProgress {
 			moveCounter++
 
-			w.model.Forward(oldQVal)
+			graph.Forward(oldQVal)
 			action := w.selectAction(oldQVal)
 			w.gridWorld.MakeMove(action)
 			w.metric.events.gameActionTaken <- true
@@ -100,8 +101,8 @@ func (w *W4) Run() {
 				batchOldState.SetData(batchOldStateSlice)
 				batchNewState.SetData(batchNewStateSlice)
 
-				w.model.Forward(batchOldQVal)
-				w.model.Forward(batchNewQVal)
+				graph.Forward(batchOldQVal)
+				graph.Forward(batchNewQVal)
 
 				batchYSlice := make([]float32, w.batchSize * w.numActions)
 				for batchIndex, experience := range experienceBatch {
@@ -116,9 +117,9 @@ func (w *W4) Run() {
 				}
 				batchY.SetData(batchYSlice)
 
-				w.model.Forward(loss)
+				graph.Forward(loss)
 				w.metric.events.loss <- loss.ToFloat32()[action]
-				w.model.Backward(loss, w.model.TrainableVariables()...)
+				graph.Backward(loss, w.model.TrainableVariables()...)
 				for i, parameter := range w.model.TrainableVariables() {
 					w.model.Optimizer().Update(parameter, 1, i + 2)
 				}
@@ -198,6 +199,7 @@ func (w *W4) TestSingle() {
 }
 
 func (w *W4) test() bool {
+	graph := tensor.NewGraph()
 	w.createRandomGame()
 	//w.createGame()
 	w.gridWorld.Print()
@@ -210,7 +212,7 @@ func (w *W4) test() bool {
 		w.addNoise(stateMat)
 		state.SetData(stateMat.Data())
 
-		w.model.Forward(qval)
+		graph.Forward(qval)
 		action := maxIndex(qval.ToFloat32())
 		w.gridWorld.MakeMove(action)
 		reward := w.gridWorld.GetReward()
