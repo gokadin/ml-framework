@@ -1,5 +1,10 @@
 package tensor
 
+//#cgo CFLAGS: -I.
+//#cgo LDFLAGS: -L${SRCDIR} -Wl,-rpath,${SRCDIR}  -lrelu
+//#include <relu.h>
+import "C"
+
 import (
 	"github.com/gokadin/ml-framework/mat"
 )
@@ -19,26 +24,28 @@ func (opw *opRelu) dependencies() []*Tensor {
 }
 
 func (opw *opRelu) forward(tensor *Tensor) {
-	tensor.mat = mat.Apply(opw.a.mat, func(value float32) float32 {
-		if value > 0 {
-			return value
-		}
-		return 0
-	})
+	C.relu(opw.a._tensor, tensor._tensor)
+	//tensor.ConvertToRegularData()
+	//tensor.mat = mat.Apply(tensor.mat, func(value float32) float32 {
+	//	if value > 0 {
+	//		return value
+	//	}
+	//	return 0
+	//})
 }
 
 func (opw *opRelu) backward(tensor *Tensor) {
-	d := mat.Apply(tensor.mat, func(value float32) float32 {
+	d := mat.Apply(tensor.ToMat32f(), func(value float32) float32 {
 		if value > 0 {
 			return 1
 		}
 		return 0
 	})
-	opw.a.grad = mat.Mul(tensor.grad, d)
+	opw.a.SetGradient(mat.Mul(tensor.GradientToMat32(), d).Data())
 }
 
 func Relu(a *Tensor) *Tensor {
-	result := Variable(a.mat.Shape())
+	result := Variable(a.shape.X, a.shape.Y)
 	result.op = &opRelu{a}
 	return result
 }

@@ -10,9 +10,9 @@ import (
 
 
 func main() {
-	//mnist()
+	mnist()
 	//xor()
-	rltest()
+	//rltest()
 
 	//startServer()
 }
@@ -38,7 +38,7 @@ func mnist() {
 		modules.Dense(10, modules.ActivationSoftmax))
 
 	model.Configure(models.ModelConfig{
-		Epochs: 3,
+		Epochs: 1,
 		Loss: models.LossSoftmaxCrossEntropy,
 	})
 

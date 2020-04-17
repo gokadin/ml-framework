@@ -1,6 +1,13 @@
 package tensor
 
-import "github.com/gokadin/ml-framework/mat"
+//#cgo CFLAGS: -I.
+//#cgo LDFLAGS: -L${SRCDIR} -Wl,-rpath,${SRCDIR}  -lmul
+//#include <mul.h>
+import "C"
+
+import (
+	"github.com/gokadin/ml-framework/mat"
+)
 
 const operationMul = "opMul"
 
@@ -17,22 +24,24 @@ func (om *opMul) dependencies() []*Tensor {
 }
 
 func (om *opMul) forward(tensor *Tensor) {
-	tensor.mat = mat.Mul(om.a.mat, om.b.mat)
+	C.mul(om.a._tensor, om.b._tensor, tensor._tensor)
+	//tensor.ConvertToRegularData()
+	//tensor.SetData(mat.Mul(om.a.mat, om.b.mat).Data())
 }
 
 
 func (om *opMul) backward(tensor *Tensor) {
 	if om.a.isGradientEnabled {
-		om.a.grad = mat.Mul(tensor.grad, om.b.mat)
+		om.a.SetGradient(mat.Mul(tensor.GradientToMat32(), om.b.ToMat32f()).Data())
 	}
 
 	if om.b.isGradientEnabled {
-		om.b.grad = mat.Mul(tensor.grad, om.a.mat)
+		om.b.SetGradient(mat.Mul(tensor.GradientToMat32(), om.a.ToMat32f()).Data())
 	}
 }
 
 func Mul(a, b *Tensor) *Tensor {
-	result := Variable(a.mat.Shape())
+	result := Variable(a.shape.X, a.shape.Y)
 	result.op = &opMul{a, b}
 	return result
 }

@@ -34,9 +34,10 @@ func NewW3() *W3 {
 
 func (w *W3) Run() {
 	w.model = w.buildModel()
-	state := tensor.Variable(mat.WithShape(1, 64))
-	state2 := tensor.Variable(mat.WithShape(1, 64))
-	y := tensor.Variable(mat.WithShape(1, 4))
+	graph := tensor.NewGraph()
+	state := tensor.Variable(1, 64)
+	state2 := tensor.Variable(1, 64)
+	y := tensor.Variable(1, 4)
 	qval := w.model.Predict(state)
 	newQ := w.model.PredictNoGrad(state2)
 	loss := w.model.Loss(qval, y)
@@ -53,11 +54,11 @@ func (w *W3) Run() {
 		w.createGame()
 		stateMat := w.gridWorld.GetState()
 		w.addNoise(stateMat)
-		state.SetData(stateMat)
+		state.SetData(stateMat.Data())
 		gameInProgress := true
 		for gameInProgress {
 			gameCounter++
-			w.model.Forward(qval)
+			graph.Forward(qval)
 
 			// choose action
 			var action int
@@ -65,16 +66,16 @@ func (w *W3) Run() {
 			if r < w.epsilon {
 				action = rand.Intn(4)
 			} else {
-				action = maxIndex(qval.Data().Data())
+				action = maxIndex(qval.ToFloat32())
 			}
 
 			w.gridWorld.MakeMove(action)
 			reward := w.gridWorld.GetReward()
 			nextStateMat := w.gridWorld.GetState()
 			w.addNoise(nextStateMat)
-			state2.SetData(nextStateMat)
-			w.model.Forward(newQ)
-			maxQValue := maxValue(newQ.Data().Data())
+			state2.SetData(nextStateMat.Data())
+			graph.Forward(newQ)
+			maxQValue := maxValue(newQ.ToFloat32())
 
 			var yValue float32
 			if reward == -1 {
@@ -82,20 +83,20 @@ func (w *W3) Run() {
 			} else {
 				yValue = float32(reward)
 			}
-			y.SetData(mat.NewMat32f(mat.WithShape(1, 4), qval.Data().Copy()))
-			y.Data().Set(action, yValue)
+			y.SetData(qval.ToFloat32())
+			y.Set(action, yValue)
 
-			w.model.Forward(loss)
-			w.model.Backward(loss, w.model.TrainableVariables()...)
+			graph.Forward(loss)
+			graph.Backward(loss, w.model.TrainableVariables()...)
 
-			lossSum += loss.Data().At(action)
-			line.XYs = append(line.XYs, plotter.XY{Y: float64(loss.Data().At(action)), X: float64(i)})
+			lossSum += loss.ToFloat32()[action]
+			line.XYs = append(line.XYs, plotter.XY{Y: float64(loss.ToFloat32()[action]), X: float64(i)})
 
 			for _, parameter := range w.model.TrainableVariables() {
 				w.model.Optimizer().Update(parameter, 1, i + 2)
 			}
 
-			state.SetData(nextStateMat)
+			state.SetData(nextStateMat.Data())
 
 			if reward != -1 {
 				gameInProgress = false
@@ -132,20 +133,21 @@ func (w *W3) RunSaved() {
 }
 
 func (w *W3) test() {
+	graph := tensor.NewGraph()
 	w.createGame()
 	//pixelgl.Run(w.gridWorld.Run)
 	w.gridWorld.Print()
-	state := tensor.Variable(mat.WithShape(1, 64))
+	state := tensor.Variable(1, 64)
 	qval := w.model.Predict(state)
 	counter := 0
 	isGameRunning := true
 	for isGameRunning {
 		stateMat := w.gridWorld.GetState()
 		w.addNoise(stateMat)
-		state.SetData(stateMat)
+		state.SetData(stateMat.Data())
 
-		w.model.Forward(qval)
-		action := maxIndex(qval.Data().Data())
+		graph.Forward(qval)
+		action := maxIndex(qval.ToFloat32())
 		w.gridWorld.MakeMove(action)
 		fmt.Println(fmt.Sprintf("taking action %d", action))
 

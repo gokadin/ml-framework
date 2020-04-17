@@ -17,21 +17,21 @@ func (os *opSub) dependencies() []*Tensor {
 }
 
 func (os *opSub) forward(tensor *Tensor) {
-	tensor.mat = mat.Sub(os.a.mat, os.b.mat)
+	tensor.SetData(mat.Sub(os.a.ToMat32f(), os.b.ToMat32f()).Data())
 }
 
 func (os *opSub) backward(tensor *Tensor) {
 	if os.a.isGradientEnabled {
-		os.a.grad = tensor.grad
+		os.a.SetGradient(tensor.GradientToFloat32())
 	}
 
 	if os.b.isGradientEnabled {
-		os.b.grad = mat.Neg(tensor.grad)
+		os.b.SetGradient(mat.Neg(tensor.GradientToMat32()).Data())
 	}
 }
 
 func Sub(a, b *Tensor) *Tensor {
-	result := Variable(a.mat.Shape())
+	result := Variable(a.shape.X, a.shape.Y)
 	result.op = &opSub{a, b}
 	return result
 }

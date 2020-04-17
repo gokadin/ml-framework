@@ -55,7 +55,7 @@ func newDefaultOptimizer(overrides []float32) *defaultOptimizer {
 }
 
 func (do defaultOptimizer) Update(tensor *tensor.Tensor, batchSize, counter int) {
-    tensor.Reduce(mat.MulScalar(tensor.Gradient(), do.learningRate / float32(batchSize)))
+    tensor.Reduce(mat.MulScalar(tensor.GradientToMat32(), do.learningRate / float32(batchSize)))
 }
 
 type momentumOptimizer struct {
@@ -81,10 +81,10 @@ func newMomentumOptimizer(overrides []float32) *momentumOptimizer {
 
 func (mo momentumOptimizer) Update(tensor *tensor.Tensor, batchSize, counter int) {
     if _, ok := mo.velocityMap[tensor.Id()]; !ok {
-        mo.velocityMap[tensor.Id()] = mat.NewMat32fZeros(tensor.Shape())
+        mo.velocityMap[tensor.Id()] = mat.NewMat32fZeros(mat.WithShape(tensor.Shape().X, tensor.Shape().Y))
     }
 
-    mo.velocityMap[tensor.Id()] = mat.Add(mat.MulScalar(mo.velocityMap[tensor.Id()], mo.momentum), mat.MulScalar(tensor.Gradient(), mo.learningRate / float32(batchSize)))
+    mo.velocityMap[tensor.Id()] = mat.Add(mat.MulScalar(mo.velocityMap[tensor.Id()], mo.momentum), mat.MulScalar(tensor.GradientToMat32(), mo.learningRate / float32(batchSize)))
     tensor.Reduce(mo.velocityMap[tensor.Id()])
 }
 
@@ -123,11 +123,11 @@ func newAdamOptimizer(overrides []float32) *adamOptimizer {
 
 func (ao adamOptimizer) Update(tensor *tensor.Tensor, batchSize, counter int) {
     if _, ok := ao.velocityMap[tensor.Id()]; !ok {
-        ao.meanMap[tensor.Id()] = mat.NewMat32fZeros(tensor.Shape())
-        ao.velocityMap[tensor.Id()] = mat.NewMat32fZeros(tensor.Shape())
+        ao.meanMap[tensor.Id()] = mat.NewMat32fZeros(mat.WithShape(tensor.Shape().X, tensor.Shape().Y))
+        ao.velocityMap[tensor.Id()] = mat.NewMat32fZeros(mat.WithShape(tensor.Shape().X, tensor.Shape().Y))
     }
 
-    g := mat.DivScalar(tensor.Gradient(), float32(batchSize))
+    g := mat.DivScalar(tensor.GradientToMat32(), float32(batchSize))
 
     ao.meanMap[tensor.Id()] = mat.Add(mat.MulScalar(ao.meanMap[tensor.Id()], ao.beta1), mat.MulScalar(g, 1 - ao.beta1))
     ao.velocityMap[tensor.Id()] = mat.Add(mat.MulScalar(ao.velocityMap[tensor.Id()], ao.beta2), mat.MulScalar(mat.Pow(g, 2), 1 - ao.beta2))

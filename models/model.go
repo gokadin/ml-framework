@@ -3,7 +3,6 @@ package models
 import (
 	"fmt"
 	"github.com/gokadin/ml-framework/datasets"
-	"github.com/gokadin/ml-framework/mat"
 	"github.com/gokadin/ml-framework/modules"
 	"github.com/gokadin/ml-framework/tensor"
 	"math/rand"
@@ -17,7 +16,6 @@ type Model struct {
 	criterion criterion
 	optimizer optimizer
 	trainableVariables []*tensor.Tensor
-	graph *tensor.Graph
 	metric *metric
 	isInitialized bool
 }
@@ -28,7 +26,6 @@ func NewModel() *Model {
 
 	model := &Model{
 		configuration: ModelConfig{},
-		graph: tensor.NewGraph(),
 		trainableVariables: make([]*tensor.Tensor, 0),
 		modules: make([]modules.Module, 0),
 	}
@@ -81,8 +78,9 @@ func (m *Model) TrainableVariables() []*tensor.Tensor {
 
 func (m *Model) Fit(dataset *datasets.Dataset) {
 	m.Initialize(dataset.Shape().Y)
-	batchX := tensor.Variable(mat.WithShape(dataset.BatchSize(), dataset.Get(datasets.TrainingSetX).Data().Shape().Y)).SetName("batch x")
-	batchY := tensor.Variable(mat.WithShape(dataset.BatchSize(), dataset.Get(datasets.TrainingSetY).Data().Shape().Y)).SetName("batch y")
+	graph := tensor.NewGraph()
+	batchX := tensor.Variable(dataset.BatchSize(), dataset.Get(datasets.TrainingSetX).Data().Shape().Y).SetName("batch x")
+	batchY := tensor.Variable(dataset.BatchSize(), dataset.Get(datasets.TrainingSetY).Data().Shape().Y).SetName("batch y")
 	pred := m.Predict(batchX).SetName("prediction")
 	loss := m.criterion.forward(pred, batchY).SetName("loss")
 
@@ -101,14 +99,14 @@ func (m *Model) Fit(dataset *datasets.Dataset) {
 			m.metric.events.batchStarted <- dataset.BatchCounter()
 
 			batchDataX, batchDataY := dataset.NextBatch()
-			batchX.SetData(batchDataX)
-			batchY.SetData(batchDataY)
+			batchX.SetData(batchDataX.Data())
+			batchY.SetData(batchDataY.Data())
 
 			m.metric.events.forwardStarted <- true
-			m.graph.Forward(loss)
+			graph.Forward(loss)
 			m.metric.events.forwardFinished <- true
 			m.metric.events.backwardStarted <- true
-			m.graph.Backward(loss, m.trainableVariables...)
+			graph.Backward(loss, m.trainableVariables...)
 			m.metric.events.backwardFinished <- true
 
 			batchLoss := averageLoss(loss)
@@ -134,14 +132,17 @@ func (m *Model) Fit(dataset *datasets.Dataset) {
 }
 
 func (m *Model) Run(dataset *datasets.Dataset) {
+	graph := tensor.NewGraph()
 	m.Initialize(dataset.Shape().Y)
-	x := tensor.Constant(dataset.Get(datasets.ValidationSetX).Data())
-	target := tensor.Constant(dataset.Get(datasets.ValidationSetY).Data())
+	x := tensor.Variable(dataset.Get(datasets.ValidationSetX).Data().Shape().X, dataset.Get(datasets.ValidationSetX).Data().Shape().Y).
+		SetData(dataset.Get(datasets.ValidationSetX).Data().Data())
+	target := tensor.Variable(dataset.Get(datasets.ValidationSetY).Data().Shape().X, dataset.Get(datasets.ValidationSetY).Data().Shape().Y).
+		SetData(dataset.Get(datasets.ValidationSetY).Data().Data())
 
 	y := m.Predict(x)
 	loss := m.criterion.forward(y, target)
 
-	m.graph.Forward(loss)
+	graph.Forward(loss)
 
 	fmt.Printf("Error: %f Accuracy: %.2f\n", averageLoss(loss), accuracyOneHot(y, target))
 }
@@ -172,14 +173,6 @@ func (m *Model) Loss(pred, batchY *tensor.Tensor) *tensor.Tensor {
 	return m.criterion.forward(pred, batchY)
 }
 
-func (m *Model) Forward(tensor *tensor.Tensor) {
-	m.graph.Forward(tensor)
-}
-
-func (m *Model) Backward(of *tensor.Tensor, derivatives ...*tensor.Tensor) {
-	m.graph.Backward(of, derivatives...)
-}
-
 func (m *Model) Optimizer() optimizer {
 	return m.optimizer
 }
@@ -206,8 +199,8 @@ func (m *Model) Copy() *Model {
 			break
 		}
 		duplicateModule.InitializeWith(
-			mat.NewMat32f(module.GetParameters()[0].Shape(), module.GetParameters()[0].Data().Copy()),
-			mat.NewMat32f(module.GetParameters()[1].Shape(), module.GetParameters()[1].Data().Copy()))
+			tensor.Variable(module.GetParameters()[0].Shape().X, module.GetParameters()[0].Shape().Y).SetData(module.GetParameters()[0].ToFloat32()),
+			tensor.Variable(module.GetParameters()[1].Shape().X, module.GetParameters()[1].Shape().Y).SetData(module.GetParameters()[1].ToFloat32()))
 		duplicate.Add(duplicateModule)
 	}
 
@@ -219,7 +212,7 @@ func (m *Model) Copy() *Model {
 func (m *Model) SyncFrom(target *Model) {
 	for i, module := range target.modules {
 		for j, parameter := range module.GetParameters() {
-			m.modules[i].GetParameters()[j].SetData(mat.NewMat32f(parameter.Data().Shape(), parameter.Data().Copy()))
+			m.modules[i].GetParameters()[j].SetData(parameter.ToFloat32())
 		}
 	}
 }

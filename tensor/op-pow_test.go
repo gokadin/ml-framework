@@ -7,7 +7,7 @@ import (
 )
 
 func Test_pow_forward(t *testing.T) {
-	a := Constant(mat.NewMat32f(mat.WithShape(2, 2), []float32{1, 2, 3, 4}))
+	a := Variable(mat.WithShape(2, 2)).SetData([]float32{1, 2, 3, 4})
 	c := Pow(a, 3)
 
 	c.forward()
@@ -16,7 +16,7 @@ func Test_pow_forward(t *testing.T) {
 }
 
 func Test_pow_backward(t *testing.T) {
-	a := Constant(mat.NewMat32f(mat.WithShape(2, 2), []float32{1, 2, 3, 4}))
+	a := Variable(mat.WithShape(2, 2)).SetData([]float32{1, 2, 3, 4})
 	a.isGradientEnabled = true
 	c := Pow(a, 3)
 	c.grad = mat.NewMat32fOnes(c.mat.Shape())
@@ -28,7 +28,7 @@ func Test_pow_backward(t *testing.T) {
 }
 
 func Test_pow_backward_forPowerOfTwo(t *testing.T) {
-	a := Constant(mat.NewMat32f(mat.WithShape(2, 2), []float32{1, 2, 3, 4}))
+	a := Variable(mat.WithShape(2, 2)).SetData([]float32{1, 2, 3, 4})
 	a.isGradientEnabled = true
 	c := Pow(a, 2)
 	c.grad = mat.NewMat32fOnes(c.mat.Shape())

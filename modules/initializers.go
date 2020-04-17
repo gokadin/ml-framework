@@ -15,47 +15,51 @@ const (
 	initializerTypeXavier = "initializerTypeXavier"
 )
 
-func initializeParameter(shape mat.Shape, initializerType string) *tensor.Tensor {
+func initializeParameter(initializerType string, shapeArray ...int) *tensor.Tensor {
 	switch initializerType {
 	case initializerTypeZeros:
-		return initializeParameterZeros(shape)
+		return initializeParameterZeros(shapeArray...)
 	case initializerTypeRandom:
-		return initializeParameterRandom(shape)
+		return initializeParameterRandom(shapeArray...)
 	case initializerTypeNormalized:
-		return initializeParameterNormalized(shape)
+		return initializeParameterNormalized(shapeArray...)
 	case initializerTypeXavier:
-		return initializeParameterXavier(shape)
+		return initializeParameterXavier(shapeArray...)
 	}
 
 	log.Fatalf("parameter initializer of type %s is unknown", initializerType)
 	return nil
 }
 
-func initializeParameterZeros(shape mat.Shape) *tensor.Tensor {
-	return tensor.Constant(mat.NewMat32fZeros(shape))
+func initializeParameterZeros(shapeArray ...int) *tensor.Tensor {
+	t := tensor.Variable(shapeArray...)
+	return t.SetData(mat.Zeros32f(t.Size()))
 }
 
-func initializeParameterRandom(shape mat.Shape) *tensor.Tensor {
-	data := make([]float32, shape.X * shape.Y)
+func initializeParameterRandom(shapeArray ...int) *tensor.Tensor {
+	t := tensor.Variable(shapeArray...)
+	data := make([]float32, t.Size())
 	for i := range data {
 		data[i] = rand.Float32()
 	}
-	return tensor.Constant(mat.NewMat32f(shape, data))
+	return t.SetData(data)
 }
 
-func initializeParameterNormalized(shape mat.Shape) *tensor.Tensor {
-	data := make([]float32, shape.X * shape.Y)
+func initializeParameterNormalized(shapeArray ...int) *tensor.Tensor {
+	t := tensor.Variable(shapeArray...)
+	data := make([]float32, t.Size())
 	for i := range data {
-		data[i] = rand.Float32() / float32(math.Sqrt(float64(shape.X)))
+		data[i] = rand.Float32() / float32(math.Sqrt(float64(t.Shape().X)))
 	}
-	return tensor.Constant(mat.NewMat32f(shape, data))
+	return t.SetData(data)
 }
 
-func initializeParameterXavier(shape mat.Shape) *tensor.Tensor {
-	limit := float32(math.Sqrt(6.0 / float64(shape.X + shape.Y)))
-	data := make([]float32, shape.X * shape.Y)
+func initializeParameterXavier(shapeArray ...int) *tensor.Tensor {
+	t := tensor.Variable(shapeArray...)
+	limit := float32(math.Sqrt(6.0 / float64(t.Shape().X + t.Shape().Y)))
+	data := make([]float32, t.Shape().X * t.Shape().Y)
 	for i := range data {
 		data[i] = -limit + rand.Float32()  * (limit + limit)
 	}
-	return tensor.Constant(mat.NewMat32f(shape, data))
+	return t.SetData(data)
 }

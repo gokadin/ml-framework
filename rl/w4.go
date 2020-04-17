@@ -52,41 +52,42 @@ func (w *W4) Run() {
 
 	replayBuffer := NewReplayBuffer(w.memSize, w.batchSize)
 
-	oldState := tensor.Variable(mat.WithShape(1, w.stateSize))
-	newState := tensor.Variable(mat.WithShape(1, w.stateSize))
+	oldState := tensor.Variable(1, w.stateSize)
+	newState := tensor.Variable(1, w.stateSize)
 	oldQVal := w.model.PredictNoGrad(oldState)
 
-	batchOldState := tensor.Variable(mat.WithShape(w.batchSize, w.stateSize))
+	batchOldState := tensor.Variable(w.batchSize, w.stateSize)
 	batchOldQVal := w.model.Predict(batchOldState)
-	batchNewState := tensor.Variable(mat.WithShape(w.batchSize, w.stateSize))
+	batchNewState := tensor.Variable(w.batchSize, w.stateSize)
 	batchNewQVal := w.model.PredictNoGrad(batchNewState)
 
-	batchY := tensor.Variable(mat.WithShape(w.batchSize, w.numActions))
+	batchY := tensor.Variable(w.batchSize, w.numActions)
 	loss := w.model.Loss(batchOldQVal, batchY)
 
 	w.metric.events.trainingStarted <- true
 
 	for i := 0; i < w.model.Configuration().Epochs; i++ {
+		graph := tensor.NewGraph()
 		w.metric.events.epochStarted <- true
 		w.createRandomGame()
 		//w.createGame()
 
-		oldState.SetData(w.addNoise(w.gridWorld.GetState()))
+		oldState.SetData(w.addNoise(w.gridWorld.GetState()).Data())
 
 		moveCounter := 0
 		gameInProgress := true
 		for gameInProgress {
 			moveCounter++
 
-			w.model.Forward(oldQVal)
+			graph.Forward(oldQVal)
 			action := w.selectAction(oldQVal)
 			w.gridWorld.MakeMove(action)
 			w.metric.events.gameActionTaken <- true
 			reward := w.gridWorld.GetReward()
 
-			newState.SetData(w.addNoise(w.gridWorld.GetState()))
+			newState.SetData(w.addNoise(w.gridWorld.GetState()).Data())
 
-			replayBuffer.Append(oldState.Data(), newState.Data(), action, reward)
+			replayBuffer.Append(oldState.ToMat32f(), newState.ToMat32f(), action, reward)
 			if replayBuffer.IsFull() {
 				batchOldStateSlice := make([]float32, w.batchSize * w.stateSize)
 				batchNewStateSlice := make([]float32, w.batchSize * w.stateSize)
@@ -97,28 +98,28 @@ func (w *W4) Run() {
 						batchNewStateSlice[batchIndex * w.stateSize + stateIndex] = experience.newState.At(stateIndex)
 					}
 				}
-				batchOldState.SetData(mat.NewMat32f(mat.WithShape(w.batchSize, w.stateSize), batchOldStateSlice))
-				batchNewState.SetData(mat.NewMat32f(mat.WithShape(w.batchSize, w.stateSize), batchNewStateSlice))
+				batchOldState.SetData(batchOldStateSlice)
+				batchNewState.SetData(batchNewStateSlice)
 
-				w.model.Forward(batchOldQVal)
-				w.model.Forward(batchNewQVal)
+				graph.Forward(batchOldQVal)
+				graph.Forward(batchNewQVal)
 
 				batchYSlice := make([]float32, w.batchSize * w.numActions)
 				for batchIndex, experience := range experienceBatch {
-					maxQValue := maxValue(batchNewQVal.Data().Data()[batchIndex * w.numActions:batchIndex * w.numActions + w.numActions])
+					maxQValue := maxValue(batchNewQVal.ToFloat32()[batchIndex * w.numActions:batchIndex * w.numActions + w.numActions])
 					for actionIndex := 0; actionIndex < w.numActions; actionIndex++ {
 						if actionIndex == experience.action {
 							batchYSlice[batchIndex * w.numActions + actionIndex] = w.calculateYValue(maxQValue, experience.reward)
 							continue
 						}
-						batchYSlice[batchIndex * w.numActions + actionIndex] = batchOldQVal.Data().At(batchIndex * w.numActions + actionIndex)
+						batchYSlice[batchIndex * w.numActions + actionIndex] = batchOldQVal.ToFloat32()[batchIndex * w.numActions + actionIndex]
 					}
 				}
-				batchY.SetData(mat.NewMat32f(mat.WithShape(w.batchSize, w.numActions), batchYSlice))
+				batchY.SetData(batchYSlice)
 
-				w.model.Forward(loss)
-				w.metric.events.loss <- loss.Data().At(action)
-				w.model.Backward(loss, w.model.TrainableVariables()...)
+				graph.Forward(loss)
+				w.metric.events.loss <- loss.ToFloat32()[action]
+				graph.Backward(loss, w.model.TrainableVariables()...)
 				for i, parameter := range w.model.TrainableVariables() {
 					w.model.Optimizer().Update(parameter, 1, i + 2)
 				}
@@ -132,16 +133,16 @@ func (w *W4) Run() {
 					w.metric.events.gameWon <- true
 				}
 			} else {
-				oldState.SetData(newState.Data())
+				oldState.SetData(newState.ToFloat32())
 			}
 		}
 
 		if i != 0 && i % 100 == 0 {
 			for i, module := range w.model.Modules() {
-				w.metric.events.moduleWeightAverage <- struct{int; float32}{i, module.GetParameters()[0].Data().Average()}
-				w.metric.events.moduleBiasAverage <- struct{int; float32}{i, module.GetParameters()[1].Data().Average()}
-				w.metric.events.moduleWeightGradientAverage <- struct{int; float32}{i, module.GetParameters()[0].Gradient().Average()}
-				w.metric.events.moduleBiasGradientAverage <- struct{int; float32}{i, module.GetParameters()[1].Gradient().Average()}
+				w.metric.events.moduleWeightAverage <- struct{int; float32}{i, module.GetParameters()[0].ToMat32f().Average()}
+				w.metric.events.moduleBiasAverage <- struct{int; float32}{i, module.GetParameters()[1].ToMat32f().Average()}
+				w.metric.events.moduleWeightGradientAverage <- struct{int; float32}{i, module.GetParameters()[0].GradientToMat32().Average()}
+				w.metric.events.moduleBiasGradientAverage <- struct{int; float32}{i, module.GetParameters()[1].GradientToMat32().Average()}
 			}
 
 			w.metric.events.statusUpdate <- true
@@ -167,7 +168,7 @@ func (w *W4) selectAction(qval *tensor.Tensor) int {
 		return rand.Intn(4)
 	}
 
-	return maxIndex(qval.Data().Data())
+	return maxIndex(qval.ToFloat32())
 }
 
 func (w *W4) calculateYValue(maxQValue float32, reward int) float32 {
@@ -198,20 +199,21 @@ func (w *W4) TestSingle() {
 }
 
 func (w *W4) test() bool {
+	graph := tensor.NewGraph()
 	w.createRandomGame()
 	//w.createGame()
 	w.gridWorld.Print()
-	state := tensor.Variable(mat.WithShape(1, 64))
+	state := tensor.Variable(1, 64)
 	qval := w.model.Predict(state)
 	counter := 0
 	isGameRunning := true
 	for isGameRunning {
 		stateMat := w.gridWorld.GetState()
 		w.addNoise(stateMat)
-		state.SetData(stateMat)
+		state.SetData(stateMat.Data())
 
-		w.model.Forward(qval)
-		action := maxIndex(qval.Data().Data())
+		graph.Forward(qval)
+		action := maxIndex(qval.ToFloat32())
 		w.gridWorld.MakeMove(action)
 		reward := w.gridWorld.GetReward()
 		fmt.Println(fmt.Sprintf("action %d reward %d", action, reward))

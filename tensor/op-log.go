@@ -19,15 +19,15 @@ func (opw *opLog) dependencies() []*Tensor {
 }
 
 func (opw *opLog) forward(tensor *Tensor) {
-	tensor.mat = mat.Log(opw.a.mat)
+	tensor.SetData(mat.Log(opw.a.ToMat32f()).Data())
 }
 
 func (opw *opLog) backward(tensor *Tensor) {
-	opw.a.grad = mat.DivScalarBy(tensor.grad, 1)
+	opw.a.SetGradient(mat.DivScalarBy(tensor.GradientToMat32(), 1).Data())
 }
 
 func Log(a *Tensor) *Tensor {
-	result := Variable(a.mat.Shape())
+	result := Variable(a.shape.X, a.shape.Y)
 	result.op = &opLog{a}
 	return result
 }

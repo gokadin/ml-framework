@@ -1,8 +1,9 @@
 package tensor
 
-import (
-	"github.com/gokadin/ml-framework/mat"
-)
+//#cgo CFLAGS: -I.
+//#cgo LDFLAGS: -L${SRCDIR} -Wl,-rpath,${SRCDIR}  -lmatmul
+//#include <matmul.h>
+import "C"
 
 const operationMatmul = "opMatmul"
 
@@ -19,20 +20,26 @@ func (omm *opMatmul) dependencies() []*Tensor {
 }
 
 func (omm *opMatmul) forward(tensor *Tensor) {
-	tensor.mat = mat.MatMulParallel(omm.a.mat, omm.b.mat)
+	C.matmul(omm.a._tensor, omm.b._tensor, tensor._tensor)
+	//tensor.ConvertToRegularData()
+	//tensor.SetData(mat.MatMulParallel(omm.a.mat, omm.b.mat).Data())
 }
 
 func (omm *opMatmul) backward(tensor *Tensor) {
+	C.matmul_backward(tensor._tensor, omm.a._tensor, omm.b._tensor)
+
 	if omm.a.isGradientEnabled {
-		omm.a.grad = mat.MatMulParallel(tensor.grad, mat.Transpose(omm.b.mat))
+		//omm.b.ConvertToRegularData()
+		//omm.a.grad = mat.MatMulParallel(tensor.grad, mat.Transpose(omm.b.mat))
 	}
 	if omm.b.isGradientEnabled {
-		omm.b.grad = mat.Transpose(mat.MatMulParallel(mat.Transpose(tensor.grad), omm.a.mat))
+		//omm.a.ConvertToRegularData()
+		//omm.b.grad = mat.Transpose(mat.MatMulParallel(mat.Transpose(tensor.grad), omm.a.mat))
 	}
 }
 
 func Matmul(a, b *Tensor) *Tensor {
-	result := Variable(mat.WithShape(a.mat.Shape().X, b.mat.Shape().Y))
+	result := Variable(a.shape.X, b.shape.Y)
 	result.op = &opMatmul{a, b}
 	return result
 }

@@ -1,7 +1,7 @@
 package modules
 
 import (
-	"github.com/gokadin/ml-framework/mat"
+	"fmt"
 	"github.com/gokadin/ml-framework/tensor"
 )
 
@@ -37,17 +37,18 @@ func (d *dense) Initialize(inputSize int) {
 		return
 	}
 
-	d.weights = initializeParameter(mat.WithShape(inputSize, d.unitCount), d.weightInitializer).SetName("dense layer weights")
-	d.bias = initializeParameter(mat.WithShape(1, d.unitCount), d.biasInitializer).SetName("dense layer biases")
+	weightsTensor := initializeParameter(d.weightInitializer, inputSize, d.unitCount)
+	biasTensor := initializeParameter(d.biasInitializer, 1, d.unitCount)
+	d.InitializeWith(weightsTensor, biasTensor)
 }
 
-func (d *dense) InitializeWith(weights, biases *mat.Mat32f) {
+func (d *dense) InitializeWith(weights, biases *tensor.Tensor) {
 	if d.weights != nil {
 		return
 	}
 
-	d.weights = tensor.Constant(weights).SetName("dense layer weights")
-	d.bias = tensor.Constant(biases).SetName("dense layer biases")
+	d.weights = weights.SetName(fmt.Sprintf("dense layer (%d) weights", d.unitCount))
+	d.bias = biases.SetName(fmt.Sprintf("dense layer (%d) biases", d.unitCount))
 }
 
 func (d *dense) Forward(input *tensor.Tensor) *tensor.Tensor {
