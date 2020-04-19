@@ -19,6 +19,7 @@ func (opw *opSoftmax) dependencies() []*Tensor {
 }
 
 func (opw *opSoftmax) forward(tensor *Tensor) {
+	tensor.adjustShape(opw.a.shape)
 	tensor.SetData(mat.Softmax(opw.a.ToMat32f()).Data())
 }
 

@@ -20,6 +20,7 @@ func (oa *opAdd) dependencies() []*Tensor {
 }
 
 func (oa *opAdd) forward(tensor *Tensor) {
+	tensor.adjustShape(oa.a.shape)
 	C.add(oa.a._tensor, oa.b._tensor, tensor._tensor)
 }
 

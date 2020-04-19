@@ -25,7 +25,7 @@ func (opw *opCrossEntropy) dependencies() []*Tensor {
 }
 
 func (opw *opCrossEntropy) forward(tensor *Tensor) {
-	//tensor.SetData(mat.DivScalar(mat.Sum(mat.Neg(mat.Log(mat.Sum(mat.Mul(opw.target.mat, opw.a.mat), 1))), 0), float32(opw.a.mat.Shape().X)).Data())
+	tensor.adjustShape(Shape{1, 1})
 	C.cross_entropy(opw.a._tensor, opw.target._tensor, tensor._tensor)
 }
 

@@ -31,19 +31,23 @@ func Variable(shapeArray ...int) *Tensor {
 	t := &Tensor {
 		id:   uuid.New().String(),
 		shape: shape,
-		_data: make([]C.float, shape.X * shape.Y),
-		_grad: make([]C.float, shape.X * shape.Y),
 	}
 
 	t._tensor = C.alloc_tensor()
+	t.initializeNativeTensor(shape)
+	runtime.SetFinalizer(t, free)
+
+	return t
+}
+
+func (t *Tensor) initializeNativeTensor(shape Shape) {
+	t._data = make([]C.float, shape.X * shape.Y)
+	t._grad = make([]C.float, shape.X * shape.Y)
+
 	t._tensor.grad = &t._grad[0]
 	t._tensor.data = &t._data[0]
 	t._tensor.shapeX = C.int(shape.X)
 	t._tensor.shapeY = C.int(shape.Y)
-
-	runtime.SetFinalizer(t, free)
-
-	return t
 }
 
 func free(t *Tensor) {
@@ -88,6 +92,14 @@ func (t *Tensor) ToFloat32() []float32 {
 	return result
 }
 
+func (t *Tensor) ToFloat64() []float64 {
+	result := make([]float64, t.shape.X * t.shape.Y)
+	for i := 0; i < len(result); i++ {
+		result[i] = float64(t._data[i])
+	}
+	return result
+}
+
 func (t *Tensor) ToMat32f() *mat.Mat32f {
 	result := make([]float32, t.shape.X * t.shape.Y)
 	for i := 0; i < len(result); i++ {
@@ -126,8 +138,17 @@ func (t *Tensor) Size() int {
 	return t.shape.X * t.shape.Y
 }
 
-func (t *Tensor) Reshape(shape ...int) {
+func (t *Tensor) adjustShape(shape Shape) {
+	if t.shape.X != shape.X || t.shape.Y != t.shape.Y {
+		t.shape = shape
+		t.initializeNativeTensor(shape)
+	}
+}
+
+func (t *Tensor) Reshape(shape ...int) *Tensor {
 	t.shape = Shape{X: shape[0], Y: shape[1]}
+	t.initializeNativeTensor(t.shape)
+	return t
 }
 
 func (t *Tensor) forward() {

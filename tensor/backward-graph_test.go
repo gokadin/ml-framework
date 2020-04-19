@@ -1,13 +1,12 @@
 package tensor
 
 import (
-	"github.com/gokadin/ml-framework/mat"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func Test_markGradientDependencies_withSingleNode(t *testing.T) {
-	a := Variable(mat.WithShape(1, 1)).SetData([]float32{1})
+	a := Variable(1, 1).SetData([]float32{1})
 
 	buildBackwardGraph([]*Tensor{a}, a)
 
@@ -15,7 +14,7 @@ func Test_markGradientDependencies_withSingleNode(t *testing.T) {
 }
 
 func Test_markGradientDependencies_withSingleNodeAndOneDependency(t *testing.T) {
-	a := Variable(mat.WithShape(1, 1)).SetData([]float32{1})
+	a := Variable(1, 1).SetData([]float32{1})
 	b := Pow(a, 2)
 
 	buildBackwardGraph([]*Tensor{a}, b)
@@ -25,8 +24,8 @@ func Test_markGradientDependencies_withSingleNodeAndOneDependency(t *testing.T) 
 }
 
 func Test_markGradientDependencies_withSingleNodeAndTwoDependenciesWithSingleDerivative(t *testing.T) {
-	a := Variable(mat.WithShape(1, 1)).SetData([]float32{1})
-	b := Variable(mat.WithShape(1, 1)).SetData([]float32{1})
+	a := Variable(1, 1).SetData([]float32{1})
+	b := Variable(1, 1).SetData([]float32{1})
 	c := Add(a, b)
 
 	buildBackwardGraph([]*Tensor{a}, c)
@@ -37,8 +36,8 @@ func Test_markGradientDependencies_withSingleNodeAndTwoDependenciesWithSingleDer
 }
 
 func Test_markGradientDependencies_withSingleNodeAndTwoDependenciesWithBothDerivative(t *testing.T) {
-	a := Variable(mat.WithShape(1, 1)).SetData([]float32{1})
-	b := Variable(mat.WithShape(1, 1)).SetData([]float32{1})
+	a := Variable(1, 1).SetData([]float32{1})
+	b := Variable(1, 1).SetData([]float32{1})
 	c := Add(a, b)
 
 	buildBackwardGraph([]*Tensor{a, b}, c)
@@ -49,12 +48,12 @@ func Test_markGradientDependencies_withSingleNodeAndTwoDependenciesWithBothDeriv
 }
 
 func Test_markGradientDependencies_withMultipleNodesAndSingleDerivative(t *testing.T) {
-	x := Variable(mat.WithShape(1, 1)).SetData([]float32{1})
-	y := Variable(mat.WithShape(1, 1)).SetData([]float32{1})
+	x := Variable(1, 1).SetData([]float32{1})
+	y := Variable(1, 1).SetData([]float32{1})
 	a := Add(x, y)
-	b := Variable(mat.WithShape(1, 1)).SetData([]float32{1})
-	c := Variable(mat.WithShape(1, 1)).SetData([]float32{1})
-	d := Variable(mat.WithShape(1, 1)).SetData([]float32{1})
+	b := Variable(1, 1).SetData([]float32{1})
+	c := Variable(1, 1).SetData([]float32{1})
+	d := Variable(1, 1).SetData([]float32{1})
 	e := Add(a, b)
 	f := Add(c, d)
 	g := Add(e, f)
@@ -75,12 +74,12 @@ func Test_markGradientDependencies_withMultipleNodesAndSingleDerivative(t *testi
 }
 
 func Test_markGradientDependencies_withMultipleNodesAndMultipleDerivatives(t *testing.T) {
-	x := Variable(mat.WithShape(1, 1)).SetData([]float32{1})
-	y := Variable(mat.WithShape(1, 1)).SetData([]float32{1})
+	x := Variable(1, 1).SetData([]float32{1})
+	y := Variable(1, 1).SetData([]float32{1})
 	a := Add(x, y)
-	b := Variable(mat.WithShape(1, 1)).SetData([]float32{1})
-	c := Variable(mat.WithShape(1, 1)).SetData([]float32{1})
-	d := Variable(mat.WithShape(1, 1)).SetData([]float32{1})
+	b := Variable(1, 1).SetData([]float32{1})
+	c := Variable(1, 1).SetData([]float32{1})
+	d := Variable(1, 1).SetData([]float32{1})
 	e := Add(a, b)
 	f := Add(c, d)
 	g := Add(e, f)
@@ -101,12 +100,12 @@ func Test_markGradientDependencies_withMultipleNodesAndMultipleDerivatives(t *te
 }
 
 func Test_markGradientDependencies_withMultipleNodesAndMultipleDerivativesOnSamePath(t *testing.T) {
-	x := Variable(mat.WithShape(1, 1)).SetData([]float32{1})
-	y := Variable(mat.WithShape(1, 1)).SetData([]float32{1})
+	x := Variable(1, 1).SetData([]float32{1})
+	y := Variable(1, 1).SetData([]float32{1})
 	a := Add(x, y)
-	b := Variable(mat.WithShape(1, 1)).SetData([]float32{1})
-	c := Variable(mat.WithShape(1, 1)).SetData([]float32{1})
-	d := Variable(mat.WithShape(1, 1)).SetData([]float32{1})
+	b := Variable(1, 1).SetData([]float32{1})
+	c := Variable(1, 1).SetData([]float32{1})
+	d := Variable(1, 1).SetData([]float32{1})
 	e := Add(a, b)
 	f := Add(c, d)
 	g := Add(e, f)

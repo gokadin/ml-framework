@@ -24,6 +24,7 @@ func (opw *opRelu) dependencies() []*Tensor {
 }
 
 func (opw *opRelu) forward(tensor *Tensor) {
+	tensor.adjustShape(opw.a.shape)
 	C.relu(opw.a._tensor, tensor._tensor)
 	//tensor.ConvertToRegularData()
 	//tensor.mat = mat.Apply(tensor.mat, func(value float32) float32 {

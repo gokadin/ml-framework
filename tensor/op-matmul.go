@@ -4,6 +4,7 @@ package tensor
 //#cgo LDFLAGS: -L${SRCDIR} -Wl,-rpath,${SRCDIR}  -lmatmul
 //#include <matmul.h>
 import "C"
+import "github.com/gokadin/ml-framework/mat"
 
 const operationMatmul = "opMatmul"
 
@@ -20,22 +21,14 @@ func (omm *opMatmul) dependencies() []*Tensor {
 }
 
 func (omm *opMatmul) forward(tensor *Tensor) {
-	C.matmul(omm.a._tensor, omm.b._tensor, tensor._tensor)
-	//tensor.ConvertToRegularData()
-	//tensor.SetData(mat.MatMulParallel(omm.a.mat, omm.b.mat).Data())
+	tensor.adjustShape(Shape{omm.a.shape.X, omm.b.shape.Y})
+	aMat := mat.NewMat32f(mat.WithShape(omm.a.shape.X, omm.a.shape.Y), omm.a.ToFloat32())
+	bMat := mat.NewMat32f(mat.WithShape(omm.b.shape.X, omm.b.shape.Y), omm.b.ToFloat32())
+	tensor.SetData(mat.MatMulParallel(aMat, bMat).Data())
 }
 
 func (omm *opMatmul) backward(tensor *Tensor) {
 	C.matmul_backward(tensor._tensor, omm.a._tensor, omm.b._tensor)
-
-	if omm.a.isGradientEnabled {
-		//omm.b.ConvertToRegularData()
-		//omm.a.grad = mat.MatMulParallel(tensor.grad, mat.Transpose(omm.b.mat))
-	}
-	if omm.b.isGradientEnabled {
-		//omm.a.ConvertToRegularData()
-		//omm.b.grad = mat.Transpose(mat.MatMulParallel(mat.Transpose(tensor.grad), omm.a.mat))
-	}
 }
 
 func Matmul(a, b *Tensor) *Tensor {

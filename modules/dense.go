@@ -52,7 +52,7 @@ func (d *dense) InitializeWith(weights, biases *tensor.Tensor) {
 }
 
 func (d *dense) Forward(input *tensor.Tensor) *tensor.Tensor {
-	return activate(tensor.Add(tensor.Matmul(input, d.weights), tensor.Expand(d.bias, 0, input.Shape().X)), d.activation)
+	return activate(tensor.Linear(input, d.weights, d.bias), d.activation)
 }
 
 func (d *dense) GetParameters() []*tensor.Tensor {

@@ -19,26 +19,27 @@ func (opw *opLeakyRelu) dependencies() []*Tensor {
 }
 
 func (opw *opLeakyRelu) forward(tensor *Tensor) {
-	tensor.mat = mat.Apply(opw.a.mat, func(value float32) float32 {
+	tensor.adjustShape(opw.a.shape)
+	tensor.SetData(mat.Apply(opw.a.ToMat32f(), func(value float32) float32 {
 		if value > 0 {
 			return value
 		}
 		return 0.01 * value
-	})
+	}).Data())
 }
 
 func (opw *opLeakyRelu) backward(tensor *Tensor) {
-	d := mat.Apply(tensor.mat, func(value float32) float32 {
+	d := mat.Apply(tensor.ToMat32f(), func(value float32) float32 {
 		if value > 0 {
 			return 1
 		}
 		return 0.01
 	})
-	opw.a.grad = mat.Mul(tensor.grad, d)
+	opw.a.SetGradient(mat.Mul(tensor.GradientToMat32(), d).Data())
 }
 
 func LeakyRelu(a *Tensor) *Tensor {
-	result := Variable(a.mat.Shape())
+	result := Variable(a.shape.X, a.shape.Y)
 	result.op = &opLeakyRelu{a}
 	return result
 }

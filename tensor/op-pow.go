@@ -20,6 +20,7 @@ func (opw *opPow) dependencies() []*Tensor {
 }
 
 func (opw *opPow) forward(tensor *Tensor) {
+	tensor.adjustShape(opw.a.shape)
 	tensor.SetData(mat.Pow(opw.a.ToMat32f(), float64(opw.power)).Data())
 }
 

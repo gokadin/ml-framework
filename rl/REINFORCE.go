@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"github.com/encryptio/alias"
 	"github.com/gokadin/ml-framework/graphics2D"
-	"github.com/gokadin/ml-framework/mat"
 	"github.com/gokadin/ml-framework/models"
 	"github.com/gokadin/ml-framework/modules"
 	"github.com/gokadin/ml-framework/tensor"
 	gym "github.com/openai/gym-http-api/binding-go"
+	"math"
 	"math/rand"
 	"runtime"
 	"time"
@@ -22,11 +22,9 @@ type Reinforce struct {
 	model *models.Model
 	targetModel *models.Model
 	metric *metric
-	epsilon float64
 	gamma float32
-	targetNetworkSyncFrequency int
-	targetNetworkSyncCounter int
-	maxMoves int
+	maxEpisodes int
+	maxDur int
 	batchSize int
 	memSize int
 	stateSize int
@@ -38,74 +36,142 @@ func NewReinforce() *Reinforce {
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	return &Reinforce{
-		epsilon: 1.0,
-		gamma: 0.9,
-		maxMoves: 50,
+		gamma: 0.99,
 		memSize: 1000,
 		batchSize: 200,
-		targetNetworkSyncFrequency: 500,
 		stateSize: 64,
 		numActions: 4,
+		maxEpisodes: 500,
+		maxDur: 200,
 		metric: newMetric(),
 	}
 }
 
 const BaseURL = "http://localhost:5000"
 
-func (w *Reinforce) Run() {
-	w.metric.start()
-	w.model = w.buildModel()
+func (w *Reinforce) setupGymClient() (*gym.Client, gym.InstanceID) {
+	env, err := gym.NewClient(BaseURL)
+	must(err)
 
-	client, err := gym.NewClient(BaseURL)
-	if err != nil {
-		panic(err)
-	}
-
-	insts, err := client.ListAll()
-	if err != nil {
-		panic(err)
-	}
+	insts, err := env.ListAll()
+	must(err)
 	fmt.Println("Started with instances:", insts)
 
-	id, err := client.Create("CartPole-v0")
-	if err != nil {
-		panic(err)
-	}
-	defer client.Close(id)
+	id, err := env.Create("CartPole-v0")
+	must(err)
 
-	actSpace, err := client.ActionSpace(id)
+	actSpace, err := env.ActionSpace(id)
 	must(err)
 	fmt.Printf("Action space: %+v\n", actSpace)
 
-	must(client.StartMonitor(id, "/tmp/cartpole-monitor", false, false, false))
+	//must(env.StartMonitor(id, "/tmp/cartpole-monitor", false, false, false))
 
-	stateMat := make([]float32, 4)
-	state := tensor.Variable(mat.WithShape(1, 4))
-	pred := w.model.Predict(state)
-	loss := tensor.Neg()
+	return env, id
+}
 
-	fmt.Println()
-	fmt.Println("Starting new episode...")
-	obs, err := client.Reset(id)
-	must(err)
-	fmt.Println("First observation:", obs)
-	for {
-		act, err := client.SampleAction(id)
+func (w *Reinforce) Run() {
+	w.metric.start()
+	w.model = w.buildModel()
+	graph := tensor.NewGraph()
+	env, id := w.setupGymClient()
+
+	previousState := tensor.Variable(1, 4)
+	currentState := tensor.Variable(1, 4)
+	actionProbabilities := w.model.Predict(currentState)
+	batchStates := tensor.Variable(1, 1)
+	predBatch := w.model.Predict(batchStates)
+	discountedRewards := tensor.Variable(1, 1)
+	loss := tensor.Neg(tensor.Sum(tensor.Mul(discountedRewards, tensor.Log(predBatch)), 0))
+	//loss := tensor.CrossEntropy(predBatch, discountedRewards)
+	for episode := 0; episode < w.maxEpisodes; episode++ {
+		w.metric.events.epochStarted <- true
+		replayStates := make([]float32, 0)
+		replayActions := make([]int, 0)
+		replayRewards := make([]float32, 0)
+		currentStateMat, err := env.Reset(id)
+		currentState.SetData(w.obsToState(currentStateMat.([]float64)))
 		must(err)
 
-		// Take the action, getting a new observation, a reward,
-		// and a flag indicating if the episode is done.
-		newObs, rew, done, _, err := client.Step(id, act, false)
-		newState := w.obsToState(newObs.([]float64))
-		must(err)
-		obs = newObs
-		fmt.Println("reward:", rew, " -- observation:", obs)
-		if done {
-			break
+		for t := 0; t < w.maxDur; t++ {
+			graph.Forward(actionProbabilities)
+			action := w.selectAction(actionProbabilities.ToFloat64())
+			previousState.SetData(currentState.ToFloat32())
+			currentStateMat, _, done, _, err := env.Step(id, action, false)
+			w.metric.events.gameActionTaken <- true
+			currentState.SetData(w.obsToState(currentStateMat.([]float64)))
+			must(err)
+
+			replayStates = append(replayStates, previousState.ToFloat32()...)
+			replayActions = append(replayActions, action)
+			replayRewards = append(replayRewards, float32(t + 1))
+
+			if done {
+				break
+			}
+		}
+
+		discountedRewardsMat := w.discountedRewards(replayRewards)
+		discountedRewards.Reshape(len(replayActions), 1).SetData(discountedRewardsMat)
+
+		batchStates.Reshape(len(replayActions), 4).SetData(replayStates)
+		graph.Forward(predBatch)
+		predBatch.SetData(w.updatePredBatch(replayActions, discountedRewardsMat, predBatch.ToFloat32()))
+
+		graph.Forward(loss)
+		w.metric.events.loss <- loss.ToFloat32()[0]
+		graph.Backward(loss, w.model.TrainableVariables()...)
+		for i, parameter := range w.model.TrainableVariables() {
+			w.model.Optimizer().Update(parameter, 1, i + 2)
+		}
+
+		w.metric.events.epochFinished <- true
+		w.metric.events.statusUpdate <- true
+	}
+
+	env.Close(id)
+	//must(env.CloseMonitor(id))
+}
+
+func (w *Reinforce) getProbBatchMat(actionBatch []int, predBatch []float32) []float32 {
+	numActions := 2
+	proBatchMat := make([]float32, len(actionBatch))
+	for i := 0; i < len(actionBatch); i++ {
+		proBatchMat[i] = predBatch[i * numActions + actionBatch[i]]
+	}
+	return proBatchMat
+}
+
+func (w *Reinforce) updatePredBatch(actionBatch []int, discountedRewards, predBatchMat []float32) []float32 {
+	numActions := 2
+	updated := make([]float32, len(actionBatch) * numActions)
+	for i := 0; i < len(actionBatch); i++ {
+		if actionBatch[i] == 0 {
+			updated[i * numActions + 1] = discountedRewards[i]
+			updated[i * numActions] = predBatchMat[i * numActions]
+		} else {
+			updated[i * numActions] = discountedRewards[i]
+			updated[i * numActions + 1] = predBatchMat[i * numActions + 1]
+		}
+	}
+	return updated
+}
+
+func (w *Reinforce) discountedRewards(rewards []float32) []float32 {
+	discounted := make([]float32, len(rewards))
+	var max float32
+	for i := 0; i < len(rewards); i++ {
+		discounted[i] = float32(math.Pow(float64(w.gamma), float64(i))) * rewards[i]
+
+		if discounted[i] > max {
+			max = discounted[i]
 		}
 	}
 
-	must(client.CloseMonitor(id))
+	// normalize
+	for i := 0; i < len(discounted); i++ {
+		discounted[i] = discounted[i] / max
+	}
+	return discounted
 }
 
 func (w *Reinforce) selectAction(probabilities []float64) int {
@@ -122,163 +188,18 @@ func (w *Reinforce) obsToState(obs []float64) []float32 {
 	return state
 }
 
-func (w *Reinforce) calculateYValue(maxQValue float32, reward int) float32 {
-	if reward == -1 {
-		return float32(reward) + w.gamma * maxQValue
-	}
-
-	return float32(reward)
-}
-
-func (w *Reinforce) TestPercentage() {
-	w.model = models.Restore("reinforce")
-
-	runs := 1000
-	numWins := 0
-	for i := 0; i < runs; i++ {
-		if w.test(false) {
-			numWins++
-		}
-	}
-
-	fmt.Println(fmt.Sprintf("gridworld performance %2.f%%", float32(numWins) * 100 / float32(runs)))
-}
-
-func (w *Reinforce) TestSingle() {
-	w.model = models.Restore("reinforce")
-	w.test(true)
-}
-
-func (w *Reinforce) test(visualize bool) bool {
-	w.createRandomGame()
-	if visualize {
-		w.gridWorld.Print()
-	}
-	state := tensor.Variable(mat.WithShape(1, 64))
-	qval := w.model.Predict(state)
-	counter := 0
-	isGameRunning := true
-	for isGameRunning {
-		stateMat := w.gridWorld.GetState()
-		w.addNoise(stateMat)
-		state.SetData(stateMat)
-
-		w.model.Forward(qval)
-		action := maxIndex(qval.Data().Data())
-		w.gridWorld.MakeMove(action)
-		reward := w.gridWorld.GetReward()
-		if visualize {
-			fmt.Println(fmt.Sprintf("action %d reward %d", action, reward))
-		}
-
-		if reward != -1 {
-			isGameRunning = false
-			if reward > 0 {
-				if visualize {
-					fmt.Println("game won")
-				}
-				return true
-			} else {
-				if visualize {
-					fmt.Println("game lost")
-				}
-			}
-		}
-
-		counter++
-		if counter > 15 {
-			if visualize {
-				fmt.Println("game lost... too many moves")
-			}
-			isGameRunning = false
-		}
-
-		if visualize {
-			w.gridWorld.Print()
-			time.Sleep(500 * time.Millisecond)
-		}
-	}
-
-	return false
-}
-
 func (w *Reinforce) buildModel() *models.Model {
 	model := models.Build(
 		modules.Dense(150, modules.ActivationLeakyRelu),
-		modules.Dense(4, modules.ActivationSoftmax))
+		modules.Dense(2, modules.ActivationSoftmax))
 
 	model.Configure(models.ModelConfig{
-		Epochs: 1000,
-		Loss: models.LossMeanSquared,
 		LearningRate: 0.0009,
 	})
 
-	model.Initialize(64)
+	model.Initialize(4)
 
 	return model
-}
-
-func (w *Reinforce) createGame() {
-	w.gridWorld = graphics2D.NewGridWorld(1042, 768, 4)
-	w.gridWorld.PlaceAgent(0, 3)
-	w.gridWorld.PlaceWall(1, 2)
-	w.gridWorld.PlaceTarget(2, 0)
-	w.gridWorld.PlaceDanger(0, 1)
-}
-
-func (w *Reinforce) createRandomGame() {
-	w.gridWorld = graphics2D.NewGridWorld(1042, 768, 4)
-	usedPositions := make([]struct{i int; j int}, 0)
-	agentI := rand.Intn(4)
-	agentJ := rand.Intn(4)
-	usedPositions = append(usedPositions, struct{i int; j int}{agentI, agentJ})
-	w.gridWorld.PlaceAgent(agentI, agentJ)
-	for {
-		i := rand.Intn(4)
-		j := rand.Intn(4)
-		if w.positionsContains(usedPositions, i, j) {
-			continue
-		}
-		w.gridWorld.PlaceWall(i, j)
-		usedPositions = append(usedPositions, struct{i int; j int}{i, j})
-		break
-	}
-	for {
-		i := rand.Intn(4)
-		j := rand.Intn(4)
-		if w.positionsContains(usedPositions, i, j) {
-			continue
-		}
-		w.gridWorld.PlaceTarget(i, j)
-		usedPositions = append(usedPositions, struct{i int; j int}{i, j})
-		break
-	}
-	for {
-		i := rand.Intn(4)
-		j := rand.Intn(4)
-		if w.positionsContains(usedPositions, i, j) {
-			continue
-		}
-		w.gridWorld.PlaceDanger(i, j)
-		usedPositions = append(usedPositions, struct{i int; j int}{i, j})
-		break
-	}
-}
-
-func (w *Reinforce) positionsContains(arr []struct{i int; j int}, i, j int) bool {
-	for k := 0; k < len(arr); k++ {
-		if arr[k].i == i && arr[k].j == j {
-			return true
-		}
-	}
-	return false
-}
-
-func (w *Reinforce) addNoise(mat *mat.Mat32f) *mat.Mat32f {
-	mat.Apply(func(f float32) float32 {
-		return f + rand.Float32() / 10
-	})
-	return mat
 }
 
 func must(err error) {
