@@ -16,6 +16,8 @@ type metricEvents struct {
 	forwardFinished chan bool
 	backwardStarted chan bool
 	backwardFinished chan bool
+	optimizerStarted chan bool
+	optimizerFinished chan bool
 	gameWon chan bool
 }
 
@@ -31,6 +33,8 @@ func makeMetricEvents() metricEvents {
 		forwardFinished: make(chan bool),
 		backwardStarted: make(chan bool),
 		backwardFinished: make(chan bool),
+		optimizerStarted: make(chan bool),
+		optimizerFinished: make(chan bool),
 	}
 }
 
@@ -56,6 +60,7 @@ func newMetric(modelConfig *ModelConfig) *metric {
 	m.timings["batch"] = &metricTiming{}
 	m.timings["forward"] = &metricTiming{}
 	m.timings["backward"] = &metricTiming{}
+	m.timings["optimizer"] = &metricTiming{}
 	return m
 }
 
@@ -83,8 +88,11 @@ func (m *metric) receiveEvents() {
 			backwardTimeAveMs := m.timings["backward"].timeAveMs / (int64(m.timings["backward"].iteration) + 1)
 			m.timings["backward"].timeAveMs = 0
 			m.timings["backward"].iteration = 0
+			optimizerTimeAveMs := m.timings["optimizer"].timeAveMs / (int64(m.timings["optimizer"].iteration) + 1)
+			m.timings["optimizer"].timeAveMs = 0
+			m.timings["optimizer"].iteration = 0
 			fmt.Printf("epoch %d finished in %dms with loss %f\n", m.timings["epoch"].iteration, epochTimeMs, epochLoss)
-			fmt.Printf("ave batch: %dms ave forward: %dms ave backward: %dms\n", batchTimeAveMs, forwardTimeAveMs, backwardTimeAveMs)
+			fmt.Printf("ave batch: %dms ave forward: %dms ave backward: %dms ave optim %dms\n", batchTimeAveMs, forwardTimeAveMs, backwardTimeAveMs, optimizerTimeAveMs)
 		case batch := <- m.events.batchStarted:
 			m.timings["batch"].iteration = batch
 			m.timings["batch"].timeMs = time.Now().UnixNano()
@@ -103,6 +111,12 @@ func (m *metric) receiveEvents() {
 		case <- m.events.backwardFinished:
 			backwardTimeMs := (time.Now().UnixNano() - m.timings["backward"].timeMs) / int64(time.Millisecond)
 			m.timings["backward"].timeAveMs += backwardTimeMs
+		case <- m.events.optimizerStarted:
+			m.timings["optimizer"].iteration++
+			m.timings["optimizer"].timeMs = time.Now().UnixNano()
+		case <- m.events.optimizerFinished:
+			forwardTimeMs := (time.Now().UnixNano() - m.timings["optimizer"].timeMs) / int64(time.Millisecond)
+			m.timings["optimizer"].timeAveMs += forwardTimeMs
 		}
 	}
 }

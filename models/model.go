@@ -112,7 +112,9 @@ func (m *Model) Fit(dataset *datasets.Dataset) {
 			batchLoss := averageLoss(loss)
 			epochLoss += batchLoss
 
+			m.metric.events.optimizerStarted <- true
 			m.optimizer.Update(m.TrainableVariables()...)
+			m.metric.events.optimizerFinished <- true
 
 			m.metric.events.batchFinished <- true
 		}
