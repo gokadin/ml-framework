@@ -132,6 +132,9 @@ extern "C" {
 
         cudaMemcpy(&b->grad[0], gpu_b_grad_transpose, b_size, cudaMemcpyDeviceToHost);
 
+        cudaStreamDestroy(streamA);
+        cudaStreamDestroy(streamB);
+
         cudaFree(gpu_tensor_grad);
         cudaFree(gpu_tensor_grad_transpose);
         cudaFree(gpu_a);

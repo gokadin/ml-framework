@@ -56,9 +56,7 @@ func (w *W2) Run() {
 		graph.Forward(loss)
 		graph.Backward(loss, w.model.TrainableVariables()...)
 
-		for _, parameter := range w.model.TrainableVariables() {
-			w.model.Optimizer().Update(parameter, dataset.BatchSize(), (i + 1) * dataset.BatchSize() + dataset.BatchCounter())
-		}
+		w.model.Optimizer().Update(w.model.TrainableVariables()...)
 
 		dataset.AddData(datasets.TrainingSetX, mat.NewMat32f(mat.WithShape(1, 1), []float32{float32(w.state.currentState())})).OneHot(10)
 

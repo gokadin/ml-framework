@@ -141,7 +141,7 @@ func Test_dot_backward_big(t *testing.T) {
 	aMat := make([]float32, 1000 * 128)
 	for i := 0; i < len(aMat); i++ {
 		if i == 10 {
-			aMat[i] = 6
+			aMat[i] = 0
 		} else {
 			aMat[i] = 2
 		}

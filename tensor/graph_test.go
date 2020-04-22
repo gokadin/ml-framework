@@ -1,5 +1,22 @@
 package tensor
 
+import (
+	"github.com/stretchr/testify/assert"
+	"testing"
+)
+
+func Test_graph(t *testing.T) {
+	a := Variable(1, 1).SetData([]float32{3})
+	b := Variable(1, 1).SetData([]float32{4})
+	c := Add(a, b)
+
+	graph := NewGraph()
+
+	graph.Forward(c)
+
+	assert.Equal(t, 7., c.ToFloat64()[0])
+}
+
 //func Test_graph_some(t *testing.T) {
 //	graph := NewGraph()
 //	a := Variable(mat.WithShape(1, 1)).SetData([]float32{2})

@@ -120,9 +120,7 @@ func (w *Reinforce) Run() {
 		graph.Forward(loss)
 		w.metric.events.loss <- loss.ToFloat32()[0]
 		graph.Backward(loss, w.model.TrainableVariables()...)
-		for i, parameter := range w.model.TrainableVariables() {
-			w.model.Optimizer().Update(parameter, 1, i + 2)
-		}
+		w.model.Optimizer().Update(w.model.TrainableVariables()...)
 
 		w.metric.events.epochFinished <- true
 		w.metric.events.statusUpdate <- true

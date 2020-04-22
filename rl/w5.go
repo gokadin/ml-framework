@@ -134,9 +134,7 @@ func (w *W5) Run() {
 				graph.Forward(loss)
 				w.metric.events.loss <- loss.ToMat32f().At(action)
 				graph.Backward(loss, w.model.TrainableVariables()...)
-				for i, parameter := range w.model.TrainableVariables() {
-					w.model.Optimizer().Update(parameter, 1, i + 2)
-				}
+				w.model.Optimizer().Update(w.model.TrainableVariables()...)
 			}
 
 			if reward != -1 || moveCounter > w.maxMoves {

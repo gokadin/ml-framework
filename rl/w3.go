@@ -92,9 +92,7 @@ func (w *W3) Run() {
 			lossSum += loss.ToFloat32()[action]
 			line.XYs = append(line.XYs, plotter.XY{Y: float64(loss.ToFloat32()[action]), X: float64(i)})
 
-			for _, parameter := range w.model.TrainableVariables() {
-				w.model.Optimizer().Update(parameter, 1, i + 2)
-			}
+			w.model.Optimizer().Update(w.model.TrainableVariables()...)
 
 			state.SetData(nextStateMat.Data())
 
