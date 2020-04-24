@@ -5,7 +5,7 @@ import (
 	"github.com/gokadin/ml-framework/datasets"
 	"github.com/gokadin/ml-framework/models"
 	"github.com/gokadin/ml-framework/modules"
-	"github.com/gokadin/ml-framework/rl"
+	"github.com/gokadin/ml-framework/runners"
 )
 
 
@@ -23,8 +23,8 @@ func startServer() {
 }
 
 func rltest() {
-	ws := rl.NewReinforce()
-	ws.Run()
+	//ws := rl.NewReinforce()
+	//ws.Run()
 	//ws.TestSingle()
 	//ws.TestPercentage()
 }
@@ -33,17 +33,17 @@ func mnist() {
 	dataset := datasets.From("mnist").SetBatchSize(1000)
 
 	//models.Restore("mnist")
-	model := models.Build(
+	runner := runners.BuildModelRunner(
 		modules.Dense(128, modules.ActivationRelu),
 		modules.Dense(10, modules.ActivationSoftmax))
 
-	model.Configure(models.ModelConfig{
+	runner.Configure(runners.ModelConfig{
 		Epochs: 50,
-		Loss: models.LossSoftmaxCrossEntropy,
+		Loss:   modules.LossSoftmaxCrossEntropy,
 	})
 
-	model.Fit(dataset)
-	model.Run(dataset)
+	runner.Fit(dataset)
+	runner.Run(dataset)
 	//model.Save("mnist")
 }
 
@@ -51,16 +51,16 @@ func xor() {
 	dataset := datasets.From("xor").SetBatchSize(4)
 
 	//models.Restore("xor")
-	model := models.Build(
+	runner := runners.BuildModelRunner(
 		modules.Dense(2, modules.ActivationSigmoid),
 		modules.Dense(1, modules.ActivationIdentity))
 
-	model.Configure(models.ModelConfig{
-		Optimizer:          models.OptimizerAdam,
-		Loss:               models.LossMeanSquared,
+	runner.Configure(runners.ModelConfig{
+		Optimizer: models.OptimizerAdam,
+		Loss:      modules.LossMeanSquared,
 	})
 
-	model.Fit(dataset)
-	model.Run(dataset)
+	runner.Fit(dataset)
+	runner.Run(dataset)
 	//model.Save("xor")
 }

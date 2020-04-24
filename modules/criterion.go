@@ -1,4 +1,4 @@
-package models
+package modules
 
 import (
 	"github.com/gokadin/ml-framework/tensor"
@@ -10,11 +10,11 @@ const (
 	LossSoftmaxCrossEntropy = "LossSoftmaxCrossEntropy"
 )
 
-type criterion interface {
-	forward(pred, target *tensor.Tensor) *tensor.Tensor
+type Criterion interface {
+	Forward(pred, target *tensor.Tensor) *tensor.Tensor
 }
 
-func newCriterion(loss string) criterion {
+func NewCriterion(loss string) Criterion {
 	switch loss {
 	case LossMeanSquared:
 		return newMeanSquaredCriterion()
@@ -32,7 +32,7 @@ func newMeanSquaredCriterion() *meanSquaredCriterion {
 	return &meanSquaredCriterion{}
 }
 
-func (msc *meanSquaredCriterion) forward(pred, target *tensor.Tensor) *tensor.Tensor {
+func (msc *meanSquaredCriterion) Forward(pred, target *tensor.Tensor) *tensor.Tensor {
 	return tensor.DivScalar(tensor.Sum(tensor.Pow(tensor.Sub(pred, target), 2), 0), float32(pred.Shape().X))
 }
 
@@ -42,6 +42,6 @@ func newCrossEntropyCriterion() *crossEntropyCriterion {
 	return &crossEntropyCriterion{}
 }
 
-func (cec *crossEntropyCriterion) forward(pred, target *tensor.Tensor) *tensor.Tensor {
+func (cec *crossEntropyCriterion) Forward(pred, target *tensor.Tensor) *tensor.Tensor {
 	return tensor.CrossEntropy(pred, target)
 }

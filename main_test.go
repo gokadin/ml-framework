@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/gokadin/ml-framework/datasets"
-	"github.com/gokadin/ml-framework/models"
 	"github.com/gokadin/ml-framework/modules"
+	"github.com/gokadin/ml-framework/runners"
 	"testing"
 )
 
@@ -11,15 +11,15 @@ func Test_mnist(t *testing.T) {
 	dataset := datasets.From("mnist").SetBatchSize(1000)
 
 	//models.Restore("mnist")
-	model := models.Build(
+	runner := runners.BuildModelRunner(
 		modules.Dense(128, modules.ActivationRelu),
 		modules.Dense(10, modules.ActivationSoftmax))
 
-	model.Configure(models.ModelConfig{
+	runner.Configure(runners.ModelConfig{
 		Epochs: 20,
-		Loss: models.LossSoftmaxCrossEntropy,
+		Loss:   modules.LossSoftmaxCrossEntropy,
 	})
 
-	model.Fit(dataset)
-	model.Run(dataset)
+	runner.Fit(dataset)
+	runner.Run(dataset)
 }

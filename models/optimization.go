@@ -22,11 +22,11 @@ const (
     defaultEpsStable float32 = 1e-08
 )
 
-type optimizer interface {
+type Optimizer interface {
     Update(parameters ...*tensor.Tensor)
 }
 
-func newOptimizer(optimizerType string) optimizer {
+func NewOptimizer(optimizerType string) Optimizer {
     switch optimizerType {
     case OptimizerDefault:
         return newDefaultOptimizer([]float32{})

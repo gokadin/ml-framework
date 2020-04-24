@@ -1,4 +1,4 @@
-package models
+package runners
 
 import (
 	"fmt"
@@ -46,15 +46,15 @@ type metricTiming struct {
 
 type metric struct {
 	modelConfig *ModelConfig
-	timings map[string]*metricTiming
-	events metricEvents
+	timings     map[string]*metricTiming
+	events      metricEvents
 }
 
 func newMetric(modelConfig *ModelConfig) *metric {
 	m := &metric{
 		modelConfig: modelConfig,
-		events: makeMetricEvents(),
-		timings: make(map[string]*metricTiming),
+		events:      makeMetricEvents(),
+		timings:     make(map[string]*metricTiming),
 	}
 	m.timings["epoch"] = &metricTiming{}
 	m.timings["batch"] = &metricTiming{}
