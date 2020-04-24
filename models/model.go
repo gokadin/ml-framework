@@ -90,12 +90,7 @@ func (m *Model) Fit(dataset *datasets.Dataset) {
 		m.metric.events.epochStarted <- epoch
 
 		var epochLoss float32
-		for {
-			if !dataset.HasNextBatch() {
-				dataset.ResetBatchCounter()
-				break
-			}
-
+		for dataset.HasNextBatch() {
 			m.metric.events.batchStarted <- dataset.BatchCounter()
 
 			batchDataX, batchDataY := dataset.NextBatch()

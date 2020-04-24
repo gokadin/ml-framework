@@ -79,7 +79,11 @@ func (d *Dataset) SetBatchSize(batchSize int) *Dataset {
 }
 
 func (d *Dataset) HasNextBatch() bool {
-	return d.batchCounter < d.NumBatches()
+	result := d.batchCounter < d.NumBatches()
+	if !result {
+		d.batchCounter = 0
+	}
+	return result
 }
 
 func (d *Dataset) ResetBatchCounter() {
