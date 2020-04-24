@@ -1,4 +1,4 @@
-package main
+package examples
 
 import (
 	"github.com/gokadin/ml-framework/datasets"
@@ -10,7 +10,6 @@ import (
 func Test_mnist(t *testing.T) {
 	dataset := datasets.From("mnist").SetBatchSize(1000)
 
-	//models.Restore("mnist")
 	runner := runners.BuildModelRunner(
 		modules.Dense(128, modules.ActivationRelu),
 		modules.Dense(10, modules.ActivationSoftmax))
