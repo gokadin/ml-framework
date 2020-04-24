@@ -2,7 +2,6 @@ package tensor
 
 import (
 	"github.com/gokadin/ml-framework/mat"
-	"github.com/google/uuid"
 	"log"
 	"runtime"
 )
@@ -11,12 +10,15 @@ import (
 //#include <tensor.cpp>
 import "C"
 
+var nextId int
+
 type Tensor struct {
-	id                string
+	id                int
 	name              string
 	shape 			  Shape
 	op                op
 	isGradientEnabled bool
+	ready			  bool
 	_data              []C.float
 	_grad              []C.float
 	_tensor           *C.TENSOR
@@ -28,8 +30,9 @@ func Variable(shapeArray ...int) *Tensor {
 	}
 	shape := Shape{X: shapeArray[0], Y: shapeArray[1]}
 
+	nextId++
 	t := &Tensor {
-		id:   uuid.New().String(),
+		id:   nextId,
 		shape: shape,
 	}
 
@@ -54,7 +57,7 @@ func free(t *Tensor) {
 	C.free_tensor(t._tensor)
 }
 
-func (t *Tensor) Id() string {
+func (t *Tensor) Id() int {
 	return t.id
 }
 
@@ -124,9 +127,9 @@ func (t *Tensor) GradientToMat32() *mat.Mat32f {
 	return mat.NewMat32f(mat.WithShape(t.shape.X, t.shape.Y), result)
 }
 
-func (t *Tensor) Reduce(grad *mat.Mat32f) {
+func (t *Tensor) Reduce(grad []float32) {
 	for i := 0; i < len(t._data); i++ {
-		t._data[i] -= C.float(grad.Data()[i])
+		t._data[i] -= C.float(grad[i])
 	}
 }
 
@@ -153,8 +156,10 @@ func (t *Tensor) Reshape(shape ...int) *Tensor {
 
 func (t *Tensor) forward() {
 	t.op.forward(t)
+	t.ready = true
 }
 
 func (t *Tensor) backward() {
 	t.op.backward(t)
+	t.ready = false
 }

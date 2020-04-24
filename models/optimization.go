@@ -56,21 +56,21 @@ func newDefaultOptimizer(overrides []float32) *defaultOptimizer {
 
 func (do defaultOptimizer) Update(parameters ...*tensor.Tensor) {
     for _, parameter := range parameters {
-        parameter.Reduce(mat.MulScalar(parameter.GradientToMat32(), do.learningRate))
+        parameter.Reduce(mat.MulScalar(parameter.GradientToMat32(), do.learningRate).Data())
     }
 }
 
 type momentumOptimizer struct {
     learningRate float32
     momentum float32
-    velocityMap map[string]*mat.Mat32f
+    velocityMap map[int]*mat.Mat32f
 }
 
 func newMomentumOptimizer(overrides []float32) *momentumOptimizer {
     o := &momentumOptimizer{
         learningRate: defaultLearningRate,
         momentum: defaultMomentum,
-        velocityMap: make(map[string]*mat.Mat32f),
+        velocityMap: make(map[int]*mat.Mat32f),
     }
     if len(overrides) >= 1 {
         o.learningRate = overrides[0]
@@ -88,7 +88,7 @@ func (mo momentumOptimizer) Update(parameters ...*tensor.Tensor) {
         }
 
         mo.velocityMap[parameter.Id()] = mat.Add(mat.MulScalar(mo.velocityMap[parameter.Id()], mo.momentum), mat.MulScalar(parameter.GradientToMat32(), mo.learningRate))
-        parameter.Reduce(mo.velocityMap[parameter.Id()])
+        parameter.Reduce(mo.velocityMap[parameter.Id()].Data())
 	}
 }
 
@@ -97,9 +97,7 @@ type adamOptimizer struct {
     beta1 float32
     beta2 float32
     epsStable float32
-    meanMap map[string]*mat.Mat32f
-    velocityMap map[string]*mat.Mat32f
-    workerMap map[string]chan bool
+    workerMap map[int]chan bool
     out chan bool
 }
 
@@ -109,9 +107,7 @@ func newAdamOptimizer(overrides []float32) *adamOptimizer {
         beta1: defaultBeta1,
         beta2: defaultBeta2,
         epsStable: defaultEpsStable,
-        meanMap: make(map[string]*mat.Mat32f),
-        velocityMap: make(map[string]*mat.Mat32f),
-        workerMap: make(map[string]chan bool),
+        workerMap: make(map[int]chan bool),
         out: make(chan bool),
     }
     if len(overrides) >= 1 {
@@ -165,7 +161,7 @@ func adamUpdate(parameter *tensor.Tensor, in, out chan bool, beta1, beta2, epsSt
         biasCorr := mat.DivScalar(mean, 1 - float32(math.Pow(float64(beta1), count)))
         sqrtBiasCorr := mat.DivScalar(velocity, 1 - float32(math.Pow(float64(beta2), count)))
 
-        parameter.Reduce(mat.Div(mat.MulScalar(biasCorr, learningRate), mat.AddScalar(mat.Sqrt(sqrtBiasCorr), epsStable)))
+        parameter.Reduce(mat.Div(mat.MulScalar(biasCorr, learningRate), mat.AddScalar(mat.Sqrt(sqrtBiasCorr), epsStable)).Data())
 
         out <- true
     }
