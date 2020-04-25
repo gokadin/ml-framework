@@ -15,12 +15,12 @@ var nextId int
 type Tensor struct {
 	id                int
 	name              string
-	shape 			  Shape
+	shape             Shape
 	op                op
 	isGradientEnabled bool
-	ready			  bool
-	_data              []C.float
-	_grad              []C.float
+	ready             bool
+	_data             []C.float
+	_grad             []C.float
 	_tensor           *C.TENSOR
 }
 
@@ -31,8 +31,8 @@ func Variable(shapeArray ...int) *Tensor {
 	shape := Shape{X: shapeArray[0], Y: shapeArray[1]}
 
 	nextId++
-	t := &Tensor {
-		id:   nextId,
+	t := &Tensor{
+		id:    nextId,
 		shape: shape,
 	}
 
@@ -44,8 +44,8 @@ func Variable(shapeArray ...int) *Tensor {
 }
 
 func (t *Tensor) initializeNativeTensor(shape Shape) {
-	t._data = make([]C.float, shape.X * shape.Y)
-	t._grad = make([]C.float, shape.X * shape.Y)
+	t._data = make([]C.float, shape.X*shape.Y)
+	t._grad = make([]C.float, shape.X*shape.Y)
 
 	t._tensor.grad = &t._grad[0]
 	t._tensor.data = &t._data[0]
@@ -88,7 +88,7 @@ func (t *Tensor) SetGradient(grad []float32) {
 }
 
 func (t *Tensor) ToFloat32() []float32 {
-	result := make([]float32, t.shape.X * t.shape.Y)
+	result := make([]float32, t.shape.X*t.shape.Y)
 	for i := 0; i < len(result); i++ {
 		result[i] = float32(t._data[i])
 	}
@@ -96,7 +96,7 @@ func (t *Tensor) ToFloat32() []float32 {
 }
 
 func (t *Tensor) ToFloat64() []float64 {
-	result := make([]float64, t.shape.X * t.shape.Y)
+	result := make([]float64, t.shape.X*t.shape.Y)
 	for i := 0; i < len(result); i++ {
 		result[i] = float64(t._data[i])
 	}
@@ -104,7 +104,7 @@ func (t *Tensor) ToFloat64() []float64 {
 }
 
 func (t *Tensor) ToMat32f() *mat.Mat32f {
-	result := make([]float32, t.shape.X * t.shape.Y)
+	result := make([]float32, t.shape.X*t.shape.Y)
 	for i := 0; i < len(result); i++ {
 		result[i] = float32(t._data[i])
 	}
@@ -112,7 +112,7 @@ func (t *Tensor) ToMat32f() *mat.Mat32f {
 }
 
 func (t *Tensor) GradientToFloat32() []float32 {
-	result := make([]float32, t.shape.X * t.shape.Y)
+	result := make([]float32, t.shape.X*t.shape.Y)
 	for i := 0; i < len(result); i++ {
 		result[i] = float32(t._grad[i])
 	}
@@ -120,7 +120,7 @@ func (t *Tensor) GradientToFloat32() []float32 {
 }
 
 func (t *Tensor) GradientToMat32() *mat.Mat32f {
-	result := make([]float32, t.shape.X * t.shape.Y)
+	result := make([]float32, t.shape.X*t.shape.Y)
 	for i := 0; i < len(result); i++ {
 		result[i] = float32(t._grad[i])
 	}

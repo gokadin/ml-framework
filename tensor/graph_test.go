@@ -1,6 +1,7 @@
 package tensor
 
 import (
+	"github.com/gokadin/ml-framework/mat"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -15,6 +16,55 @@ func Test_graph(t *testing.T) {
 	graph.Forward(c)
 
 	assert.Equal(t, 7., c.ToFloat64()[0])
+}
+
+func Test_hydra(t *testing.T) {
+	graph := NewGraph()
+	matA := []float32{3, 3, 3, 3}
+	matB := []float32{4, 4, 4, 4}
+	a := Variable(2, 2).SetData(matA)
+	b := Variable(2, 2).SetData(matB)
+	c := Pow(Add(a, b), 2)
+	head1 := Pow(Neg(c), 3)
+	head2 := Pow(c, 2)
+
+	graph.Forward(head1)
+	graph.Forward(head2)
+
+	expectedC := mat.Pow(mat.Add(mat.NewMat32f(mat.WithShape(2, 2), matA), mat.NewMat32f(mat.WithShape(2, 2), matB)), 2)
+	expectedHead1 := mat.Pow(mat.Neg(expectedC), 3)
+	expectedHead2 := mat.Pow(expectedC, 2)
+	assert.Equal(t, expectedHead1.Data(), head1.ToFloat32())
+	assert.Equal(t, expectedHead2.Data(), head2.ToFloat32())
+}
+
+func Test_hydraBackward(t *testing.T) {
+	graph := NewGraph()
+	matA := []float32{3, 3, 3, 3}
+	matB := []float32{4, 4, 4, 4}
+	a := Variable(2, 2).SetData(matA)
+	b := Variable(2, 2).SetData(matB)
+	c := Pow(Add(a, b), 2)
+	head1 := Pow(Neg(c), 2)
+	head2Start := Pow(c, 2)
+	head2 := Pow(head2Start, 2)
+
+	graph.Forward(head1)
+	graph.Forward(head2)
+
+	expectedC := mat.Pow(mat.Add(mat.NewMat32f(mat.WithShape(2, 2), matA), mat.NewMat32f(mat.WithShape(2, 2), matB)), 2)
+	expectedHead1 := mat.Pow(mat.Neg(expectedC), 2)
+	expectedHead2 := mat.Pow(mat.Pow(expectedC, 2), 2)
+	assert.Equal(t, expectedHead1.Data(), head1.ToFloat32())
+	assert.Equal(t, expectedHead2.Data(), head2.ToFloat32())
+
+	// ..... backward
+
+	graph.Backward(head1, a)
+	graph.Backward(head2, head2Start)
+
+	expectedGradHead2 := mat.MulScalar(head2Start.ToMat32f(), 2).Data()
+	assert.Equal(t, expectedGradHead2, head2Start.GradientToFloat32())
 }
 
 //func Test_graph_some(t *testing.T) {
