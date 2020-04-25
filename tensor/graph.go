@@ -1,14 +1,19 @@
 package tensor
 
+//#cgo CFLAGS: -I.
+//#cgo LDFLAGS: -L${SRCDIR} -Wl,-rpath,${SRCDIR}
+//#include <graph.h>
+import "C"
+
 type Graph struct {
-	forwardGraphs map[string]*forwardGraph
-	backwardGraphs map[string]*backwardGraph
+	forwardGraphs map[int]*forwardGraph
+	backwardGraphs map[int]*backwardGraph
 }
 
 func NewGraph() *Graph {
 	return &Graph{
-		forwardGraphs: make(map[string]*forwardGraph),
-		backwardGraphs: make(map[string]*backwardGraph),
+		forwardGraphs: make(map[int]*forwardGraph),
+		backwardGraphs: make(map[int]*backwardGraph),
 	}
 }
 
@@ -21,7 +26,7 @@ func (g *Graph) Forward(tensor *Tensor) {
 }
 
 func (g *Graph) Backward(of *Tensor, derivatives ...*Tensor) {
-	id := backwardGraphId(of, derivatives)
+	id := generateMapKey(append(derivatives, of))
 	if _, ok := g.backwardGraphs[id]; !ok {
 		g.backwardGraphs[id] = buildBackwardGraph(derivatives, of)
 	}
@@ -29,10 +34,14 @@ func (g *Graph) Backward(of *Tensor, derivatives ...*Tensor) {
 	g.backwardGraphs[id].run()
 }
 
-func backwardGraphId(of *Tensor, derivatives []*Tensor) string {
-	id := of.id
-	for _, derivative := range derivatives {
-		id += derivative.id
+func generateMapKey(tensors []*Tensor) int {
+	key := 0
+	for i := 0; i < len(tensors); i++ {
+		partialSum := 0
+		for j := 0; j < i + 1; j++ {
+			partialSum += tensors[j].id
+		}
+		key += (partialSum + i) / (i + 1)
 	}
-	return id // truncate (md5)
+	return key
 }

@@ -26,9 +26,12 @@ func (ope *opExpand) dependencies() []*Tensor {
 }
 
 func (ope *opExpand) forward(tensor *Tensor) {
+	if ope.axis == 0 {
+		tensor.adjustShape(Shape{ope.copies, ope.a.shape.Y})
+	} else {
+		tensor.adjustShape(Shape{ope.a.shape.X, ope.a.shape.Y * ope.copies})
+	}
 	C.expand(ope.a._tensor, C.int(ope.axis), C.int(ope.copies), tensor._tensor)
-	//tensor.ConvertToRegularData()
-	//tensor.SetData(mat.Expand(ope.a.mat, ope.axis, ope.copies).Data())
 }
 
 func (ope *opExpand) backward(tensor *Tensor) {

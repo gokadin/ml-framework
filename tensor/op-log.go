@@ -19,6 +19,7 @@ func (opw *opLog) dependencies() []*Tensor {
 }
 
 func (opw *opLog) forward(tensor *Tensor) {
+	tensor.adjustShape(opw.a.shape)
 	tensor.SetData(mat.Log(opw.a.ToMat32f()).Data())
 }
 

@@ -7,19 +7,19 @@ import (
 	"os"
 )
 
-const cacheRootDir = ".cache"
+const cacheRootDir = ".ml-framework-cache"
 
 func createCache() {
-	_ = os.Mkdir(cacheRootDir, os.ModePerm)
+	_ = os.Mkdir(getCacheRoot(), os.ModePerm)
 }
 
 func isCached(filename string) bool {
-	_, err := os.Stat(fmt.Sprintf("%s/%s", cacheRootDir, filename))
+	_, err := os.Stat(fmt.Sprintf("%s/%s", getCacheRoot(), filename))
 	return !os.IsNotExist(err)
 }
 
 func addToCache(filename string, content []byte) {
-	out, err := os.Create(fmt.Sprintf("%s/%s", cacheRootDir, filename))
+	out, err := os.Create(fmt.Sprintf("%s/%s", getCacheRoot(), filename))
 	if err != nil {
 		log.Fatal("Could not write to cache")
 	}
@@ -33,7 +33,7 @@ func addToCache(filename string, content []byte) {
 }
 
 func getCachedFile(filename string) []byte {
-	file, err := os.Open(fmt.Sprintf("%s/%s", cacheRootDir, filename))
+	file, err := os.Open(fmt.Sprintf("%s/%s", getCacheRoot(), filename))
 	if err != nil {
 		log.Fatal("Could not retrieve file from cache")
 	}
@@ -44,4 +44,8 @@ func getCachedFile(filename string) []byte {
 		log.Fatal("Could not decode file from cache")
 	}
 	return bytes
+}
+
+func getCacheRoot() string {
+	return os.TempDir() + "/" + cacheRootDir
 }

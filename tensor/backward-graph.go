@@ -7,7 +7,7 @@ type backwardGraph struct {
 	done      chan bool
 	doneCount int
 	root      *Tensor
-	graph     map[string]*backwardMapping
+	graph     map[int]*backwardMapping
 }
 
 type backwardMapping struct {
@@ -21,7 +21,7 @@ func buildBackwardGraph(derivatives []*Tensor, of *Tensor) *backwardGraph {
 		start:     make(chan bool),
 		done:      make(chan bool),
 		root:      of,
-		graph:     make(map[string]*backwardMapping),
+		graph:     make(map[int]*backwardMapping),
 	}
 
 	bg.buildGraph(derivatives, of, nil)
@@ -35,7 +35,7 @@ func (bg *backwardGraph) buildGraph(derivatives []*Tensor, root, parent *Tensor)
 		return
 	}
 
-	gradientDependencies := make([]string, 0)
+	gradientDependencies := make([]int, 0)
 	for _, dependency := range root.op.dependencies() {
 		if dependency == nil {
 			continue

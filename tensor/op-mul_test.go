@@ -7,14 +7,14 @@ import (
 )
 
 func Test_mul_simple(t *testing.T) {
-	a := Variable(mat.WithShape(3, 4)).SetData([]float32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12})
-	b := Variable(mat.WithShape(3, 4)).SetData([]float32{2, 3, 4, 2, 11, 6, 15, 1, 4, 2, 10, 8})
+	a := Variable(3, 4).SetData([]float32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12})
+	b := Variable(3, 4).SetData([]float32{2, 3, 4, 2, 11, 6, 15, 1, 4, 2, 10, 8})
 	c := Mul(a, b)
 
 	c.forward()
 
-	expected := mat.Mul(a.Data(), b.Data())
-	assert.Equal(t, expected.Data(), c.Data().Data())
+	expected := mat.Mul(a.ToMat32f(), b.ToMat32f())
+	assert.Equal(t, expected.Data(), c.ToFloat32())
 }
 
 func Test_mul_big(t *testing.T) {
@@ -26,12 +26,12 @@ func Test_mul_big(t *testing.T) {
 		aMat[i] = 2
 		bMat[i] = 3
 	}
-	a := Variable(mat.WithShape(width, height)).SetData(aMat)
-	b := Variable(mat.WithShape(width, height)).SetData(bMat)
+	a := Variable(width, height).SetData(aMat)
+	b := Variable(width, height).SetData(bMat)
 	c := Mul(a, b)
 
 	c.forward()
 
-	expected := mat.Mul(a.Data(), b.Data())
-	assert.Equal(t, expected.Data(), c.Data().Data())
+	expected := mat.Mul(a.ToMat32f(), b.ToMat32f())
+	assert.Equal(t, expected.Data(), c.ToFloat32())
 }

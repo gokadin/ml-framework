@@ -19,6 +19,7 @@ func (opn *opNeg) dependencies() []*Tensor {
 }
 
 func (opn *opNeg) forward(tensor *Tensor) {
+	tensor.adjustShape(opn.a.shape)
 	tensor.SetData(mat.Neg(opn.a.ToMat32f()).Data())
 }
 

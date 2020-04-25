@@ -25,6 +25,7 @@ type metricEvents struct {
 	gameFinished chan bool
 	statusUpdate chan bool
 	loss chan float32
+	score chan int
 	moduleWeightAverage chan struct{int; float32}
 	moduleWeightGradientAverage chan struct{int; float32}
 	moduleBiasAverage chan struct{int; float32}
@@ -48,6 +49,7 @@ func makeMetricEvents() metricEvents {
 		gameFinished: make(chan bool),
 		statusUpdate: make(chan bool),
 		loss: make(chan float32),
+		score: make(chan int),
 		moduleWeightAverage: make(chan struct{int; float32}),
 		moduleWeightGradientAverage: make(chan struct{int; float32}),
 		moduleBiasAverage: make(chan struct{int; float32}),
@@ -138,6 +140,9 @@ func (m *metric) receiveEvents() {
 			m.counters["gameWins"]++
 		case <- m.events.gameFinished:
 			m.counters["totalGames"]++
+		case score := <- m.events.score:
+			m.counters["score"] += float64(score)
+			m.counters["episodes"]++
 		case loss := <- m.events.loss:
 			m.counters["lossTotal"] += float64(loss)
 			m.lossLine.XYs = append(m.lossLine.XYs, plotter.XY{Y: float64(loss), X: m.counters["epochs"]})
@@ -153,53 +158,6 @@ func (m *metric) receiveEvents() {
 		case data := <- m.events.moduleBiasGradientAverage:
 			m.counters["m" + string(data.int) + "bgAverage"] = float64(data.float32)
 		case <- m.events.statusUpdate:
-			width := 20
-			s := m.spaces(width) + "|"
-			for i := 0; i < int(m.counters["numModules"]); i++ {
-				s += fmt.Sprintf(" M%d%s|", i, m.spaces(width - 3))
-			}
-			s += "\n"
-			s += "W" + m.spaces(width - 1) + "|"
-			for i := 0; i < int(m.counters["numModules"]); i++ {
-				value := m.counters["m" + string(i) + "wAverage"]
-				spaceCount := width - 9
-				if value < 0 {
-					spaceCount--
-				}
-				s += fmt.Sprintf(" %f%s|", value, m.spaces(spaceCount))
-			}
-			s += "\n"
-			s += "W grad" + m.spaces(width - 6) + "|"
-			for i := 0; i < int(m.counters["numModules"]); i++ {
-				value := m.counters["m" + string(i) + "wgAverage"]
-				spaceCount := width - 9
-				if value < 0 {
-					spaceCount--
-				}
-				s += fmt.Sprintf(" %f%s|", value, m.spaces(spaceCount))
-			}
-			s += "\n"
-			s += "B" + m.spaces(width - 1) + "|"
-			for i := 0; i < int(m.counters["numModules"]); i++ {
-				value := m.counters["m" + string(i) + "bAverage"]
-				spaceCount := width - 9
-				if value < 0 {
-					spaceCount--
-				}
-				s += fmt.Sprintf(" %f%s|", value, m.spaces(spaceCount))
-			}
-			s += "\n"
-			s += "B grad" + m.spaces(width - 6) + "|"
-			for i := 0; i < int(m.counters["numModules"]); i++ {
-				value := m.counters["m" + string(i) + "bgAverage"]
-				spaceCount := width - 9
-				if value < 0 {
-					spaceCount--
-				}
-				s += fmt.Sprintf(" %f%s|", value, m.spaces(spaceCount))
-			}
-			s += "\n"
-			fmt.Print(s)
 			fmt.Print(fmt.Sprintf("epoch %d   loss %f   aveMoves %2.f   success %2.f%%\n",
 				int(m.counters["epochs"]),
 				m.counters["lossTotal"] / m.counters["gameActionsTotal"],

@@ -20,6 +20,7 @@ func (opw *opSigmoid) dependencies() []*Tensor {
 }
 
 func (opw *opSigmoid) forward(tensor *Tensor) {
+	tensor.adjustShape(opw.a.shape)
 	tensor.SetData(mat.Apply(opw.a.ToMat32f(), func(value float32) float32 {
 		return float32(1 / (math.Exp(-float64(value)) + 1))
 	}).Data())

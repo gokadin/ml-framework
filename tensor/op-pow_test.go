@@ -7,34 +7,34 @@ import (
 )
 
 func Test_pow_forward(t *testing.T) {
-	a := Variable(mat.WithShape(2, 2)).SetData([]float32{1, 2, 3, 4})
+	a := Variable(2, 2).SetData([]float32{1, 2, 3, 4})
 	c := Pow(a, 3)
 
 	c.forward()
 
-	assert.True(t, mat.NewMat32f(a.Shape(), []float32{1, 8, 27, 64}).Equals32f(c.mat))
+	assert.True(t, mat.NewMat32f(mat.WithShape(a.Shape().X, a.shape.Y), []float32{1, 8, 27, 64}).Equals32f(c.ToMat32f()))
 }
 
 func Test_pow_backward(t *testing.T) {
-	a := Variable(mat.WithShape(2, 2)).SetData([]float32{1, 2, 3, 4})
+	a := Variable(2, 2).SetData([]float32{1, 2, 3, 4})
 	a.isGradientEnabled = true
 	c := Pow(a, 3)
-	c.grad = mat.NewMat32fOnes(c.mat.Shape())
+	c.SetGradient(mat.Ones32f(c.Size()))
 	c.forward()
 
 	c.backward()
 
-	assert.True(t, mat.NewMat32f(a.Shape(), []float32{3, 12, 27, 48}).Equals32f(a.grad))
+	assert.True(t, mat.NewMat32f(mat.WithShape(a.Shape().X, a.shape.Y), []float32{3, 12, 27, 48}).Equals32f(a.GradientToMat32()))
 }
 
 func Test_pow_backward_forPowerOfTwo(t *testing.T) {
-	a := Variable(mat.WithShape(2, 2)).SetData([]float32{1, 2, 3, 4})
+	a := Variable(2, 2).SetData([]float32{1, 2, 3, 4})
 	a.isGradientEnabled = true
 	c := Pow(a, 2)
-	c.grad = mat.NewMat32fOnes(c.mat.Shape())
+	c.SetGradient(mat.Ones32f(c.Size()))
 	c.forward()
 
 	c.backward()
 
-	assert.True(t, mat.NewMat32f(a.Shape(), []float32{2, 4, 6, 8}).Equals32f(a.grad))
+	assert.True(t, mat.NewMat32f(mat.WithShape(a.Shape().X, a.shape.Y), []float32{2, 4, 6, 8}).Equals32f(a.GradientToMat32()))
 }

@@ -17,6 +17,7 @@ func (os *opSub) dependencies() []*Tensor {
 }
 
 func (os *opSub) forward(tensor *Tensor) {
+	tensor.adjustShape(os.a.shape)
 	tensor.SetData(mat.Sub(os.a.ToMat32f(), os.b.ToMat32f()).Data())
 }
 

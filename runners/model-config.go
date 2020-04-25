@@ -1,11 +1,17 @@
-package models
+package runners
+
+import (
+	"github.com/gokadin/ml-framework/models"
+	"github.com/gokadin/ml-framework/modules"
+)
 
 const (
 	defaultEpochs = 0
 	defaultMaxError = 0.001
 	defaultValidOutputRange = 0.1
-	defaultOptimizerType = OptimizerAdam
-	defaultLoss = LossMeanSquared
+	defaultLearningRate = 0.001
+	defaultOptimizerType = models.OptimizerAdam
+	defaultLoss = modules.LossMeanSquared
 )
 
 type ModelConfig struct {

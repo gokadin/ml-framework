@@ -24,9 +24,8 @@ func (om *opMul) dependencies() []*Tensor {
 }
 
 func (om *opMul) forward(tensor *Tensor) {
+	tensor.adjustShape(om.a.shape)
 	C.mul(om.a._tensor, om.b._tensor, tensor._tensor)
-	//tensor.ConvertToRegularData()
-	//tensor.SetData(mat.Mul(om.a.mat, om.b.mat).Data())
 }
 
 

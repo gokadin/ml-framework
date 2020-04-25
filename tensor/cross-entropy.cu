@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <cuda.h>
 #include "tensor.h"
+#include "sum.cuh"
 
 const int BLOCK_SIZE = 1024;
 
@@ -24,20 +25,6 @@ __global__ void sum1_log_neg(float *a, float *target, int width, int height)
             sum += a[row * width + i];
         }
         target[row] = -log(sum);
-    }
-}
-
-__global__ void sum0(float *a, float *target, int width, int height)
-{
-    int col = blockIdx.x * blockDim.x + threadIdx.x;
-    float sum = 0;
-    if (col < width)
-    {
-        for (int i = 0; i < height; i++)
-        {
-            sum += a[col + i * width];
-        }
-        target[col] = sum;
     }
 }
 

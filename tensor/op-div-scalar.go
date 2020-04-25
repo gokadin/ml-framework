@@ -20,6 +20,7 @@ func (opw *opDivScalar) dependencies() []*Tensor {
 }
 
 func (opw *opDivScalar) forward(tensor *Tensor) {
+	tensor.adjustShape(opw.a.shape)
 	tensor.SetData(mat.DivScalar(opw.a.ToMat32f(), opw.scalar).Data())
 }
 

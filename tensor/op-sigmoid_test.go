@@ -8,29 +8,29 @@ import (
 )
 
 func Test_sigmoid_forward(t *testing.T) {
-	a := Variable(mat.WithShape(2, 2)).SetData([]float32{1, 2, 3, 4})
+	a := Variable(2, 2).SetData([]float32{1, 2, 3, 4})
 	c := Sigmoid(a)
 
 	c.forward()
 
-	result := mat.Apply(a.mat, func(value float32) float32 {
+	result := mat.Apply(a.ToMat32f(), func(value float32) float32 {
 		return float32(1 / (math.Exp(-float64(value)) + 1))
 	})
-	assert.True(t, result.Equals32f(c.mat))
+	assert.True(t, result.Equals32f(c.ToMat32f()))
 }
 
 func Test_sigmoid_backward(t *testing.T) {
-	a := Variable(mat.WithShape(2, 2)).SetData([]float32{1, 2, 3, 4})
+	a := Variable(2, 2).SetData([]float32{1, 2, 3, 4})
 	a.isGradientEnabled = true
 	c := Sigmoid(a)
-	c.grad = mat.NewMat32fOnes(c.mat.Shape())
+	c.SetGradient(mat.Ones32f(c.Size()))
 	c.forward()
 
 	c.backward()
 
-	result := mat.Apply(c.mat, func(value float32) float32 {
+	result := mat.Apply(c.ToMat32f(), func(value float32) float32 {
 		return value * (1 - value)
 	})
-	assert.True(t, result.Equals32f(a.grad))
+	assert.True(t, result.Equals32f(a.GradientToMat32()))
 }
 

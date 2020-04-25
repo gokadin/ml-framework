@@ -8,6 +8,7 @@ import (
 const ActivationIdentity = "identity"
 const ActivationSigmoid = "sigmoid"
 const ActivationRelu = "relu"
+const ActivationLeakyRelu = "leaky-relu"
 const ActivationSoftmax = "softmax"
 
 func activate(t *tensor.Tensor, activation string) *tensor.Tensor {
@@ -18,6 +19,8 @@ func activate(t *tensor.Tensor, activation string) *tensor.Tensor {
 		return tensor.Sigmoid(t)
 	case ActivationRelu:
 		return tensor.Relu(t)
+	case ActivationLeakyRelu:
+		return tensor.LeakyRelu(t)
 	case ActivationSoftmax:
 		return tensor.Softmax(t)
 	}
