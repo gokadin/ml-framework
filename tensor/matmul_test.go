@@ -155,7 +155,7 @@ func Test_dot_backward_big(t *testing.T) {
 	b := Variable(128, 10).SetData(bMat)
 	b.isGradientEnabled = true
 	c := Matmul(a, b)
-	c.SetGradient(mat.Ones32f(c.Size()))
+	c.SetGradient(mat.Ones32f(c.Shape().Size()))
 	c.forward()
 
 	c.backward()

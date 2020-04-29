@@ -19,7 +19,7 @@ func Test_pow_backward(t *testing.T) {
 	a := Variable(2, 2).SetData([]float32{1, 2, 3, 4})
 	a.isGradientEnabled = true
 	c := Pow(a, 3)
-	c.SetGradient(mat.Ones32f(c.Size()))
+	c.SetGradient(mat.Ones32f(c.Shape().Size()))
 	c.forward()
 
 	c.backward()
@@ -31,7 +31,7 @@ func Test_pow_backward_forPowerOfTwo(t *testing.T) {
 	a := Variable(2, 2).SetData([]float32{1, 2, 3, 4})
 	a.isGradientEnabled = true
 	c := Pow(a, 2)
-	c.SetGradient(mat.Ones32f(c.Size()))
+	c.SetGradient(mat.Ones32f(c.Shape().Size()))
 	c.forward()
 
 	c.backward()

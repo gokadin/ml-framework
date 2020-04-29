@@ -22,7 +22,7 @@ func Test_sub_backward(t *testing.T) {
 	b := Variable(2, 2).SetData([]float32{1, 2, 1, 4})
 	b.isGradientEnabled = true
 	c := Sub(a, b)
-	c.SetGradient(mat.Ones32f(c.Size()))
+	c.SetGradient(mat.Ones32f(c.Shape().Size()))
 	c.forward()
 
 	c.backward()

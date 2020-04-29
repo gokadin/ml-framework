@@ -2,36 +2,37 @@
 #define TENSOR_H
 
 #include <stdlib.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include "op.h"
 
-//typedef enum
-//{
-//    ADD,
-//    MATMUL
-//} OP_TYPE;
-
-//typedef struct {
-//    OP_TYPE op_type;
-//    struct TENSOR *dependencies;
-//} TENSOR_GRAPH;
+struct TENSOR;
 
 typedef struct {
     int x;
     int y;
+    int size;
 } SHAPE;
 
-typedef struct {
+typedef struct TENSOR {
     float *data;
     float *grad;
     SHAPE mat_shape;
     SHAPE grad_shape;
+    bool run_on_gpu;
+    OP *op;
 } TENSOR;
 
 TENSOR *alloc_tensor();
 
 void free_tensor(TENSOR *p);
 
-//void set_op(OP_TYPE op_type, TENSOR *tensor, TENSOR *a, TENSOR *b);
+void set_mat_shape(TENSOR *tensor, int x, int y);
 
-//void forward(TENSOR *tensor);
+void set_grad_shape(TENSOR *tensor, int x, int y);
+
+int forward(TENSOR *tensor);
+
+int backward(TENSOR *tensor);
 
 #endif

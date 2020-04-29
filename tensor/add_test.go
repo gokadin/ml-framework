@@ -6,50 +6,67 @@ import (
 	"testing"
 )
 
-func Test_add_forward(t *testing.T) {
-	a := Variable(1, 2).SetData([]float32{1, 2})
-	b := Variable(1, 2).SetData([]float32{2, 3})
-	c := Add(a, b)
-
-	c.forward()
-
-	assert.Equal(t, []float32{3, 5}, c.ToFloat32())
+type addTestCases struct {
+	name string
+	a *Tensor
+	b *Tensor
+	runOnGpu bool
 }
 
-func Test_add_forward_multipleAssociations(t *testing.T) {
-	a := Variable(2, 2).SetData([]float32{1, 2, 2, 3})
-	b := Variable(2, 2).SetData([]float32{2, 3, 1, 2})
-	c := Add(a, b)
+func buildAddTestCases() []addTestCases {
+	return []addTestCases{
+		{"1x1 GPU", Variable(1, 1).SetData([]float32{1}), Variable(1, 1).SetData([]float32{2}), true},
+		{"1x1 CPU", Variable(1, 1).SetData([]float32{1}), Variable(1, 1).SetData([]float32{2}), false},
+		{"2x2 GPU", Variable(2, 2).SetData([]float32{1, 2, 3, 4}), Variable(2, 2).SetData([]float32{5, 6, 7, 8}), true},
+		{"2x2 CPU", Variable(2, 2).SetData([]float32{1, 2, 3, 4}), Variable(2, 2).SetData([]float32{5, 6, 7, 8}), false},
+	}
+}
 
-	c.forward()
+func Test_add_forward(t *testing.T) {
+	t.Parallel()
+	for _, test := range buildAddTestCases() {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			t.Log(test.name)
 
-	assert.Equal(t, []float32{3, 5, 3, 5}, c.ToFloat32())
+			expected := mat.Add(test.a.ToMat32f(), test.b.ToMat32f()).Data()
+			c := Add(test.a, test.b)
+			c.RunOnGpu(test.runOnGpu)
+
+			c.forward()
+
+			assert.Equal(t, expected, c.ToFloat32())
+		})
+	}
 }
 
 func Test_add_backward(t *testing.T) {
-	a := Variable(2, 2).SetData([]float32{1, 2, 2, 3})
-	a.isGradientEnabled = true
-	b := Variable(2, 2).SetData([]float32{2, 3, 1, 2})
-	b.isGradientEnabled = true
-	c := Add(a, b)
-	c.forward()
-	c.SetGradient(mat.Ones32f(c.Size()))
+	t.Parallel()
+	for _, test := range buildAddTestCases() {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			t.Log(test.name)
 
-	c.backward()
+			c := Add(test.a, test.b)
+			c.RunOnGpu(test.runOnGpu)
+			c.forward()
+			c.SetGradient(mat.Ones32f(c.Shape().Size()))
 
-	assert.Equal(t, []float32{1, 1, 1, 1}, a.GradientToFloat32())
-	assert.Equal(t, []float32{1, 1, 1, 1}, b.GradientToFloat32())
+			c.backward()
+
+			assert.Equal(t, c.GradientToFloat32(), test.a.GradientToFloat32())
+			assert.Equal(t, c.GradientToFloat32(), test.b.GradientToFloat32())
+		})
+	}
 }
 
-func Test_add_backward_isGradientsAreDisabled(t *testing.T) {
-	a := Variable(2, 2).SetData([]float32{1, 2, 2, 3})
-	b := Variable(2, 2).SetData([]float32{2, 3, 1, 2})
+func Test_add_forward_invalid_shapes(t *testing.T) {
+	a := Variable(1, 2).SetData([]float32{1, 2})
+	b := Variable(1, 3).SetData([]float32{1, 2, 3})
 	c := Add(a, b)
+
 	c.forward()
-	c.SetGradient(mat.Ones32f(c.Size()))
 
-	c.backward()
-
-	assert.Nil(t, a.GradientToFloat32())
-	assert.Nil(t, b.GradientToFloat32())
+	// ...
 }
+

@@ -14,7 +14,7 @@ __global__ void add(float *a, float* b, float *target, int size)
 
 extern "C" {
 
-    void add(TENSOR *a, TENSOR* b, TENSOR *target) {
+    int gpu_add(TENSOR *a, TENSOR* b, TENSOR *target) {
         int size = a->mat_shape.x * a->mat_shape.y;
         int msize = size * sizeof(float);
         float* gpu_a;
@@ -36,6 +36,8 @@ extern "C" {
         cudaFree(gpu_a);
         cudaFree(gpu_b);
         cudaFree(gpu_target);
+
+        return 0;
     }
 
 }

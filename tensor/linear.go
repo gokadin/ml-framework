@@ -41,7 +41,8 @@ func (oa *opLinear) backward(tensor *Tensor) {
 }
 
 func Linear(a, x, b *Tensor) *Tensor {
-	result := Variable(a.shape.X, b.shape.Y)
-	result.op = &opLinear{a, x, b}
-	return result
+	//result := Variable(a.shape.X, b.shape.Y)
+	//result.op = &opLinear{a, x, b}
+	return Add(Matmul(a, x), Expand(b, 0, a.shape.X))
+	//return result
 }

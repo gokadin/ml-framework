@@ -23,7 +23,7 @@ func Test_sigmoid_backward(t *testing.T) {
 	a := Variable(2, 2).SetData([]float32{1, 2, 3, 4})
 	a.isGradientEnabled = true
 	c := Sigmoid(a)
-	c.SetGradient(mat.Ones32f(c.Size()))
+	c.SetGradient(mat.Ones32f(c.Shape().Size()))
 	c.forward()
 
 	c.backward()

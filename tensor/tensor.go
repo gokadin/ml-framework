@@ -7,7 +7,8 @@ import (
 )
 
 //#cgo CFLAGS: -I.
-//#include <tensor.cpp>
+//#cgo LDFLAGS: -L${SRCDIR} -Wl,-rpath,${SRCDIR} -ladd
+//#include <tensor.h>
 import "C"
 
 var nextId int
@@ -49,8 +50,8 @@ func (t *Tensor) initializeNativeTensor(shape Shape) {
 
 	t._tensor.grad = &t._grad[0]
 	t._tensor.data = &t._data[0]
-	t._tensor.mat_shape.x = C.int(shape.X)
-	t._tensor.mat_shape.y = C.int(shape.Y)
+	C.set_mat_shape(t._tensor, C.int(shape.X), C.int(shape.Y))
+	C.set_grad_shape(t._tensor, C.int(shape.X), C.int(shape.Y))
 }
 
 func free(t *Tensor) {
@@ -68,6 +69,10 @@ func (t *Tensor) Name() string {
 func (t *Tensor) SetName(name string) *Tensor {
 	t.name = name
 	return t
+}
+
+func (t *Tensor) RunOnGpu(value bool) {
+	t._tensor.run_on_gpu = C.bool(value)
 }
 
 func (t *Tensor) SetData(data []float32) *Tensor {
@@ -137,10 +142,6 @@ func (t *Tensor) Shape() Shape {
 	return t.shape
 }
 
-func (t *Tensor) Size() int {
-	return t.shape.X * t.shape.Y
-}
-
 func (t *Tensor) adjustShape(shape Shape) {
 	if t.shape.X != shape.X || t.shape.Y != t.shape.Y {
 		t.shape = shape
@@ -155,11 +156,30 @@ func (t *Tensor) Reshape(shape ...int) *Tensor {
 }
 
 func (t *Tensor) forward() {
-	t.op.forward(t)
+	if t.op.name() == operationAdd {
+		handleOpResult(int(C.forward(t._tensor)))
+	} else {
+		t.op.forward(t)
+	}
 	t.ready = true
 }
 
 func (t *Tensor) backward() {
-	t.op.backward(t)
+	if t.op.name() == operationAdd {
+		handleOpResult(int(C.backward(t._tensor)))
+	} else {
+		t.op.backward(t)
+	}
 	t.ready = false
+}
+
+func handleOpResult(code int) {
+	if code == 0 {
+		return
+	}
+
+	switch code {
+	case 1:
+		log.Fatal("operation failed due to incompatible shapes")
+	}
 }

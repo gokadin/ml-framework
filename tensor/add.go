@@ -1,7 +1,5 @@
 package tensor
 
-//#cgo CFLAGS: -I.
-//#cgo LDFLAGS: -L${SRCDIR} -Wl,-rpath,${SRCDIR} -ladd
 //#include <add.h>
 import "C"
 
@@ -21,21 +19,17 @@ func (oa *opAdd) dependencies() []*Tensor {
 
 func (oa *opAdd) forward(tensor *Tensor) {
 	tensor.adjustShape(oa.a.shape)
-	C.add(oa.a._tensor, oa.b._tensor, tensor._tensor)
+	C.forward(tensor._tensor)
 }
 
 func (oa *opAdd) backward(tensor *Tensor) {
-	if oa.a.isGradientEnabled {
-		oa.a.SetGradient(tensor.GradientToFloat32())
-	}
-
-	if oa.b.isGradientEnabled {
-		oa.b.SetGradient(tensor.GradientToFloat32())
-	}
+	oa.a.SetGradient(tensor.GradientToFloat32())
+	oa.b.SetGradient(tensor.GradientToFloat32())
 }
 
 func Add(a, b *Tensor) *Tensor {
 	result := Variable(a.shape.ToArray()...)
 	result.op = &opAdd{a, b}
+	result._tensor.op = C.alloc_add(a._tensor, b._tensor)
 	return result
 }
