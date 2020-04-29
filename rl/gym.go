@@ -2,6 +2,7 @@ package rl
 
 import (
 	"fmt"
+	"github.com/gokadin/ml-framework/mat"
 	gym "github.com/openai/gym-http-api/binding-go"
 )
 
@@ -34,5 +35,6 @@ func obsToState(obs []float64) []float32 {
 	for i := 0; i < len(obs); i++ {
 		state[i] = float32(obs[i])
 	}
+	mat.Normalize32f(state)
 	return state
 }
