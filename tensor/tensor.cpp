@@ -21,5 +21,5 @@ void free_tensor(TENSOR *tensor)
 
 //void forward(TENSOR *tensor)
 //{
-//	add(tensor->graph.dependencies[0].data, tensor->graph.dependencies[1].data, tensor->data, tensor->shapeX * tensor->shapeY);
+//	add(tensor->graph.dependencies[0].data, tensor->graph.dependencies[1].data, tensor->data, tensor->mat_shape.x * tensor->mat_shape.y);
 //}

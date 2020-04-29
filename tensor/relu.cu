@@ -19,7 +19,7 @@ __global__ void relu(float *a, float *target, int size)
 extern "C" {
 
     void relu(TENSOR *a, TENSOR *target) {
-        int size = a->shapeX * a->shapeY;
+        int size = a->mat_shape.x * a->mat_shape.y;
         int msize = size * sizeof(float);
         float* gpu_a;
         float* gpu_target;

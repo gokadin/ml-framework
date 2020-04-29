@@ -32,7 +32,7 @@ extern "C" {
 
     void cross_entropy(TENSOR *a, TENSOR* b, TENSOR *target) {
         float* gpu_a;
-        int size = a->shapeX * a->shapeY;
+        int size = a->mat_shape.x * a->mat_shape.y;
         int msize = size * sizeof(float);
         cudaMalloc((void**)&gpu_a, msize);
         cudaMemcpy(gpu_a, &a->data[0], msize, cudaMemcpyHostToDevice);
@@ -49,26 +49,26 @@ extern "C" {
 
         dim3 blockSize = dim3(BLOCK_SIZE);
         dim3 gridSize = dim3((size + BLOCK_SIZE - 1) / BLOCK_SIZE);
-        mul_in_place<<<gridSize, blockSize>>>(gpu_a, gpu_b, a->shapeX * a->shapeY);
+        mul_in_place<<<gridSize, blockSize>>>(gpu_a, gpu_b, a->mat_shape.x * a->mat_shape.y);
 
         // SUM1 - LOG - NEG
 
         float* gpu_sum1_target;
-        int msize_sum1_target = a->shapeX * sizeof(float);
+        int msize_sum1_target = a->mat_shape.x * sizeof(float);
         cudaMalloc((void**)&gpu_sum1_target, msize_sum1_target);
 
-        gridSize = dim3((a->shapeX + BLOCK_SIZE - 1) / BLOCK_SIZE);
-        sum1_log_neg<<<gridSize, blockSize>>>(gpu_a, gpu_sum1_target, a->shapeY, a->shapeX);
+        gridSize = dim3((a->mat_shape.x + BLOCK_SIZE - 1) / BLOCK_SIZE);
+        sum1_log_neg<<<gridSize, blockSize>>>(gpu_a, gpu_sum1_target, a->mat_shape.y, a->mat_shape.x);
 
         // SUM0
 
-        gridSize = dim3((a->shapeX + BLOCK_SIZE - 1) / BLOCK_SIZE);
-        sum0<<<gridSize, blockSize>>>(gpu_sum1_target, gpu_target, 1, a->shapeX);
+        gridSize = dim3((a->mat_shape.x + BLOCK_SIZE - 1) / BLOCK_SIZE);
+        sum0<<<gridSize, blockSize>>>(gpu_sum1_target, gpu_target, 1, a->mat_shape.x);
 
         // copy back
 
         cudaMemcpy(&target->data[0], gpu_target, msize_target, cudaMemcpyDeviceToHost);
-        target->data[0] /= a->shapeX;
+        target->data[0] /= a->mat_shape.x;
 
         cudaFree(gpu_a);
         cudaFree(gpu_b);

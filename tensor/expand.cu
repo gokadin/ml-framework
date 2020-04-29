@@ -19,12 +19,12 @@ __global__ void expand_x(float *a, float *target, int copies, int size_a_y)
 extern "C" {
 
     void expand(TENSOR *a, int axis, int copies, TENSOR *target) {
-        int size_a = a->shapeX * a->shapeY;
+        int size_a = a->mat_shape.x * a->mat_shape.y;
         int size_target = 0;
         if (axis == 0) {
-            size_target = copies * a->shapeY;
+            size_target = copies * a->mat_shape.y;
         } else if (axis == 1) {
-            size_target = a->shapeX * a->shapeY * copies;
+            size_target = a->mat_shape.x * a->mat_shape.y * copies;
         }
         int msize_a = size_a * sizeof(float);
         int msize_target = size_target * sizeof(float);
@@ -37,8 +37,8 @@ extern "C" {
 
         if (axis == 0) {
             dim3 blockSize = dim3(32, 32);
-            dim3 gridSize = dim3((copies + blockSize.x - 1) / blockSize.x, (a->shapeY + blockSize.y - 1) / blockSize.y);
-            expand_x<<<gridSize, blockSize>>>(gpu_a, gpu_target, copies, a->shapeY);
+            dim3 gridSize = dim3((copies + blockSize.x - 1) / blockSize.x, (a->mat_shape.y + blockSize.y - 1) / blockSize.y);
+            expand_x<<<gridSize, blockSize>>>(gpu_a, gpu_target, copies, a->mat_shape.y);
         } else {
 //            expand<<<size / 256 + 1,256>>>(gpu_a, gpu_target, size);
         }

@@ -9,23 +9,21 @@
 //    MATMUL
 //} OP_TYPE;
 
-struct TENSOR;
-
-/* TENSOR_GRAPH */
-
 //typedef struct {
 //    OP_TYPE op_type;
 //    struct TENSOR *dependencies;
 //} TENSOR_GRAPH;
 
-/* TENSOR */
+typedef struct {
+    int x;
+    int y;
+} SHAPE;
 
-typedef struct TENSOR {
+typedef struct {
     float *data;
     float *grad;
-    int shapeX;
-    int shapeY;
-//    TENSOR_GRAPH graph;
+    SHAPE mat_shape;
+    SHAPE grad_shape;
 } TENSOR;
 
 TENSOR *alloc_tensor();

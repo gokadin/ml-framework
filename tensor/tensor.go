@@ -49,8 +49,8 @@ func (t *Tensor) initializeNativeTensor(shape Shape) {
 
 	t._tensor.grad = &t._grad[0]
 	t._tensor.data = &t._data[0]
-	t._tensor.shapeX = C.int(shape.X)
-	t._tensor.shapeY = C.int(shape.Y)
+	t._tensor.mat_shape.x = C.int(shape.X)
+	t._tensor.mat_shape.y = C.int(shape.Y)
 }
 
 func free(t *Tensor) {
