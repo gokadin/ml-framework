@@ -20,7 +20,6 @@ func (opw *opDivScalar) dependencies() []*Tensor {
 }
 
 func (opw *opDivScalar) forward(tensor *Tensor) {
-	tensor.adjustShape(opw.a.shape)
 	tensor.SetData(mat.DivScalar(opw.a.ToMat32f(), opw.scalar).Data())
 }
 
@@ -30,7 +29,7 @@ func (opw *opDivScalar) backward(tensor *Tensor) {
 }
 
 func DivScalar(a *Tensor, scalar float32) *Tensor {
-	result := Variable(a.shape.X, a.shape.Y)
+	result := Variable(a.Shape().X, a.Shape().Y)
 	result.op = &opDivScalar{a, scalar}
 	return result
 }

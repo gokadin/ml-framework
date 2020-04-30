@@ -18,7 +18,6 @@ func (oa *opAdd) dependencies() []*Tensor {
 }
 
 func (oa *opAdd) forward(tensor *Tensor) {
-	tensor.adjustShape(oa.a.shape)
 	C.forward(tensor._tensor)
 }
 
@@ -28,7 +27,7 @@ func (oa *opAdd) backward(tensor *Tensor) {
 }
 
 func Add(a, b *Tensor) *Tensor {
-	result := Variable(a.shape.ToArray()...)
+	result := Variable(a.Shape().ToArray()...)
 	result.op = &opAdd{a, b}
 	result._tensor.op = C.alloc_add(a._tensor, b._tensor)
 	return result

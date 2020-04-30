@@ -85,7 +85,7 @@ func Test_dot_forward_differentSimple(t *testing.T) {
 
 	c.forward()
 
-	assert.True(t, mat.NewMat32f(mat.WithShape(a.Shape().X, a.shape.Y), []float32{4, 1, 2, 2}).Equals32f(c.ToMat32f()))
+	assert.True(t, mat.NewMat32f(mat.WithShape(a.Shape().X, a.Shape().Y), []float32{4, 1, 2, 2}).Equals32f(c.ToMat32f()))
 }
 
 func Test_dot_forward_differentSizes(t *testing.T) {
@@ -126,7 +126,7 @@ func Test_dot_backward(t *testing.T) {
 	b := Variable(2, 2).SetData([]float32{4, 1, 2, 2})
 	b.isGradientEnabled = true
 	c := Matmul(a, b)
-	c.SetGradient(mat.Ones32f(c.Shape().X * c.shape.Y))
+	c.SetGradient(mat.Ones32f(c.Shape().X * c.Shape().Y))
 	c.forward()
 
 	c.backward()

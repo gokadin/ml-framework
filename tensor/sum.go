@@ -26,11 +26,6 @@ func (ops *opSum) dependencies() []*Tensor {
 }
 
 func (ops *opSum) forward(tensor *Tensor) {
-	if ops.axis == 0 {
-		tensor.adjustShape(Shape{1, ops.a.shape.Y})
-	} else {
-		tensor.adjustShape(Shape{ops.a.shape.X, 1})
-	}
 	C.sum(ops.a._tensor, C.int(ops.axis), tensor._tensor)
 }
 
@@ -51,6 +46,6 @@ func Sum(a *Tensor, axis int) *Tensor {
 	} else {
 		log.Fatal("axis unknown: " + string(axis))
 	}
-	result.op = &opSum{a, axis, a.shape}
+	result.op = &opSum{a, axis, a.Shape()}
 	return result
 }

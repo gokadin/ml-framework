@@ -65,8 +65,22 @@ func Test_add_forward_invalid_shapes(t *testing.T) {
 	b := Variable(1, 3).SetData([]float32{1, 2, 3})
 	c := Add(a, b)
 
+	assert.Panics(t, c.forward)
+}
+
+func Test_add_forward_reshape(t *testing.T) {
+	a := Variable(1, 2)
+	b := Variable(1, 2)
+	c := Add(a, b)
+	a.Reshape(2, 2)
+	b.Reshape(2, 2)
+	a.SetData([]float32{1, 2, 3, 4})
+	b.SetData([]float32{1, 2, 3, 4})
+	expected := mat.Add(a.ToMat32f(), b.ToMat32f()).Data()
+
 	c.forward()
 
-	// ...
+	assert.Equal(t, a.Shape().ToArray(), c.Shape().ToArray())
+	assert.Equal(t, expected, c.ToFloat32())
 }
 

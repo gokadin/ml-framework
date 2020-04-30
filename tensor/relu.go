@@ -24,7 +24,6 @@ func (opw *opRelu) dependencies() []*Tensor {
 }
 
 func (opw *opRelu) forward(tensor *Tensor) {
-	tensor.adjustShape(opw.a.shape)
 	C.relu(opw.a._tensor, tensor._tensor)
 	//tensor.SetData(mat.Apply(tensor.ToMat32f(), func(value float32) float32 {
 	//	if value > 0 {
@@ -45,7 +44,7 @@ func (opw *opRelu) backward(tensor *Tensor) {
 }
 
 func Relu(a *Tensor) *Tensor {
-	result := Variable(a.shape.X, a.shape.Y)
+	result := Variable(a.Shape().X, a.Shape().Y)
 	result.op = &opRelu{a}
 	return result
 }

@@ -17,7 +17,6 @@ func (os *opSub) dependencies() []*Tensor {
 }
 
 func (os *opSub) forward(tensor *Tensor) {
-	tensor.adjustShape(os.a.shape)
 	tensor.SetData(mat.Sub(os.a.ToMat32f(), os.b.ToMat32f()).Data())
 }
 
@@ -32,7 +31,7 @@ func (os *opSub) backward(tensor *Tensor) {
 }
 
 func Sub(a, b *Tensor) *Tensor {
-	result := Variable(a.shape.X, a.shape.Y)
+	result := Variable(a.Shape().X, a.Shape().Y)
 	result.op = &opSub{a, b}
 	return result
 }

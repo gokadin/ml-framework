@@ -1,8 +1,9 @@
 #include "tensor.h"
 
-TENSOR *alloc_tensor()
+TENSOR *alloc_tensor(int id)
 {
     TENSOR *tensor = (TENSOR*)malloc(sizeof(TENSOR));
+    tensor->id = id;
     tensor->run_on_gpu = true;
     return tensor;
 }
@@ -17,18 +18,9 @@ void free_tensor(TENSOR *tensor)
     free(tensor);
 }
 
-void set_mat_shape(TENSOR *tensor, int x, int y)
+SHAPE calculate_op_shape(struct TENSOR *tensor)
 {
-    tensor->mat_shape.x = x;
-    tensor->mat_shape.y = y;
-    tensor->mat_shape.size = x * y;
-}
-
-void set_grad_shape(TENSOR *tensor, int x, int y)
-{
-    tensor->grad_shape.x = x;
-    tensor->grad_shape.y = y;
-    tensor->grad_shape.size = x * y;
+    return tensor->op->target_shape(tensor);
 }
 
 int forward(TENSOR *tensor)

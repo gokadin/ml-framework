@@ -21,9 +21,8 @@ func (omm *opMatmul) dependencies() []*Tensor {
 }
 
 func (omm *opMatmul) forward(tensor *Tensor) {
-	tensor.adjustShape(Shape{omm.a.shape.X, omm.b.shape.Y})
-	aMat := mat.NewMat32f(mat.WithShape(omm.a.shape.X, omm.a.shape.Y), omm.a.ToFloat32())
-	bMat := mat.NewMat32f(mat.WithShape(omm.b.shape.X, omm.b.shape.Y), omm.b.ToFloat32())
+	aMat := mat.NewMat32f(mat.WithShape(omm.a.Shape().X, omm.a.Shape().Y), omm.a.ToFloat32())
+	bMat := mat.NewMat32f(mat.WithShape(omm.b.Shape().X, omm.b.Shape().Y), omm.b.ToFloat32())
 	tensor.SetData(mat.MatMulParallel(aMat, bMat).Data())
 }
 
@@ -32,7 +31,7 @@ func (omm *opMatmul) backward(tensor *Tensor) {
 }
 
 func Matmul(a, b *Tensor) *Tensor {
-	result := Variable(a.shape.X, b.shape.Y)
+	result := Variable(a.Shape().X, b.Shape().Y)
 	result.op = &opMatmul{a, b}
 	return result
 }

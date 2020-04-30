@@ -20,7 +20,6 @@ func (opw *opPow) dependencies() []*Tensor {
 }
 
 func (opw *opPow) forward(tensor *Tensor) {
-	tensor.adjustShape(opw.a.shape)
 	tensor.SetData(mat.Pow(opw.a.ToMat32f(), float64(opw.power)).Data())
 }
 
@@ -33,7 +32,7 @@ func (opw *opPow) backward(tensor *Tensor) {
 }
 
 func Pow(a *Tensor, power float32) *Tensor {
-	result := Variable(a.shape.X, a.shape.Y)
+	result := Variable(a.Shape().X, a.Shape().Y)
 	result.op = &opPow{a, power}
 	return result
 }

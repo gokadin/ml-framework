@@ -19,7 +19,6 @@ func (opw *opSoftmax) dependencies() []*Tensor {
 }
 
 func (opw *opSoftmax) forward(tensor *Tensor) {
-	tensor.adjustShape(opw.a.shape)
 	tensor.SetData(mat.Softmax(opw.a.ToMat32f()).Data())
 }
 
@@ -28,7 +27,7 @@ func (opw *opSoftmax) backward(tensor *Tensor) {
 }
 
 func Softmax(a *Tensor) *Tensor {
-	result := Variable(a.shape.X, a.shape.Y)
+	result := Variable(a.Shape().X, a.Shape().Y)
 	result.op = &opSoftmax{a}
 	return result
 }

@@ -24,7 +24,6 @@ func (om *opMul) dependencies() []*Tensor {
 }
 
 func (om *opMul) forward(tensor *Tensor) {
-	tensor.adjustShape(om.a.shape)
 	C.mul(om.a._tensor, om.b._tensor, tensor._tensor)
 }
 
@@ -40,7 +39,7 @@ func (om *opMul) backward(tensor *Tensor) {
 }
 
 func Mul(a, b *Tensor) *Tensor {
-	result := Variable(a.shape.X, a.shape.Y)
+	result := Variable(a.Shape().X, a.Shape().Y)
 	result.op = &opMul{a, b}
 	return result
 }

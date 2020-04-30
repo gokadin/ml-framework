@@ -19,7 +19,6 @@ func (opw *opLeakyRelu) dependencies() []*Tensor {
 }
 
 func (opw *opLeakyRelu) forward(tensor *Tensor) {
-	tensor.adjustShape(opw.a.shape)
 	tensor.SetData(mat.Apply(opw.a.ToMat32f(), func(value float32) float32 {
 		if value > 0 {
 			return value
@@ -39,7 +38,7 @@ func (opw *opLeakyRelu) backward(tensor *Tensor) {
 }
 
 func LeakyRelu(a *Tensor) *Tensor {
-	result := Variable(a.shape.X, a.shape.Y)
+	result := Variable(a.Shape().X, a.Shape().Y)
 	result.op = &opLeakyRelu{a}
 	return result
 }
