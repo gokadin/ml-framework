@@ -32,7 +32,7 @@ func (opw *opPow) backward(tensor *Tensor) {
 }
 
 func Pow(a *Tensor, power float32) *Tensor {
-	result := Variable(a.Shape().X, a.Shape().Y)
+	result := OfShape(a.Shape().X, a.Shape().Y)
 	result.op = &opPow{a, power}
 	return result
 }

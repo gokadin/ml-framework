@@ -8,7 +8,7 @@ import (
 )
 
 func Test_sigmoid_forward(t *testing.T) {
-	a := Variable(2, 2).SetData([]float32{1, 2, 3, 4})
+	a := OfShape(2, 2).SetData([]float32{1, 2, 3, 4})
 	c := Sigmoid(a)
 
 	c.forward()
@@ -20,7 +20,7 @@ func Test_sigmoid_forward(t *testing.T) {
 }
 
 func Test_sigmoid_backward(t *testing.T) {
-	a := Variable(2, 2).SetData([]float32{1, 2, 3, 4})
+	a := OfShape(2, 2).SetData([]float32{1, 2, 3, 4})
 	a.isGradientEnabled = true
 	c := Sigmoid(a)
 	c.SetGradient(mat.Ones32f(c.Shape().Size()))

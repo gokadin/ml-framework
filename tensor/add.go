@@ -18,16 +18,16 @@ func (oa *opAdd) dependencies() []*Tensor {
 }
 
 func (oa *opAdd) forward(tensor *Tensor) {
-	C.forward(tensor._tensor)
+	//C.forward(tensor._tensor)
 }
 
 func (oa *opAdd) backward(tensor *Tensor) {
-	oa.a.SetGradient(tensor.GradientToFloat32())
-	oa.b.SetGradient(tensor.GradientToFloat32())
+	//oa.a.SetGradient(tensor.GradientToFloat32())
+	//oa.b.SetGradient(tensor.GradientToFloat32())
 }
 
 func Add(a, b *Tensor) *Tensor {
-	result := Variable(a.Shape().ToArray()...)
+	result := OfShape(a.Shape().ToArray()...)
 	result.op = &opAdd{a, b}
 	result._tensor.op = C.alloc_add(a._tensor, b._tensor)
 	return result

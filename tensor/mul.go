@@ -39,7 +39,7 @@ func (om *opMul) backward(tensor *Tensor) {
 }
 
 func Mul(a, b *Tensor) *Tensor {
-	result := Variable(a.Shape().X, a.Shape().Y)
+	result := OfShape(a.Shape().X, a.Shape().Y)
 	result.op = &opMul{a, b}
 	return result
 }

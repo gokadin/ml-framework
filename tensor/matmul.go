@@ -27,11 +27,11 @@ func (omm *opMatmul) forward(tensor *Tensor) {
 }
 
 func (omm *opMatmul) backward(tensor *Tensor) {
-	C.matmul_backward(tensor._tensor, omm.a._tensor, omm.b._tensor)
+	C.gpu_matmul_backward(tensor._tensor, omm.a._tensor, omm.b._tensor)
 }
 
 func Matmul(a, b *Tensor) *Tensor {
-	result := Variable(a.Shape().X, b.Shape().Y)
+	result := OfShape(a.Shape().X, b.Shape().Y)
 	result.op = &opMatmul{a, b}
 	return result
 }

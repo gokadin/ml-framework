@@ -7,8 +7,8 @@ import (
 )
 
 func Test_dot_forward_simple(t *testing.T) {
-	a := Variable(2, 2).SetData([]float32{1, 2, 3, 4})
-	b := Variable(2, 2).SetData([]float32{5, 6, 7, 8})
+	a := OfShape(2, 2).SetData([]float32{1, 2, 3, 4})
+	b := OfShape(2, 2).SetData([]float32{5, 6, 7, 8})
 	c := Matmul(a, b)
 
 	c.forward()
@@ -27,8 +27,8 @@ func Test_dot_forward_square(t *testing.T) {
 	for i := 0; i < len(bMat); i++ {
 		bMat[i] = 1
 	}
-	a := Variable(size, size).SetData(aMat)
-	b := Variable(size, size).SetData(bMat)
+	a := OfShape(size, size).SetData(aMat)
+	b := OfShape(size, size).SetData(bMat)
 	c := Matmul(a, b)
 
 	c.forward()
@@ -47,8 +47,8 @@ func Test_dot_forward_squareNotExponentialOfTwo(t *testing.T) {
 	for i := 0; i < len(bMat); i++ {
 		bMat[i] = 1
 	}
-	a := Variable(size, size).SetData(aMat)
-	b := Variable(size, size).SetData(bMat)
+	a := OfShape(size, size).SetData(aMat)
+	b := OfShape(size, size).SetData(bMat)
 	c := Matmul(a, b)
 
 	c.forward()
@@ -68,8 +68,8 @@ func Test_dot_forward_simple2(t *testing.T) {
 	for i := 0; i < len(bMat); i++ {
 		bMat[i] = 1
 	}
-	a := Variable(size, size2).SetData(aMat)
-	b := Variable(size2, size).SetData(bMat)
+	a := OfShape(size, size2).SetData(aMat)
+	b := OfShape(size2, size).SetData(bMat)
 	c := Matmul(a, b)
 
 	c.forward()
@@ -79,8 +79,8 @@ func Test_dot_forward_simple2(t *testing.T) {
 }
 
 func Test_dot_forward_differentSimple(t *testing.T) {
-	a := Variable(2, 2).SetData([]float32{1, 0, 0, 1})
-	b := Variable(2, 2).SetData([]float32{4, 1, 2, 2})
+	a := OfShape(2, 2).SetData([]float32{1, 0, 0, 1})
+	b := OfShape(2, 2).SetData([]float32{4, 1, 2, 2})
 	c := Matmul(a, b)
 
 	c.forward()
@@ -89,8 +89,8 @@ func Test_dot_forward_differentSimple(t *testing.T) {
 }
 
 func Test_dot_forward_differentSizes(t *testing.T) {
-	a := Variable(2, 3).SetData([]float32{1, 0, 0, 1, 2, 3})
-	b := Variable(3, 2).SetData([]float32{4, 1, 2, 2, 0, 1})
+	a := OfShape(2, 3).SetData([]float32{1, 0, 0, 1, 2, 3})
+	b := OfShape(3, 2).SetData([]float32{4, 1, 2, 2, 0, 1})
 	c := Matmul(a, b)
 
 	c.forward()
@@ -110,8 +110,8 @@ func Test_dot_forward_allDifferentBigSizes(t *testing.T) {
 	for i := 0; i < len(bMat); i++ {
 		bMat[i] = 3.5
 	}
-	a := Variable(size, size2).SetData(aMat)
-	b := Variable(size2, size3).SetData(bMat)
+	a := OfShape(size, size2).SetData(aMat)
+	b := OfShape(size2, size3).SetData(bMat)
 	c := Matmul(a, b)
 
 	c.forward()
@@ -121,9 +121,9 @@ func Test_dot_forward_allDifferentBigSizes(t *testing.T) {
 }
 
 func Test_dot_backward(t *testing.T) {
-	a := Variable(2, 2).SetData([]float32{1, 0, 0, 1})
+	a := OfShape(2, 2).SetData([]float32{1, 0, 0, 1})
 	a.isGradientEnabled = true
-	b := Variable(2, 2).SetData([]float32{4, 1, 2, 2})
+	b := OfShape(2, 2).SetData([]float32{4, 1, 2, 2})
 	b.isGradientEnabled = true
 	c := Matmul(a, b)
 	c.SetGradient(mat.Ones32f(c.Shape().X * c.Shape().Y))
@@ -150,9 +150,9 @@ func Test_dot_backward_big(t *testing.T) {
 	for i := 0; i < len(bMat); i++ {
 		bMat[i] = 3
 	}
-	a := Variable(1000, 128).SetData(aMat)
+	a := OfShape(1000, 128).SetData(aMat)
 	a.isGradientEnabled = true
-	b := Variable(128, 10).SetData(bMat)
+	b := OfShape(128, 10).SetData(bMat)
 	b.isGradientEnabled = true
 	c := Matmul(a, b)
 	c.SetGradient(mat.Ones32f(c.Shape().Size()))

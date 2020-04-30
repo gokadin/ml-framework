@@ -29,7 +29,7 @@ func (opw *opDivScalar) backward(tensor *Tensor) {
 }
 
 func DivScalar(a *Tensor, scalar float32) *Tensor {
-	result := Variable(a.Shape().X, a.Shape().Y)
+	result := OfShape(a.Shape().X, a.Shape().Y)
 	result.op = &opDivScalar{a, scalar}
 	return result
 }

@@ -27,7 +27,7 @@ func (opn *opNeg) backward(tensor *Tensor) {
 }
 
 func Neg(a *Tensor) *Tensor {
-	result := Variable(a.Shape().X, a.Shape().Y)
+	result := OfShape(a.Shape().X, a.Shape().Y)
 	result.op = &opNeg{a}
 	return result
 }

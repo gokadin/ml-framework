@@ -7,7 +7,7 @@ import (
 )
 
 func Test_divScalar_forward(t *testing.T) {
-	a := Variable(2, 2).SetData([]float32{1, 2, 3, 4})
+	a := OfShape(2, 2).SetData([]float32{1, 2, 3, 4})
 	c := DivScalar(a, 2)
 
 	c.forward()
@@ -16,7 +16,7 @@ func Test_divScalar_forward(t *testing.T) {
 }
 
 func Test_divScalar_backward(t *testing.T) {
-	a := Variable(2, 2).SetData([]float32{1, 2, 3, 4})
+	a := OfShape(2, 2).SetData([]float32{1, 2, 3, 4})
 	a.isGradientEnabled = true
 	c := DivScalar(a, 2)
 	c.SetGradient(mat.NewMat32fOnes(mat.WithShape(c.Shape().X, c.Shape().Y)).Data())

@@ -38,7 +38,7 @@ func (opw *opLeakyRelu) backward(tensor *Tensor) {
 }
 
 func LeakyRelu(a *Tensor) *Tensor {
-	result := Variable(a.Shape().X, a.Shape().Y)
+	result := OfShape(a.Shape().X, a.Shape().Y)
 	result.op = &opLeakyRelu{a}
 	return result
 }

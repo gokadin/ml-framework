@@ -27,7 +27,7 @@ func (opw *opLog) backward(tensor *Tensor) {
 }
 
 func Log(a *Tensor) *Tensor {
-	result := Variable(a.Shape().X, a.Shape().Y)
+	result := OfShape(a.Shape().X, a.Shape().Y)
 	result.op = &opLog{a}
 	return result
 }

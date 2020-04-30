@@ -7,7 +7,7 @@ import (
 )
 
 func Test_Sum1_small(t *testing.T) {
-	a := Variable(3, 4).SetData([]float32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12})
+	a := OfShape(3, 4).SetData([]float32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12})
 	c := Sum(a, 1)
 
 	c.forward()
@@ -22,7 +22,7 @@ func Test_Sum1_big(t *testing.T) {
 	for i := 0; i < len(aMat); i++ {
 		aMat[i] = 2
 	}
-	a := Variable(500, 100).SetData(aMat)
+	a := OfShape(500, 100).SetData(aMat)
 	c := Sum(a, 1)
 
 	c.forward()
@@ -37,7 +37,7 @@ func Test_Sum1_bigDifferentShape(t *testing.T) {
 	for i := 0; i < len(aMat); i++ {
 		aMat[i] = 2
 	}
-	a := Variable(2000, 100).SetData(aMat)
+	a := OfShape(2000, 100).SetData(aMat)
 	c := Sum(a, 1)
 
 	c.forward()
@@ -48,7 +48,7 @@ func Test_Sum1_bigDifferentShape(t *testing.T) {
 }
 
 func Test_Sum0_small(t *testing.T) {
-	a := Variable(3, 4).SetData([]float32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12})
+	a := OfShape(3, 4).SetData([]float32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12})
 	c := Sum(a, 0)
 
 	c.forward()
@@ -63,7 +63,7 @@ func Test_Sum0_big(t *testing.T) {
 	for i := 0; i < len(aMat); i++ {
 		aMat[i] = 2
 	}
-	a := Variable(500, 100).SetData(aMat)
+	a := OfShape(500, 100).SetData(aMat)
 	c := Sum(a, 0)
 
 	c.forward()
@@ -78,7 +78,7 @@ func Test_Sum0_bigDifferentShape(t *testing.T) {
 	for i := 0; i < len(aMat); i++ {
 		aMat[i] = 2
 	}
-	a := Variable(2000, 100).SetData(aMat)
+	a := OfShape(2000, 100).SetData(aMat)
 	c := Sum(a, 0)
 
 	c.forward()
@@ -93,7 +93,7 @@ func Test_Sum0_with1Ysize(t *testing.T) {
 	for i := 0; i < len(aMat); i++ {
 		aMat[i] = 2
 	}
-	a := Variable(10, 1).SetData(aMat)
+	a := OfShape(10, 1).SetData(aMat)
 	c := Sum(a, 0)
 
 	c.forward()

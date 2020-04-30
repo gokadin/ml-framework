@@ -34,7 +34,7 @@ func (ope *opExpand) backward(tensor *Tensor) {
 }
 
 func Expand(a *Tensor, axis, copies int) *Tensor {
-	result := Variable(copies, a.Shape().Y)
+	result := OfShape(copies, a.Shape().Y)
 	if axis == 1 {
 		result.Reshape(a.Shape().X, a.Shape().Y * copies)
 	}

@@ -7,8 +7,8 @@ import (
 )
 
 func Test_mul_simple(t *testing.T) {
-	a := Variable(3, 4).SetData([]float32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12})
-	b := Variable(3, 4).SetData([]float32{2, 3, 4, 2, 11, 6, 15, 1, 4, 2, 10, 8})
+	a := OfShape(3, 4).SetData([]float32{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12})
+	b := OfShape(3, 4).SetData([]float32{2, 3, 4, 2, 11, 6, 15, 1, 4, 2, 10, 8})
 	c := Mul(a, b)
 
 	c.forward()
@@ -26,8 +26,8 @@ func Test_mul_big(t *testing.T) {
 		aMat[i] = 2
 		bMat[i] = 3
 	}
-	a := Variable(width, height).SetData(aMat)
-	b := Variable(width, height).SetData(bMat)
+	a := OfShape(width, height).SetData(aMat)
+	b := OfShape(width, height).SetData(bMat)
 	c := Mul(a, b)
 
 	c.forward()

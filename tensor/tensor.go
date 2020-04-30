@@ -2,12 +2,11 @@ package tensor
 
 import (
 	"github.com/gokadin/ml-framework/mat"
-	"log"
 	"runtime"
 )
 
 //#cgo CFLAGS: -I.
-//#cgo LDFLAGS: -L${SRCDIR} -Wl,-rpath,${SRCDIR} -ladd
+//#cgo LDFLAGS: -L${SRCDIR} -Wl,-rpath,${SRCDIR} -ladd -llinear -lmatmul
 //#include <tensor.h>
 import "C"
 
@@ -26,27 +25,48 @@ type Tensor struct {
 	_tensor           *C.TENSOR
 }
 
-func Variable(shapeArray ...int) *Tensor {
-	if len(shapeArray) != 2 {
-		log.Fatal("only shapes of 2 dimensions are supported for the moment")
-	}
-	shape := Shape{X: shapeArray[0], Y: shapeArray[1]}
-
+func New() *Tensor {
 	nextId++
 	t := &Tensor{
 		id: nextId,
 	}
 
 	t._tensor = C.alloc_tensor(C.int(nextId))
-	t.initializeNativeTensor(shape)
+	t.initializeNativeTensor([]int{1, 1})
 	runtime.SetFinalizer(t, free)
 
 	return t
 }
 
-func (t *Tensor) initializeNativeTensor(shape Shape) {
-	t._data = make([]C.float, shape.X*shape.Y)
-	t._grad = make([]C.float, shape.X*shape.Y)
+func OfShape(shape ...int) *Tensor {
+	if len(shape) != 2 {
+		panic("only 2D shapes are supported")
+	}
+
+	t := New()
+	t.Reshape(shape[0], shape[1])
+	return t
+}
+
+func Ones(shape ...int) *Tensor {
+	t := OfShape(shape...)
+	t.SetData(mat.Ones32f(shape[0] * shape[1]))
+	return t
+}
+
+func Zeros(shape ...int) *Tensor {
+	t := OfShape(shape...)
+	t.SetData(mat.Zeros32f(shape[0] * shape[1]))
+	return t
+}
+
+func From(initializer string, shape ...int) *Tensor {
+	return initializeParameter(initializer, shape...)
+}
+
+func (t *Tensor) initializeNativeTensor(shape []int) {
+	t._data = make([]C.float, shape[0] * shape[1])
+	t._grad = make([]C.float, shape[0] * shape[1])
 	t._tensor.data = &t._data[0]
 	t._tensor.grad = &t._grad[0]
 
@@ -54,8 +74,8 @@ func (t *Tensor) initializeNativeTensor(shape Shape) {
 	t._grad_shape = &C.SHAPE{}
 	t._tensor.mat_shape = t._mat_shape
 	t._tensor.grad_shape = t._grad_shape
-	t.reshapeMat(shape.ToArray()...)
-	t.reshapeGrad(shape.ToArray()...)
+	t.reshapeMat(shape[0], shape[1])
+	t.reshapeGrad(shape[0], shape[1])
 }
 
 func (t *Tensor) reshapeMat(shape ...int) {
@@ -92,6 +112,10 @@ func (t *Tensor) RunOnGpu(value bool) {
 }
 
 func (t *Tensor) SetData(data []float32) *Tensor {
+	if len(data) > int(t._mat_shape.size) {
+		panic("given data is bigger than tensor size")
+	}
+
 	for i := 0; i < len(data); i++ {
 		t._data[i] = C.float(data[i])
 	}
@@ -166,6 +190,10 @@ func (t *Tensor) Reshape(shape ...int) *Tensor {
 		panic("only 2D shapes are supported")
 	}
 
+	if shape[0] == int(t._mat_shape.x) && shape[1] == int(t._mat_shape.y) {
+		return t
+	}
+
 	t.reshapeMat(shape...)
 
 	t._data = make([]C.float, shape[0]*shape[1])
@@ -175,7 +203,7 @@ func (t *Tensor) Reshape(shape ...int) *Tensor {
 }
 
 func (t *Tensor) forward() {
-	if t.op.name() == operationAdd {
+	if t.op.name() == operationAdd || t.op.name() == operationLinear {
 		_shape := C.calculate_op_shape(t._tensor)
 		t.Reshape(int(_shape.x), int(_shape.y))
 		handleOpResult(int(C.forward(t._tensor)))

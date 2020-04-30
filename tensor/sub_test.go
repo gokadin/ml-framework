@@ -7,8 +7,8 @@ import (
 )
 
 func Test_sub_forward(t *testing.T) {
-	a := Variable(1, 2).SetData([]float32{3, 4})
-	b := Variable(1, 2).SetData([]float32{1, 2})
+	a := OfShape(1, 2).SetData([]float32{3, 4})
+	b := OfShape(1, 2).SetData([]float32{1, 2})
 	c := Sub(a, b)
 
 	c.forward()
@@ -17,9 +17,9 @@ func Test_sub_forward(t *testing.T) {
 }
 
 func Test_sub_backward(t *testing.T) {
-	a := Variable(2, 2).SetData([]float32{3, 4, 5, 3})
+	a := OfShape(2, 2).SetData([]float32{3, 4, 5, 3})
 	a.isGradientEnabled = true
-	b := Variable(2, 2).SetData([]float32{1, 2, 1, 4})
+	b := OfShape(2, 2).SetData([]float32{1, 2, 1, 4})
 	b.isGradientEnabled = true
 	c := Sub(a, b)
 	c.SetGradient(mat.Ones32f(c.Shape().Size()))

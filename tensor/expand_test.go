@@ -6,7 +6,7 @@ import (
 )
 
 func Test_Expand_forward(t *testing.T) {
-	a := Variable(1, 3).SetData([]float32{1, 2, 3})
+	a := OfShape(1, 3).SetData([]float32{1, 2, 3})
 	c := Expand(a, 0, 3)
 
 	c.forward()
@@ -15,7 +15,7 @@ func Test_Expand_forward(t *testing.T) {
 }
 
 func Test_Expand_forwardLargeNumbers(t *testing.T) {
-	a := Variable(1, 3).SetData([]float32{1, 2, 3})
+	a := OfShape(1, 3).SetData([]float32{1, 2, 3})
 	c := Expand(a, 0, 3000)
 
 	c.forward()
@@ -34,7 +34,7 @@ func Test_Expand_forwardLargeNumbersEvenBigger(t *testing.T) {
 	for i := 0; i < 6000; i++ {
 		aMat[i] = float32(i)
 	}
-	a := Variable(1, 6000).SetData(aMat)
+	a := OfShape(1, 6000).SetData(aMat)
 	c := Expand(a, 0, 3000)
 
 	c.forward()

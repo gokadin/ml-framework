@@ -121,7 +121,7 @@ func Restore(name string) *Model {
 			break
 		case persisterModelModuleEndKey:
 			module := modules.Dense(moduleShape.Y, moduleActivationFunction)
-			module.InitializeWith(tensor.Variable(moduleShape.X, moduleShape.Y).SetData(moduleWeights), tensor.Variable(1, moduleShape.Y).SetData(moduleBiases))
+			module.InitializeWith(tensor.OfShape(moduleShape.X, moduleShape.Y).SetData(moduleWeights), tensor.OfShape(1, moduleShape.Y).SetData(moduleBiases))
 			model.Add(module)
 			break
 		}

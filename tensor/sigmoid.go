@@ -30,7 +30,7 @@ func (opw *opSigmoid) backward(tensor *Tensor) {
 }
 
 func Sigmoid(a *Tensor) *Tensor {
-	result := Variable(a.Shape().X, a.Shape().Y)
+	result := OfShape(a.Shape().X, a.Shape().Y)
 	result.op = &opSigmoid{a}
 	return result
 }

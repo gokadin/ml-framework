@@ -40,9 +40,9 @@ func (ops *opSum) backward(tensor *Tensor) {
 func Sum(a *Tensor, axis int) *Tensor {
 	var result *Tensor
 	if axis == 0 {
-		result = Variable(1, a.Shape().Y)
+		result = OfShape(1, a.Shape().Y)
 	} else if axis == 1 {
-		result = Variable(a.Shape().X, 1)
+		result = OfShape(a.Shape().X, 1)
 	} else {
 		log.Fatal("axis unknown: " + string(axis))
 	}

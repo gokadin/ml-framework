@@ -44,7 +44,7 @@ func (opw *opRelu) backward(tensor *Tensor) {
 }
 
 func Relu(a *Tensor) *Tensor {
-	result := Variable(a.Shape().X, a.Shape().Y)
+	result := OfShape(a.Shape().X, a.Shape().Y)
 	result.op = &opRelu{a}
 	return result
 }

@@ -7,8 +7,8 @@ import (
 )
 
 func Test_graph(t *testing.T) {
-	a := Variable(1, 1).SetData([]float32{3})
-	b := Variable(1, 1).SetData([]float32{4})
+	a := OfShape(1, 1).SetData([]float32{3})
+	b := OfShape(1, 1).SetData([]float32{4})
 	c := Add(a, b)
 
 	graph := NewGraph()
@@ -22,8 +22,8 @@ func Test_hydra(t *testing.T) {
 	graph := NewGraph()
 	matA := []float32{3, 3, 3, 3}
 	matB := []float32{4, 4, 4, 4}
-	a := Variable(2, 2).SetData(matA)
-	b := Variable(2, 2).SetData(matB)
+	a := OfShape(2, 2).SetData(matA)
+	b := OfShape(2, 2).SetData(matB)
 	c := Pow(Add(a, b), 2)
 	head1 := Pow(Neg(c), 3)
 	head2 := Pow(c, 2)
@@ -42,8 +42,8 @@ func Test_hydraBackward(t *testing.T) {
 	graph := NewGraph()
 	matA := []float32{3, 3, 3, 3}
 	matB := []float32{4, 4, 4, 4}
-	a := Variable(2, 2).SetData(matA)
-	b := Variable(2, 2).SetData(matB)
+	a := OfShape(2, 2).SetData(matA)
+	b := OfShape(2, 2).SetData(matB)
 	c := Pow(Add(a, b), 2)
 	head1 := Pow(Neg(c), 2)
 	head2Start := Pow(c, 2)
@@ -69,10 +69,10 @@ func Test_hydraBackward(t *testing.T) {
 
 //func Test_graph_some(t *testing.T) {
 //	graph := NewGraph()
-//	a := Variable(mat.WithShape(1, 1)).SetData([]float32{2})
-//	b := Variable(mat.WithShape(1, 1)).SetData([]float32{5})
+//	a := OfShape(mat.WithShape(1, 1)).SetData([]float32{2})
+//	b := OfShape(mat.WithShape(1, 1)).SetData([]float32{5})
 //	c := Add(a, b)
-//	d := Variable(mat.WithShape(1, 1)).SetData([]float32{4})
+//	d := OfShape(mat.WithShape(1, 1)).SetData([]float32{4})
 //	e := Add(c, d)
 //
 //	graph.Forward(e)
@@ -81,10 +81,10 @@ func Test_hydraBackward(t *testing.T) {
 //}
 //
 //func Test_nonsnese(t *testing.T) {
-//	a := Variable(mat.WithShape(1, 1)).SetData([]float32{2})
-//	b := Variable(mat.WithShape(1, 1)).SetData([]float32{5})
-//	c := Variable(mat.WithShape(1, 1)).SetData([]float32{6})
-//	d := Variable(mat.WithShape(1, 1)).SetData([]float32{4})
+//	a := OfShape(mat.WithShape(1, 1)).SetData([]float32{2})
+//	b := OfShape(mat.WithShape(1, 1)).SetData([]float32{5})
+//	c := OfShape(mat.WithShape(1, 1)).SetData([]float32{6})
+//	d := OfShape(mat.WithShape(1, 1)).SetData([]float32{4})
 //	e := Add(a, b)
 //	f := Add(c, d)
 //	g := Add(e, f)
@@ -96,12 +96,12 @@ func Test_hydraBackward(t *testing.T) {
 //}
 //
 //func Test_nonsnese2(t *testing.T) {
-//	x := Variable(mat.WithShape(1, 1)).SetData([]float32{1})
-//	y := Variable(mat.WithShape(1, 1)).SetData([]float32{1})
+//	x := OfShape(mat.WithShape(1, 1)).SetData([]float32{1})
+//	y := OfShape(mat.WithShape(1, 1)).SetData([]float32{1})
 //	a := Add(x, y)
-//	b := Variable(mat.WithShape(1, 1)).SetData([]float32{5})
-//	c := Variable(mat.WithShape(1, 1)).SetData([]float32{6})
-//	d := Variable(mat.WithShape(1, 1)).SetData([]float32{4})
+//	b := OfShape(mat.WithShape(1, 1)).SetData([]float32{5})
+//	c := OfShape(mat.WithShape(1, 1)).SetData([]float32{6})
+//	d := OfShape(mat.WithShape(1, 1)).SetData([]float32{4})
 //	e := Add(a, b)
 //	f := Sub(c, d)
 //	g := Add(e, f)
@@ -113,12 +113,12 @@ func Test_hydraBackward(t *testing.T) {
 //}
 //
 //func Test_nonsnese3(t *testing.T) {
-//	x := Variable(mat.WithShape(1, 1)).SetData([]float32{1}).SetName("x")
-//	y := Variable(mat.WithShape(1, 1)).SetData([]float32{1}).SetName("y")
+//	x := OfShape(mat.WithShape(1, 1)).SetData([]float32{1}).SetName("x")
+//	y := OfShape(mat.WithShape(1, 1)).SetData([]float32{1}).SetName("y")
 //	a := Add(x, y).SetName("a")
-//	b := Variable(mat.WithShape(1, 1)).SetData([]float32{5}).SetName("b")
-//	c := Variable(mat.WithShape(1, 1)).SetData([]float32{6}).SetName("c")
-//	d := Variable(mat.WithShape(1, 1)).SetData([]float32{4}).SetName("d")
+//	b := OfShape(mat.WithShape(1, 1)).SetData([]float32{5}).SetName("b")
+//	c := OfShape(mat.WithShape(1, 1)).SetData([]float32{6}).SetName("c")
+//	d := OfShape(mat.WithShape(1, 1)).SetData([]float32{4}).SetName("d")
 //	e := Add(a, b).SetName("e")
 //	f := Sub(c, d).SetName("f")
 //	g := Add(e, f).SetName("g")
@@ -130,12 +130,12 @@ func Test_hydraBackward(t *testing.T) {
 //}
 //
 //func Test_nonsnese4(t *testing.T) {
-//	x := Variable(mat.WithShape(1, 1)).SetData([]float32{1}).SetName("x")
-//	y := Variable(mat.WithShape(1, 1)).SetData([]float32{1}).SetName("y")
+//	x := OfShape(mat.WithShape(1, 1)).SetData([]float32{1}).SetName("x")
+//	y := OfShape(mat.WithShape(1, 1)).SetData([]float32{1}).SetName("y")
 //	a := Add(x, y).SetName("a")
-//	b := Variable(mat.WithShape(1, 1)).SetData([]float32{5}).SetName("b")
-//	c := Variable(mat.WithShape(1, 1)).SetData([]float32{6}).SetName("c")
-//	d := Variable(mat.WithShape(1, 1)).SetData([]float32{4}).SetName("d")
+//	b := OfShape(mat.WithShape(1, 1)).SetData([]float32{5}).SetName("b")
+//	c := OfShape(mat.WithShape(1, 1)).SetData([]float32{6}).SetName("c")
+//	d := OfShape(mat.WithShape(1, 1)).SetData([]float32{4}).SetName("d")
 //	e := Add(a, b).SetName("e") //7
 //	f := Sub(c, d).SetName("f") //2
 //	g := Add(e, f).SetName("g") //9
@@ -154,8 +154,8 @@ func Test_hydraBackward(t *testing.T) {
 //}
 //
 //func Test_nonsnese5(t *testing.T) {
-//	a := Variable(mat.WithShape(2, 2)).SetData([]float32{1, 2, 2, 1}).SetName("a")
-//	b := Variable(mat.WithShape(2, 2)).SetData([]float32{0, 3, 1, 1}).SetName("b")
+//	a := OfShape(mat.WithShape(2, 2)).SetData([]float32{1, 2, 2, 1}).SetName("a")
+//	b := OfShape(mat.WithShape(2, 2)).SetData([]float32{0, 3, 1, 1}).SetName("b")
 //	e := Matmul(a, b).SetName("e")
 //	graph := NewGraph()
 //	graph.Forward(e)
@@ -166,7 +166,7 @@ func Test_hydraBackward(t *testing.T) {
 //}
 //
 //func Test_nonsnese6(t *testing.T) {
-//	a := Variable(mat.WithShape(2, 2)).SetData([]float32{1, 2, 2, 1}).SetName("a")
+//	a := OfShape(mat.WithShape(2, 2)).SetData([]float32{1, 2, 2, 1}).SetName("a")
 //	e := Sum(a, 0).SetName("e")
 //	graph := NewGraph()
 //	graph.Forward(e)
@@ -177,8 +177,8 @@ func Test_hydraBackward(t *testing.T) {
 //}
 //
 //func Test_nonsnese7(t *testing.T) {
-//	a := Variable(mat.WithShape(2, 2)).SetData([]float32{1, 2, 2, 1}).SetName("a")
-//	b := Variable(mat.WithShape(2, 2)).SetData([]float32{0, 3, 1, 1}).SetName("b")
+//	a := OfShape(mat.WithShape(2, 2)).SetData([]float32{1, 2, 2, 1}).SetName("a")
+//	b := OfShape(mat.WithShape(2, 2)).SetData([]float32{0, 3, 1, 1}).SetName("b")
 //	e := Matmul(a, b).SetName("e")
 //	graph := NewGraph()
 //	graph.Forward(e)
@@ -193,9 +193,9 @@ func Test_hydraBackward(t *testing.T) {
 //}
 //
 //func Test_Autograd_Gradient_DerivativeOfDotSubAndPow2(t *testing.T) {
-//	x := Variable(mat.WithShape(1, 2)).SetData([]float32{0, 1}).SetName("x")
-//	w := Variable(mat.WithShape(2, 2)).SetData([]float32{1, 1, 1, 1}).SetName("w")
-//	yHat := Variable(mat.WithShape(1, 2)).SetData([]float32{2, 2}).SetName("yHat")
+//	x := OfShape(mat.WithShape(1, 2)).SetData([]float32{0, 1}).SetName("x")
+//	w := OfShape(mat.WithShape(2, 2)).SetData([]float32{1, 1, 1, 1}).SetName("w")
+//	yHat := OfShape(mat.WithShape(1, 2)).SetData([]float32{2, 2}).SetName("yHat")
 //	e := Pow(Sub(Matmul(x, w), yHat), 2)
 //	graph := NewGraph()
 //	graph.Forward(e)

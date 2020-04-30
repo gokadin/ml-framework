@@ -34,7 +34,7 @@ func (opw *opCrossEntropy) backward(tensor *Tensor) {
 }
 
 func CrossEntropy(pred, target *Tensor) *Tensor {
-	result := Variable(1, 1)
+	result := OfShape(1, 1)
 	result.op = &opCrossEntropy{pred, target}
 	return result
 }

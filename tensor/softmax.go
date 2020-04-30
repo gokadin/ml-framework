@@ -27,7 +27,7 @@ func (opw *opSoftmax) backward(tensor *Tensor) {
 }
 
 func Softmax(a *Tensor) *Tensor {
-	result := Variable(a.Shape().X, a.Shape().Y)
+	result := OfShape(a.Shape().X, a.Shape().Y)
 	result.op = &opSoftmax{a}
 	return result
 }

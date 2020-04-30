@@ -21,7 +21,7 @@ __global__ void linear(float *a, float *x, float *b, float *c, int m, int n, int
 
 extern "C" {
 
-    void linear(const TENSOR *a, const TENSOR *x, const TENSOR* b, TENSOR *target)
+    void gpu_linear(const TENSOR *a, const TENSOR *x, const TENSOR* b, TENSOR *target)
     {
         float* gpu_a;
         size_t size = a->mat_shape->x * a->mat_shape->y * sizeof(float);

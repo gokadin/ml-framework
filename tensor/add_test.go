@@ -15,10 +15,10 @@ type addTestCases struct {
 
 func buildAddTestCases() []addTestCases {
 	return []addTestCases{
-		{"1x1 GPU", Variable(1, 1).SetData([]float32{1}), Variable(1, 1).SetData([]float32{2}), true},
-		{"1x1 CPU", Variable(1, 1).SetData([]float32{1}), Variable(1, 1).SetData([]float32{2}), false},
-		{"2x2 GPU", Variable(2, 2).SetData([]float32{1, 2, 3, 4}), Variable(2, 2).SetData([]float32{5, 6, 7, 8}), true},
-		{"2x2 CPU", Variable(2, 2).SetData([]float32{1, 2, 3, 4}), Variable(2, 2).SetData([]float32{5, 6, 7, 8}), false},
+		{"1x1 GPU", OfShape(1, 1).SetData([]float32{1}), OfShape(1, 1).SetData([]float32{2}), true},
+		{"1x1 CPU", OfShape(1, 1).SetData([]float32{1}), OfShape(1, 1).SetData([]float32{2}), false},
+		{"2x2 GPU", OfShape(2, 2).SetData([]float32{1, 2, 3, 4}), OfShape(2, 2).SetData([]float32{5, 6, 7, 8}), true},
+		{"2x2 CPU", OfShape(2, 2).SetData([]float32{1, 2, 3, 4}), OfShape(2, 2).SetData([]float32{5, 6, 7, 8}), false},
 	}
 }
 
@@ -61,16 +61,16 @@ func Test_add_backward(t *testing.T) {
 }
 
 func Test_add_forward_invalid_shapes(t *testing.T) {
-	a := Variable(1, 2).SetData([]float32{1, 2})
-	b := Variable(1, 3).SetData([]float32{1, 2, 3})
+	a := OfShape(1, 2).SetData([]float32{1, 2})
+	b := OfShape(1, 3).SetData([]float32{1, 2, 3})
 	c := Add(a, b)
 
 	assert.Panics(t, c.forward)
 }
 
 func Test_add_forward_reshape(t *testing.T) {
-	a := Variable(1, 2)
-	b := Variable(1, 2)
+	a := OfShape(1, 2)
+	b := OfShape(1, 2)
 	c := Add(a, b)
 	a.Reshape(2, 2)
 	b.Reshape(2, 2)

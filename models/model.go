@@ -91,8 +91,8 @@ func (m *Model) Copy() *Model {
 			break
 		}
 		duplicateModule.InitializeWith(
-			tensor.Variable(module.GetParameters()[0].Shape().X, module.GetParameters()[0].Shape().Y).SetData(module.GetParameters()[0].ToFloat32()),
-			tensor.Variable(module.GetParameters()[1].Shape().X, module.GetParameters()[1].Shape().Y).SetData(module.GetParameters()[1].ToFloat32()))
+			tensor.OfShape(module.GetParameters()[0].Shape().X, module.GetParameters()[0].Shape().Y).SetData(module.GetParameters()[0].ToFloat32()),
+			tensor.OfShape(module.GetParameters()[1].Shape().X, module.GetParameters()[1].Shape().Y).SetData(module.GetParameters()[1].ToFloat32()))
 		duplicate.Add(duplicateModule)
 	}
 
