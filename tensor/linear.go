@@ -1,10 +1,7 @@
 package tensor
 
-//#include <matmul.h>
 //#include <linear.h>
 import "C"
-
-import "github.com/gokadin/ml-framework/mat"
 
 const operationLinear = "opLinear"
 
@@ -26,8 +23,8 @@ func (oa *opLinear) forward(tensor *Tensor) {
 }
 
 func (oa *opLinear) backward(tensor *Tensor) {
-	oa.b.SetGradient(mat.Sum(mat.NewMat32f(mat.WithShape(tensor.Shape().X, tensor.Shape().Y), tensor.GradientToFloat32()), 0).Data())
-	C.gpu_matmul_backward(tensor._tensor, oa.a._tensor, oa.x._tensor)
+	//oa.b.SetGradient(mat.Sum(mat.NewMat32f(mat.WithShape(tensor.Shape().X, tensor.Shape().Y), tensor.GradientToFloat32()), 0).Data())
+	//C.gpu_matmul_backward(tensor._tensor, oa.a._tensor, oa.x._tensor)
 	//if oa.a.isGradientEnabled {
 		//omm.b.ConvertToRegularData()
 		//oa.a.SetGradient(mat.MatMulParallel(tensor.GradientToMat32(), mat.Transpose(oa.x.ToMat32f())).Data())

@@ -44,7 +44,8 @@ func OfShape(shape ...int) *Tensor {
 	}
 
 	t := New()
-	t.Reshape(shape[0], shape[1])
+	t.reshapeMat(shape[0], shape[1])
+	t.reshapeGrad(shape[0], shape[1])
 	return t
 }
 
@@ -65,11 +66,6 @@ func From(initializer string, shape ...int) *Tensor {
 }
 
 func (t *Tensor) initializeNativeTensor(shape []int) {
-	t._data = make([]C.float, shape[0] * shape[1])
-	t._grad = make([]C.float, shape[0] * shape[1])
-	t._tensor.data = &t._data[0]
-	t._tensor.grad = &t._grad[0]
-
 	t._mat_shape = &C.SHAPE{}
 	t._grad_shape = &C.SHAPE{}
 	t._tensor.mat_shape = t._mat_shape
@@ -82,12 +78,32 @@ func (t *Tensor) reshapeMat(shape ...int) {
 	t._mat_shape.x = C.int(shape[0])
 	t._mat_shape.y = C.int(shape[1])
 	t._mat_shape.size = C.int(shape[0] * shape[1])
+
+	t._data = make([]C.float, shape[0]*shape[1])
+	t._tensor.data = &t._data[0]
 }
 
 func (t *Tensor) reshapeGrad(shape ...int) {
 	t._grad_shape.x = C.int(shape[0])
 	t._grad_shape.y = C.int(shape[1])
 	t._grad_shape.size = C.int(shape[0] * shape[1])
+
+	t._grad = make([]C.float, shape[0]*shape[1])
+	t._tensor.grad = &t._grad[0]
+}
+
+func (t *Tensor) Reshape(shape ...int) *Tensor {
+	if len(shape) != 2 {
+		panic("only 2D shapes are supported")
+	}
+
+	if shape[0] == int(t._mat_shape.x) && shape[1] == int(t._mat_shape.y) {
+		return t
+	}
+
+	t.reshapeMat(shape...)
+
+	return t
 }
 
 func free(t *Tensor) {
@@ -169,7 +185,7 @@ func (t *Tensor) GradientToMat32() *mat.Mat32f {
 	for i := 0; i < len(result); i++ {
 		result[i] = float32(t._grad[i])
 	}
-	return mat.NewMat32f(mat.WithShape(t.Shape().X, t.Shape().Y), result)
+	return mat.NewMat32f(mat.WithShape(int(t._grad_shape.x), int(t._grad_shape.y)), result)
 }
 
 func (t *Tensor) Reduce(grad []float32) {
@@ -185,25 +201,8 @@ func (t *Tensor) Shape() Shape {
 	}
 }
 
-func (t *Tensor) Reshape(shape ...int) *Tensor {
-	if len(shape) != 2 {
-		panic("only 2D shapes are supported")
-	}
-
-	if shape[0] == int(t._mat_shape.x) && shape[1] == int(t._mat_shape.y) {
-		return t
-	}
-
-	t.reshapeMat(shape...)
-
-	t._data = make([]C.float, shape[0]*shape[1])
-	t._tensor.data = &t._data[0]
-
-	return t
-}
-
 func (t *Tensor) forward() {
-	if t.op.name() == operationAdd || t.op.name() == operationLinear {
+	if t.op.name() == operationAdd || t.op.name() == operationLinear || t.op.name() == operationMatmul {
 		_shape := C.calculate_op_shape(t._tensor)
 		t.Reshape(int(_shape.x), int(_shape.y))
 		handleOpResult(int(C.forward(t._tensor)))
@@ -214,7 +213,7 @@ func (t *Tensor) forward() {
 }
 
 func (t *Tensor) backward() {
-	if t.op.name() == operationAdd {
+	if t.op.name() == operationAdd || t.op.name() == operationLinear || t.op.name() == operationMatmul {
 		handleOpResult(int(C.backward(t._tensor)))
 	} else {
 		t.op.backward(t)
