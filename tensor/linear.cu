@@ -89,9 +89,10 @@ extern "C" {
         float* gpu_x_grad;
         cudaMalloc(&gpu_x_grad, x_size);
 
-        cudaStream_t streamA, streamB;
+        cudaStream_t streamA, streamB, streamC;
         cudaStreamCreate(&streamA);
         cudaStreamCreate(&streamB);
+        cudaStreamCreate(&streamC);
 
         // A GRAD
 
@@ -119,6 +120,7 @@ extern "C" {
 
         cudaStreamDestroy(streamA);
         cudaStreamDestroy(streamB);
+        cudaStreamDestroy(streamC);
 
         cudaFree(gpu_tensor_grad);
         cudaFree(gpu_a);

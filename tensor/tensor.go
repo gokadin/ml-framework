@@ -6,7 +6,7 @@ import (
 )
 
 //#cgo CFLAGS: -I.
-//#cgo LDFLAGS: -L${SRCDIR} -Wl,-rpath,${SRCDIR} -ladd -llinear -lmatmul
+//#cgo LDFLAGS: -L${SRCDIR} -Wl,-rpath,${SRCDIR} -ladd -llinear -lmatmul -lrelu
 //#include <tensor.h>
 import "C"
 
@@ -202,7 +202,7 @@ func (t *Tensor) Shape() Shape {
 }
 
 func (t *Tensor) forward() {
-	if t.op.name() == operationAdd || t.op.name() == operationLinear || t.op.name() == operationMatmul {
+	if t.op.name() == operationAdd || t.op.name() == operationLinear || t.op.name() == operationMatmul || t.op.name() == operationRelu {
 		_shape := C.calculate_op_shape(t._tensor)
 		t.Reshape(int(_shape.x), int(_shape.y))
 		handleOpResult(int(C.forward(t._tensor)))
@@ -213,7 +213,7 @@ func (t *Tensor) forward() {
 }
 
 func (t *Tensor) backward() {
-	if t.op.name() == operationAdd || t.op.name() == operationLinear || t.op.name() == operationMatmul {
+	if t.op.name() == operationAdd || t.op.name() == operationLinear || t.op.name() == operationMatmul || t.op.name() == operationRelu {
 		handleOpResult(int(C.backward(t._tensor)))
 	} else {
 		t.op.backward(t)
