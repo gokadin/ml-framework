@@ -5,13 +5,14 @@
 #include "matmul.h"
 #include "add.h"
 
+OP *alloc_linear(TENSOR *a, TENSOR *x, TENSOR *b);
+SHAPE linear_target_shape(TENSOR *tensor);
 int linear_forward(TENSOR *target);
 int linear_backward(TENSOR *target);
 int gpu_linear_forward(TENSOR *a, TENSOR *x, TENSOR *b, TENSOR *target);
 int cpu_linear_forward(TENSOR *a, TENSOR *x, TENSOR *b, TENSOR *target);
 int gpu_linear_backward(TENSOR *tensor, TENSOR *a, TENSOR *x, TENSOR *b);
 int cpu_linear_backward(TENSOR *tensor, TENSOR *a, TENSOR *x, TENSOR *b);
-SHAPE linear_target_shape(TENSOR *tensor);
 
 OP *alloc_linear(TENSOR *a, TENSOR *x, TENSOR *b)
 {

@@ -31,5 +31,6 @@ func (opw *opCrossEntropy) backward(tensor *Tensor) {
 func SoftmaxCrossEntropy(pred, target *Tensor) *Tensor {
 	result := OfShape(1, 1)
 	result.op = &opCrossEntropy{pred, target}
+	result._tensor.op = C.alloc_sce(pred._tensor, target._tensor)
 	return result
 }

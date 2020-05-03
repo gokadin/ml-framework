@@ -1,5 +1,8 @@
 package tensor
 
+//#include <softmax.h>
+import "C"
+
 import (
 	"github.com/gokadin/ml-framework/mat"
 )
@@ -29,5 +32,6 @@ func (opw *opSoftmax) backward(tensor *Tensor) {
 func Softmax(a *Tensor) *Tensor {
 	result := OfShape(a.Shape().X, a.Shape().Y)
 	result.op = &opSoftmax{a}
+	result._tensor.op = C.alloc_softmax(a._tensor)
 	return result
 }

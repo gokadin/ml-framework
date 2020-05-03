@@ -17,7 +17,7 @@ func buildSoftmaxCrossEntropyTestCases() []softmaxCrossEntropyTestCases {
 	return []softmaxCrossEntropyTestCases{
 		{"1x1 GPU", OfShape(1, 1).SetData([]float32{1}), OfShape(1, 1).SetData([]float32{2}), true},
 		//{"1x1 CPU", OfShape(1, 1).SetData([]float32{1}), OfShape(1, 1).SetData([]float32{2}), false},
-		//{"2x2 GPU", OfShape(2, 2).SetData([]float32{1, 2, 3, 4}), OfShape(2, 2).SetData([]float32{5, 6, 7, 8}), true},
+		{"2x2 GPU", OfShape(2, 2).SetData([]float32{1, 2, 3, 4}), OfShape(2, 2).SetData([]float32{5, 6, 7, 8}), true},
 		//{"2x2 CPU", OfShape(2, 2).SetData([]float32{1, 2, 3, 4}), OfShape(2, 2).SetData([]float32{5, 6, 7, 8}), false},
 	}
 }
@@ -29,7 +29,7 @@ func Test_softmaxCrossEntropy_forward(t *testing.T) {
 			t.Parallel()
 			t.Log(test.name)
 
-			expected := mat.DivScalar(mat.Sum(mat.Neg(mat.Log(mat.Sum(mat.Mul(test.a.ToMat32f(), test.b.ToMat32f()), 1))), 0), float32(test.a.ToMat32f().Shape().X)).Data()
+			expected := mat.Neg(mat.Sum(mat.Sum(mat.Mul(test.a.ToMat32f(), mat.Log(mat.Softmax(test.b.ToMat32f()))), 1), 0)).Data()
 			c := SoftmaxCrossEntropy(test.a, test.b)
 			c.RunOnGpu(test.runOnGpu)
 

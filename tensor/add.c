@@ -44,22 +44,22 @@ int add_backward(TENSOR *target)
     return cpu_add_backward(target->op->operands[0], target->op->operands[1], target);
 }
 
-int cpu_add_forward(TENSOR *a, TENSOR *b, TENSOR *target)
+int cpu_add_forward(TENSOR *tensor, TENSOR *a, TENSOR *b)
 {
-    for (int i = 0; i < target->mat_shape->size; i++)
+    for (int i = 0; i < tensor->mat_shape->size; i++)
     {
-        target->data[i] = a->data[i] + b->data[i];
+        tensor->data[i] = a->data[i] + b->data[i];
     }
 
     return 0;
 }
 
-int cpu_add_backward(TENSOR *a, TENSOR *b, TENSOR *target)
+int cpu_add_backward(TENSOR *tensor, TENSOR *a, TENSOR *b)
 {
-    for (int i = 0; i < target->grad_shape->size; i++)
+    for (int i = 0; i < tensor->grad_shape->size; i++)
     {
-        a->grad[i] = target->grad[i];
-        b->grad[i] = target->grad[i];
+        a->grad[i] = tensor->grad[i];
+        b->grad[i] = tensor->grad[i];
     }
 
     return 0;

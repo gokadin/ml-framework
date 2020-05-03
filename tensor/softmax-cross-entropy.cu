@@ -30,7 +30,7 @@ __global__ void sum1_log_neg(float *a, float *target, int width, int height)
 
 extern "C" {
 
-    void cross_entropy(TENSOR *a, TENSOR* b, TENSOR *target) {
+    void gpu_sce_forward(TENSOR *a, TENSOR* b, TENSOR *target) {
         float* gpu_a;
         int size = a->mat_shape->x * a->mat_shape->y;
         int msize = size * sizeof(float);

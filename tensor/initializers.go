@@ -7,9 +7,9 @@ import (
 )
 
 const (
-	InitRandom     = "InitRandom"
-	InitNormalized = "InitNormalized"
-	InitXavier     = "InitXavier"
+	InitRandom        = "InitRandom"
+	InitNormalized    = "InitNormalized"
+	InitXavier        = "InitXavier"
 )
 
 func initializeParameter(initializerType string, shapeArray ...int) *Tensor {
@@ -46,10 +46,10 @@ func initializeParameterNormalized(shapeArray ...int) *Tensor {
 
 func initializeParameterXavier(shapeArray ...int) *Tensor {
 	t := OfShape(shapeArray...)
-	limit := float32(math.Sqrt(6.0 / float64(t.Shape().X + t.Shape().Y)))
-	data := make([]float32, t.Shape().X * t.Shape().Y)
+	limit := float32(math.Sqrt(6.0 / float64(t.Shape().X+t.Shape().Y)))
+	data := make([]float32, t.Shape().X*t.Shape().Y)
 	for i := range data {
-		data[i] = -limit + rand.Float32()  * (limit + limit)
+		data[i] = -limit + rand.Float32()*(limit+limit)
 	}
 	return t.SetData(data)
 }

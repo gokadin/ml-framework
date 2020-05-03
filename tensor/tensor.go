@@ -5,7 +5,7 @@ import (
 )
 
 //#cgo CFLAGS: -I.
-//#cgo LDFLAGS: -L${SRCDIR} -Wl,-rpath,${SRCDIR} -ladd -llinear -lmatmul -lrelu -lsoftmaxcrossentropy
+//#cgo LDFLAGS: -L${SRCDIR} -Wl,-rpath,${SRCDIR} -lm -ladd -llinear -lmatmul -lrelu -lsoftmaxcrossentropy
 //#include <tensor.h>
 import "C"
 
@@ -210,7 +210,7 @@ func (t *Tensor) Copy() *Tensor {
 }
 
 func (t *Tensor) forward() {
-	if t.op.name() == operationAdd || t.op.name() == operationLinear || t.op.name() == operationMatmul || t.op.name() == operationRelu || t.op.name() == operationSoftmaxCrossEntropy {
+	if t.op.name() == operationAdd || t.op.name() == operationLinear || t.op.name() == operationMatmul || t.op.name() == operationRelu || t.op.name() == operationSoftmaxCrossEntropy || t.op.name() == operationSoftmax {
 		_shape := C.calculate_op_shape(t._tensor)
 		t.Reshape(int(_shape.x), int(_shape.y))
 		handleOpResult(int(C.forward(t._tensor)))
@@ -221,7 +221,7 @@ func (t *Tensor) forward() {
 }
 
 func (t *Tensor) backward() {
-	if t.op.name() == operationAdd || t.op.name() == operationLinear || t.op.name() == operationMatmul || t.op.name() == operationRelu || t.op.name() == operationSoftmaxCrossEntropy {
+	if t.op.name() == operationAdd || t.op.name() == operationLinear || t.op.name() == operationMatmul || t.op.name() == operationRelu || t.op.name() == operationSoftmaxCrossEntropy || t.op.name() == operationSoftmax {
 		if t.op.name() == operationLinear {
 			handleOpResult(int(C.backward(t._tensor)))
 		} else {

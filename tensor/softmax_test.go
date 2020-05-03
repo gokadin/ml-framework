@@ -6,12 +6,41 @@ import (
 	"testing"
 )
 
+type softmaxTestCases struct {
+	name string
+	a *Tensor
+	runOnGpu bool
+}
+
+func buildSoftmaxTestCases() []softmaxTestCases {
+	return []softmaxTestCases{
+		{"1x1 GPU", OfShape(1, 1).SetData([]float32{1}), true},
+		{"1x1 CPU", OfShape(1, 1).SetData([]float32{1}), false},
+		{"2x2 GPU", OfShape(2, 2).SetData([]float32{1, 2, -3, 4}), true},
+		{"2x2 CPU", OfShape(2, 2).SetData([]float32{1, 2, -3, 4}), false},
+		{"1200x2 ones GPU", Ones(1200, 2), true},
+		{"1200x2 ones CPU", Ones(1200, 2), false},
+		{"2x1200 ones GPU", Ones(2, 1200), true},
+		{"2x1200 ones CPU", Ones(2, 1200), false},
+		{"10x10 random GPU", From(InitRandom, 10, 10), true},
+		{"10x10 random GPU", From(InitRandom, 10, 10), false},
+	}
+}
+
 func Test_softmax_forward(t *testing.T) {
-	a := OfShape(2, 4).SetData([]float32{0.2, 0.4, 0.3, 0.8,
-															   0.1, 2.4, 0.2, 0.9})
-	c := Softmax(a)
+	t.Parallel()
+	for _, test := range buildSoftmaxTestCases() {
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			t.Log(test.name)
 
-	c.forward()
+			expected := mat.Softmax(test.a.ToMat32f()).Data()
+			c := Softmax(test.a)
+			c.RunOnGpu(test.runOnGpu)
 
-	assert.True(t, mat.NewMat32f(mat.WithShape(2, 1), []float32{1.0, 1.0}).Equals32f(mat.Sum(c.ToMat32f(), 1)))
+			c.forward()
+
+			assert.InDeltaSlice(t, expected, c.ToFloat32(), 0.00001)
+		})
+	}
 }
