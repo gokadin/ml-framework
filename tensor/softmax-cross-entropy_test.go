@@ -23,13 +23,12 @@ func buildSoftmaxCrossEntropyTestCases() []softmaxCrossEntropyTestCases {
 }
 
 func Test_softmaxCrossEntropy_forward(t *testing.T) {
-	t.Parallel()
 	for _, test := range buildSoftmaxCrossEntropyTestCases() {
 		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
 			t.Log(test.name)
 
-			expected := mat.Neg(mat.Sum(mat.Sum(mat.Mul(test.a.ToMat32f(), mat.Log(mat.Softmax(test.b.ToMat32f()))), 1), 0)).Data()
+			softmaxA := mat.Softmax(test.a.ToMat32f())
+			expected := mat.DivScalar(mat.Sum(mat.Neg(mat.Log(mat.Sum(mat.Mul(test.b.ToMat32f(), softmaxA), 1))), 0), float32(test.a.Shape().X)).Data()
 			c := SoftmaxCrossEntropy(test.a, test.b)
 			c.RunOnGpu(test.runOnGpu)
 

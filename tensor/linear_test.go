@@ -28,10 +28,8 @@ func buildLinearTestCases() []linearTestCases {
 }
 
 func Test_linear_forward(t *testing.T) {
-	t.Parallel()
 	for _, test := range buildLinearTestCases() {
 		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
 			t.Log(test.name)
 
 			expected := mat.Add(mat.MatMul(test.a.ToMat32f(), test.x.ToMat32f()), mat.Expand(test.b.ToMat32f(), 0, test.a.Shape().X)).Data()
@@ -46,10 +44,8 @@ func Test_linear_forward(t *testing.T) {
 }
 
 func Test_linear_backward(t *testing.T) {
-	t.Parallel()
 	for _, test := range buildLinearTestCases() {
 		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
 			t.Log(test.name)
 
 			c := Linear(test.a, test.x, test.b)

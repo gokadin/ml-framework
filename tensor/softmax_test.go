@@ -14,24 +14,26 @@ type softmaxTestCases struct {
 
 func buildSoftmaxTestCases() []softmaxTestCases {
 	return []softmaxTestCases{
-		{"1x1 GPU", OfShape(1, 1).SetData([]float32{1}), true},
-		{"1x1 CPU", OfShape(1, 1).SetData([]float32{1}), false},
-		{"2x2 GPU", OfShape(2, 2).SetData([]float32{1, 2, -3, 4}), true},
-		{"2x2 CPU", OfShape(2, 2).SetData([]float32{1, 2, -3, 4}), false},
-		{"1200x2 ones GPU", Ones(1200, 2), true},
-		{"1200x2 ones CPU", Ones(1200, 2), false},
-		{"2x1200 ones GPU", Ones(2, 1200), true},
-		{"2x1200 ones CPU", Ones(2, 1200), false},
+		{"1x1 GPU", From(InitRandom, 1, 1), true},
+		{"1x1 CPU", From(InitRandom, 1, 1), false},
+		{"2x2 GPU", From(InitRandom, 2, 2), true},
+		{"2x2 CPU", From(InitRandom, 2, 2), false},
+		{"3x4 GPU", From(InitRandom, 2, 2), true},
+		{"3x4 CPU", From(InitRandom, 2, 2), false},
+		{"6x3 GPU", From(InitRandom, 2, 2), true},
+		{"6x3 CPU", From(InitRandom, 2, 2), false},
+		{"1200x2 ones GPU", From(InitRandom, 1200, 2), true},
+		{"1200x2 ones CPU", From(InitRandom, 1200, 2), false},
+		{"2x1200 ones GPU", From(InitRandom, 2, 1200), true},
+		{"2x1200 ones CPU", From(InitRandom, 2, 1200), false},
 		{"10x10 random GPU", From(InitRandom, 10, 10), true},
-		{"10x10 random GPU", From(InitRandom, 10, 10), false},
+		{"10x10 random CPU", From(InitRandom, 10, 10), false},
 	}
 }
 
 func Test_softmax_forward(t *testing.T) {
-	t.Parallel()
 	for _, test := range buildSoftmaxTestCases() {
 		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
 			t.Log(test.name)
 
 			expected := mat.Softmax(test.a.ToMat32f()).Data()

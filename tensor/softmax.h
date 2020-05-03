@@ -34,13 +34,11 @@ SHAPE softmax_target_shape(TENSOR *tensor)
     return shape;
 }
 
-// TODO enable GPU forward
 int softmax_forward(TENSOR *target)
 {
     if (target->run_on_gpu)
     {
-        return cpu_softmax_forward(target->op->operands[0], target);
-//        return gpu_softmax_forward(target->op->operands[0], target);
+        return gpu_softmax_forward(target->op->operands[0], target);
     }
 
     return cpu_softmax_forward(target->op->operands[0], target);

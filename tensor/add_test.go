@@ -23,10 +23,8 @@ func buildAddTestCases() []addTestCases {
 }
 
 func Test_add_forward(t *testing.T) {
-	t.Parallel()
 	for _, test := range buildAddTestCases() {
 		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
 			t.Log(test.name)
 
 			expected := mat.Add(test.a.ToMat32f(), test.b.ToMat32f()).Data()
@@ -41,10 +39,8 @@ func Test_add_forward(t *testing.T) {
 }
 
 func Test_add_backward(t *testing.T) {
-	t.Parallel()
 	for _, test := range buildAddTestCases() {
 		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
 			t.Log(test.name)
 
 			c := Add(test.a, test.b)

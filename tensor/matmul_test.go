@@ -33,10 +33,8 @@ func buildMatmulTestCases() []matmulTestCases {
 }
 
 func Test_matmul_forward(t *testing.T) {
-	t.Parallel()
 	for _, test := range buildMatmulTestCases() {
 		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
 			t.Log(test.name)
 
 			expected := mat.MatMul(test.a.ToMat32f(), test.b.ToMat32f()).Data()
@@ -51,10 +49,8 @@ func Test_matmul_forward(t *testing.T) {
 }
 
 func Test_matmul_backward(t *testing.T) {
-	t.Parallel()
 	for _, test := range buildMatmulTestCases() {
 		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
 			t.Log(test.name)
 
 			c := Matmul(test.a, test.b)
