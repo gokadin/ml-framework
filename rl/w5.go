@@ -60,12 +60,12 @@ package rl
 //
 //	oldState := tensor.Variable(1, w.stateSize)
 //	newState := tensor.Variable(1, w.stateSize)
-//	oldQVal := w.model.PredictNoGrad(oldState)
+//	oldQVal := w.model.BuildNoGrad(oldState)
 //
 //	batchOldState := tensor.Variable(w.batchSize, w.stateSize)
-//	batchOldQVal := w.model.Predict(batchOldState)
+//	batchOldQVal := w.model.Build(batchOldState)
 //	batchNewState := tensor.Variable(w.batchSize, w.stateSize)
-//	batchNewQVal := w.targetModel.PredictNoGrad(batchNewState)
+//	batchNewQVal := w.targetModel.BuildNoGrad(batchNewState)
 //
 //	batchY := tensor.Variable(w.batchSize, w.numActions)
 //	loss := w.model.Loss(batchOldQVal, batchY)
@@ -90,7 +90,7 @@ package rl
 //
 //			moveCounter++
 //
-//			graph.Forward(oldQVal)
+//			graph.Build(oldQVal)
 //			action := w.selectAction(oldQVal)
 //			w.gridWorld.MakeMove(action)
 //			w.metric.events.gameActionTaken <- true
@@ -116,8 +116,8 @@ package rl
 //				batchOldState.SetData(batchOldStateSlice)
 //				batchNewState.SetData(batchNewStateSlice)
 //
-//				graph.Forward(batchOldQVal)
-//				graph.Forward(batchNewQVal)
+//				graph.Build(batchOldQVal)
+//				graph.Build(batchNewQVal)
 //
 //				batchYSlice := make([]float32, w.batchSize * w.numActions)
 //				for batchIndex, experience := range experienceBatch {
@@ -132,7 +132,7 @@ package rl
 //				}
 //				batchY.SetData(batchYSlice)
 //
-//				graph.Forward(loss)
+//				graph.Build(loss)
 //				w.metric.events.loss <- loss.ToMat32f().At(action)
 //				graph.Backward(loss, w.model.TrainableVariables()...)
 //				w.model.Optimizer().Update(w.model.TrainableVariables()...)
@@ -220,7 +220,7 @@ package rl
 //		w.gridWorld.Print()
 //	}
 //	state := tensor.Variable(1, 64)
-//	qval := w.model.Predict(state)
+//	qval := w.model.Build(state)
 //	counter := 0
 //	isGameRunning := true
 //	for isGameRunning {
@@ -228,7 +228,7 @@ package rl
 //		w.addNoise(stateMat)
 //		state.SetData(stateMat.Data())
 //
-//		graph.Forward(qval)
+//		graph.Build(qval)
 //		action := maxIndex(qval.ToFloat32())
 //		w.gridWorld.MakeMove(action)
 //		reward := w.gridWorld.GetReward()

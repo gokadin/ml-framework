@@ -39,8 +39,8 @@ package rl
 //	state := tensor.Variable(1, 64)
 //	state2 := tensor.Variable(1, 64)
 //	y := tensor.Variable(1, 4)
-//	qval := w.model.Predict(state)
-//	newQ := w.model.PredictNoGrad(state2)
+//	qval := w.model.Build(state)
+//	newQ := w.model.BuildNoGrad(state2)
 //	loss := w.model.Loss(qval, y)
 //	var lossSum float32
 //	p, _ := plot.New()
@@ -59,7 +59,7 @@ package rl
 //		gameInProgress := true
 //		for gameInProgress {
 //			gameCounter++
-//			graph.Forward(qval)
+//			graph.Build(qval)
 //
 //			// choose action
 //			var action int
@@ -75,7 +75,7 @@ package rl
 //			nextStateMat := w.gridWorld.GetState()
 //			w.addNoise(nextStateMat)
 //			state2.SetData(nextStateMat.Data())
-//			graph.Forward(newQ)
+//			graph.Build(newQ)
 //			maxQValue := maxValue(newQ.ToFloat32())
 //
 //			var yValue float32
@@ -87,7 +87,7 @@ package rl
 //			y.SetData(qval.ToFloat32())
 //			y.Set(action, yValue)
 //
-//			graph.Forward(loss)
+//			graph.Build(loss)
 //			graph.Backward(loss, w.model.TrainableVariables()...)
 //
 //			lossSum += loss.ToFloat32()[action]
@@ -137,7 +137,7 @@ package rl
 //	//pixelgl.Run(w.gridWorld.Run)
 //	w.gridWorld.Print()
 //	state := tensor.Variable(1, 64)
-//	qval := w.model.Predict(state)
+//	qval := w.model.Build(state)
 //	counter := 0
 //	isGameRunning := true
 //	for isGameRunning {
@@ -145,7 +145,7 @@ package rl
 //		w.addNoise(stateMat)
 //		state.SetData(stateMat.Data())
 //
-//		graph.Forward(qval)
+//		graph.Build(qval)
 //		action := maxIndex(qval.ToFloat32())
 //		w.gridWorld.MakeMove(action)
 //		fmt.Println(fmt.Sprintf("taking action %d", action))

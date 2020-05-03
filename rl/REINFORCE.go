@@ -78,9 +78,9 @@ package rl
 //
 //	previousState := tensor.Variable(1, 4)
 //	currentState := tensor.Variable(1, 4)
-//	actionProbabilities := w.model.Predict(currentState)
+//	actionProbabilities := w.model.Build(currentState)
 //	batchStates := tensor.Variable(1, 1)
-//	predBatch := w.model.Predict(batchStates)
+//	predBatch := w.model.Build(batchStates)
 //	discountedRewards := tensor.Variable(1, 1)
 //	loss := tensor.Neg(tensor.Sum(tensor.Mul(discountedRewards, tensor.Log(predBatch)), 0))
 //	//loss := tensor.CrossEntropy(predBatch, discountedRewards)
@@ -94,7 +94,7 @@ package rl
 //		must(err)
 //
 //		for t := 0; t < w.maxDur; t++ {
-//			graph.Forward(actionProbabilities)
+//			graph.Build(actionProbabilities)
 //			action := w.selectAction(actionProbabilities.ToFloat64())
 //			previousState.SetData(currentState.ToFloat32())
 //			currentStateMat, _, done, _, err := env.Step(id, action, false)
@@ -115,10 +115,10 @@ package rl
 //		discountedRewards.Reshape(len(replayActions), 1).SetData(discountedRewardsMat)
 //
 //		batchStates.Reshape(len(replayActions), 4).SetData(replayStates)
-//		graph.Forward(predBatch)
+//		graph.Build(predBatch)
 //		predBatch.SetData(w.updatePredBatch(replayActions, discountedRewardsMat, predBatch.ToFloat32()))
 //
-//		graph.Forward(loss)
+//		graph.Build(loss)
 //		w.metric.events.loss <- loss.ToFloat32()[0]
 //		graph.Backward(loss, w.model.TrainableVariables()...)
 //		w.model.Optimizer().Update(w.model.TrainableVariables()...)

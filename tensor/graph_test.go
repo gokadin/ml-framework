@@ -75,7 +75,7 @@ func Test_hydraBackward(t *testing.T) {
 //	d := OfShape(mat.WithShape(1, 1)).SetData([]float32{4})
 //	e := Add(c, d)
 //
-//	graph.Forward(e)
+//	graph.Build(e)
 //
 //	assert.True(t, mat.NewMat32f(e.Shape(), []float32{11}).Equals32f(e.mat))
 //}
@@ -90,7 +90,7 @@ func Test_hydraBackward(t *testing.T) {
 //	g := Add(e, f)
 //	graph := NewGraph()
 //
-//	graph.Forward(g)
+//	graph.Build(g)
 //
 //	assert.True(t, mat.NewMat32f(g.Shape(), []float32{17}).Equals32f(g.mat))
 //}
@@ -107,7 +107,7 @@ func Test_hydraBackward(t *testing.T) {
 //	g := Add(e, f)
 //	graph := NewGraph()
 //
-//	graph.Forward(g)
+//	graph.Build(g)
 //
 //	assert.True(t, mat.NewMat32f(g.Shape(), []float32{9}).Equals32f(g.mat))
 //}
@@ -142,7 +142,7 @@ func Test_hydraBackward(t *testing.T) {
 //	h := Pow(g, 3)              //729
 //	graph := NewGraph()
 //
-//	graph.Forward(h)
+//	graph.Build(h)
 //	graph.Backward(h, y)
 //
 //	assert.True(t, mat.NewMat32f(h.Shape(), []float32{729}).Equals32f(h.mat))
@@ -158,7 +158,7 @@ func Test_hydraBackward(t *testing.T) {
 //	b := OfShape(mat.WithShape(2, 2)).SetData([]float32{0, 3, 1, 1}).SetName("b")
 //	e := Matmul(a, b).SetName("e")
 //	graph := NewGraph()
-//	graph.Forward(e)
+//	graph.Build(e)
 //
 //	graph.Backward(e, a)
 //
@@ -169,9 +169,9 @@ func Test_hydraBackward(t *testing.T) {
 //	a := OfShape(mat.WithShape(2, 2)).SetData([]float32{1, 2, 2, 1}).SetName("a")
 //	e := Sum(a, 0).SetName("e")
 //	graph := NewGraph()
-//	graph.Forward(e)
+//	graph.Build(e)
 //
-//	graph.Forward(e)
+//	graph.Build(e)
 //
 //	assert.True(t, mat.NewMat32f(mat.WithShape(1, 2), []float32{3, 3}).Equals32f(e.mat))
 //}
@@ -181,7 +181,7 @@ func Test_hydraBackward(t *testing.T) {
 //	b := OfShape(mat.WithShape(2, 2)).SetData([]float32{0, 3, 1, 1}).SetName("b")
 //	e := Matmul(a, b).SetName("e")
 //	graph := NewGraph()
-//	graph.Forward(e)
+//	graph.Build(e)
 //
 //	graph.Backward(e, a)
 //
@@ -198,7 +198,7 @@ func Test_hydraBackward(t *testing.T) {
 //	yHat := OfShape(mat.WithShape(1, 2)).SetData([]float32{2, 2}).SetName("yHat")
 //	e := Pow(Sub(Matmul(x, w), yHat), 2)
 //	graph := NewGraph()
-//	graph.Forward(e)
+//	graph.Build(e)
 //
 //	graph.Backward(e, w)
 //

@@ -5,7 +5,7 @@ import (
 )
 
 //#cgo CFLAGS: -I.
-//#cgo LDFLAGS: -L${SRCDIR} -Wl,-rpath,${SRCDIR} -ladd -llinear -lmatmul -lrelu
+//#cgo LDFLAGS: -L${SRCDIR} -Wl,-rpath,${SRCDIR} -ladd -llinear -lmatmul -lrelu -lsoftmaxcrossentropy
 //#include <tensor.h>
 import "C"
 
@@ -200,8 +200,17 @@ func (t *Tensor) Shape() Shape {
 	}
 }
 
+func (t *Tensor) Copy() *Tensor {
+	tensor := New()
+	tensor.reshapeMat(int(t._mat_shape.x), int(t._mat_shape.y))
+	tensor.reshapeGrad(int(t._grad_shape.x), int(t._grad_shape.y))
+	tensor.SetData(t.ToFloat32())
+	tensor.SetGradient(t.GradientToFloat32())
+	return tensor
+}
+
 func (t *Tensor) forward() {
-	if t.op.name() == operationAdd || t.op.name() == operationLinear || t.op.name() == operationMatmul || t.op.name() == operationRelu {
+	if t.op.name() == operationAdd || t.op.name() == operationLinear || t.op.name() == operationMatmul || t.op.name() == operationRelu || t.op.name() == operationSoftmaxCrossEntropy {
 		_shape := C.calculate_op_shape(t._tensor)
 		t.Reshape(int(_shape.x), int(_shape.y))
 		handleOpResult(int(C.forward(t._tensor)))
@@ -212,7 +221,7 @@ func (t *Tensor) forward() {
 }
 
 func (t *Tensor) backward() {
-	if t.op.name() == operationAdd || t.op.name() == operationLinear || t.op.name() == operationMatmul || t.op.name() == operationRelu {
+	if t.op.name() == operationAdd || t.op.name() == operationLinear || t.op.name() == operationMatmul || t.op.name() == operationRelu || t.op.name() == operationSoftmaxCrossEntropy {
 		if t.op.name() == operationLinear {
 			handleOpResult(int(C.backward(t._tensor)))
 		} else {
