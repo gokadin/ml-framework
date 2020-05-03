@@ -8,5 +8,7 @@ func handleOpResult(code int) {
 	switch code {
 	case 1:
 		panic("operation failed due to incompatible shapes")
+	case -2:
+		panic("encountered CUDA error")
 	}
 }

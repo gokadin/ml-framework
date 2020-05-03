@@ -5,9 +5,6 @@ import (
 	"github.com/gokadin/ml-framework/tensor"
 )
 
-const defaultWeightInitializer = initializerTypeXavier
-const defaultBiasInitializer = initializerTypeZeros
-
 type dense struct {
 	activation string
 	weightInitializer string
@@ -21,8 +18,6 @@ type dense struct {
 func Dense(unitCount int, activation string) *dense {
 	return &dense{
 		activation: 			activation,
-		weightInitializer:		defaultWeightInitializer,
-		biasInitializer: 		defaultBiasInitializer,
 		isOutputLayer:          false,
 		unitCount:              unitCount,
 	}
@@ -37,8 +32,8 @@ func (d *dense) Initialize(inputSize int) {
 		return
 	}
 
-	weightsTensor := initializeParameter(d.weightInitializer, inputSize, d.unitCount)
-	biasTensor := initializeParameter(d.biasInitializer, 1, d.unitCount)
+	weightsTensor := tensor.From(tensor.InitXavier, inputSize, d.unitCount)
+	biasTensor := tensor.Zeros(1, d.unitCount)
 	d.InitializeWith(weightsTensor, biasTensor)
 }
 

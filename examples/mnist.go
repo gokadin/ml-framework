@@ -11,7 +11,7 @@ func RunMnist() {
 
 	runner := runners.BuildModelRunner(
 		modules.Dense(128, modules.ActivationRelu),
-		modules.Dense(10, modules.ActivationSoftmax))
+		modules.Dense(10, modules.ActivationIdentity))
 
 	runner.Configure(runners.ModelConfig{
 		Epochs: 50,

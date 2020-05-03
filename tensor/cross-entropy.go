@@ -25,6 +25,7 @@ func (opw *opCrossEntropy) dependencies() []*Tensor {
 }
 
 func (opw *opCrossEntropy) forward(tensor *Tensor) {
+	opw.a.SetData(mat.Softmax(opw.a.ToMat32f()).Data())
 	C.cross_entropy(opw.a._tensor, opw.target._tensor, tensor._tensor)
 }
 

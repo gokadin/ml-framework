@@ -2,7 +2,6 @@ package tensor
 
 import (
 	"github.com/gokadin/ml-framework/mat"
-	"runtime"
 )
 
 //#cgo CFLAGS: -I.
@@ -33,7 +32,7 @@ func New() *Tensor {
 
 	t._tensor = C.alloc_tensor(C.int(nextId))
 	t.initializeNativeTensor([]int{1, 1})
-	runtime.SetFinalizer(t, free)
+	//runtime.SetFinalizer(t, free)
 
 	return t
 }
@@ -214,7 +213,11 @@ func (t *Tensor) forward() {
 
 func (t *Tensor) backward() {
 	if t.op.name() == operationAdd || t.op.name() == operationLinear || t.op.name() == operationMatmul || t.op.name() == operationRelu {
-		handleOpResult(int(C.backward(t._tensor)))
+		if t.op.name() == operationLinear {
+			handleOpResult(int(C.backward(t._tensor)))
+		} else {
+			handleOpResult(int(C.backward(t._tensor)))
+		}
 	} else {
 		t.op.backward(t)
 	}

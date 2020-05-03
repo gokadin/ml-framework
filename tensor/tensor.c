@@ -10,11 +10,7 @@ TENSOR *alloc_tensor(int id)
 
 void free_tensor(TENSOR *tensor)
 {
-    if (tensor->op != NULL)
-    {
-        free(tensor->op);
-    }
-
+    free(tensor->op);
     free(tensor);
 }
 

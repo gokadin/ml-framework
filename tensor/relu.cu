@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <cuda.h>
+#include "cudautils.h"
 #include "tensor.h"
 
 const int BLOCK_SIZE = 1024;
@@ -35,20 +36,21 @@ __global__ void relu_grad(float *cg, float *ag, int size)
 extern "C" {
 
     void gpu_relu_forward(TENSOR *a, TENSOR *target) {
-        int size = a->mat_shape->x * a->mat_shape->y;
-        int msize = size * sizeof(float);
         float* gpu_a;
-        float* gpu_target;
+        size_t a_size = a->mat_shape->size * sizeof(float);
+        checkCudaErr(cudaMalloc((void**)&gpu_a, a_size));
+        checkCudaErr(cudaMemcpy(gpu_a, &a->data[0], a_size, cudaMemcpyHostToDevice));
 
-        cudaMalloc((void**)&gpu_a, msize);
-        cudaMemcpy(gpu_a, &a->data[0], msize, cudaMemcpyHostToDevice);
-        cudaMalloc((void**)&gpu_target, msize);
+        float* gpu_target;
+        size_t target_size = target->mat_shape->size * sizeof(float);
+        checkCudaErr(cudaMalloc((void**)&gpu_target, target_size));
 
         dim3 blockSize = dim3(BLOCK_SIZE);
-        dim3 gridSize = dim3((size + BLOCK_SIZE - 1) / BLOCK_SIZE);
-        relu<<<gridSize, blockSize>>>(gpu_a, gpu_target, size);
+        dim3 gridSize = dim3((a->mat_shape->size + BLOCK_SIZE - 1) / BLOCK_SIZE);
+        relu<<<gridSize, blockSize>>>(gpu_a, gpu_target, a->mat_shape->size);
+        checkCudaErr(cudaPeekAtLastError());
 
-        cudaMemcpy(&target->data[0], gpu_target, msize, cudaMemcpyDeviceToHost);
+        checkCudaErr(cudaMemcpy(&target->data[0], gpu_target, target_size, cudaMemcpyDeviceToHost));
 
         cudaFree(gpu_a);
         cudaFree(gpu_target);
@@ -56,19 +58,20 @@ extern "C" {
 
     void gpu_relu_backward(TENSOR *tensor, TENSOR *a) {
         float* gpu_tensor_grad;
-        size_t gpu_tensor_grad_size = tensor->grad_shape->x * tensor->grad_shape->y * sizeof(float);
-        cudaMalloc((void**)&gpu_tensor_grad, gpu_tensor_grad_size);
-        cudaMemcpy(gpu_tensor_grad, &tensor->grad[0], gpu_tensor_grad_size, cudaMemcpyHostToDevice);
+        size_t tensor_grad_size = tensor->grad_shape->size * sizeof(float);
+        checkCudaErr(cudaMalloc((void**)&gpu_tensor_grad, tensor_grad_size));
+        checkCudaErr(cudaMemcpy(gpu_tensor_grad, &tensor->grad[0], tensor_grad_size, cudaMemcpyHostToDevice));
 
         float* gpu_a_grad;
-        size_t a_grad_size = a->mat_shape->x * a->mat_shape->y * sizeof(float);
-        cudaMalloc(&gpu_a_grad, a_grad_size);
+        size_t a_grad_size = a->grad_shape->size * sizeof(float);
+        checkCudaErr(cudaMalloc(&gpu_a_grad, a_grad_size));
 
         dim3 blockSize(BLOCK_SIZE);
-        dim3 gridSize = dim3((a_grad_size + BLOCK_SIZE - 1) / BLOCK_SIZE);
-        relu_grad<<<gridSize, blockSize>>>(gpu_tensor_grad, gpu_a_grad, a_grad_size);
+        dim3 gridSize = dim3((a->grad_shape->size + BLOCK_SIZE - 1) / BLOCK_SIZE);
+        relu_grad<<<gridSize, blockSize>>>(gpu_tensor_grad, gpu_a_grad, a->grad_shape->size);
+        checkCudaErr(cudaPeekAtLastError());
 
-        cudaMemcpy(&a->grad[0], gpu_a_grad, a_grad_size, cudaMemcpyDeviceToHost);
+        checkCudaErr(cudaMemcpy(&a->grad[0], gpu_a_grad, a_grad_size, cudaMemcpyDeviceToHost));
 
         cudaFree(gpu_tensor_grad);
         cudaFree(gpu_a_grad);

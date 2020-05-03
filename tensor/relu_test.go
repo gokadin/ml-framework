@@ -22,6 +22,8 @@ func buildReluTestCases() []reluTestCases {
 		{"1200x2 ones CPU", Ones(1200, 2), false},
 		{"1200x2 zeros GPU", Zeros(1200, 2), true},
 		{"1200x2 zeros CPU", Zeros(1200, 2), false},
+		{"2x1200 ones GPU", Ones(2, 1200), true},
+		{"2x1200 ones CPU", Ones(2, 1200), false},
 	}
 }
 

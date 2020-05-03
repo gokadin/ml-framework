@@ -7,18 +7,18 @@ import (
 )
 
 const (
-	initRandom     = "initRandom"
-	initNormalized = "initNormalized"
-	initXavier     = "initXavier"
+	InitRandom     = "InitRandom"
+	InitNormalized = "InitNormalized"
+	InitXavier     = "InitXavier"
 )
 
 func initializeParameter(initializerType string, shapeArray ...int) *Tensor {
 	switch initializerType {
-	case initRandom:
+	case InitRandom:
 		return initializeParameterRandom(shapeArray...)
-	case initNormalized:
+	case InitNormalized:
 		return initializeParameterNormalized(shapeArray...)
-	case initXavier:
+	case InitXavier:
 		return initializeParameterXavier(shapeArray...)
 	}
 
