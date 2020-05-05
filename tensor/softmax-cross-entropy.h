@@ -70,7 +70,7 @@ int cpu_sce_forward(TENSOR *a, TENSOR *b, TENSOR *target)
         for (int j = 0; j < a->mat_shape->y; j++)
         {
             int index = i * a->mat_shape->y + j;
-            partial[index] = log(expf(a->data[index]) / sum) * b->data[index];
+            partial[index] = (expf(a->data[index]) / sum) * b->data[index];
         }
     }
 
@@ -80,8 +80,10 @@ int cpu_sce_forward(TENSOR *a, TENSOR *b, TENSOR *target)
         sum1[i] = 0;
         for (int j = 0; j < a->mat_shape->y; j++)
         {
-            sum1[i] += a->data[i * a->mat_shape->y + j];
+            int index = i * a->mat_shape->y + j;
+            sum1[i] += partial[index];
         }
+        sum1[i] = -logf(sum1[i]);
     }
 
     float sum0 = 0;
@@ -90,7 +92,7 @@ int cpu_sce_forward(TENSOR *a, TENSOR *b, TENSOR *target)
         sum0 += sum1[i];
     }
 
-    target->data[0] = -sum0;
+    target->data[0] = sum0 / a->mat_shape->x;
 
     return 0;
 }
