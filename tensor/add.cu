@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <cuda.h>
 #include "tensor.h"
+#include "cudautils.h"
+
+const int BLOCK_SIZE = 1024;
 
 __global__ void add(float *a, float* b, float *target, int size)
 {
@@ -14,24 +17,27 @@ __global__ void add(float *a, float* b, float *target, int size)
 
 extern "C" {
 
-    int gpu_add(TENSOR *a, TENSOR* b, TENSOR *target) {
-        int size = a->mat_shape->x * a->mat_shape->y;
-        int msize = size * sizeof(float);
+    int gpu_add_forward(TENSOR *a, TENSOR* b, TENSOR *target) {
         float* gpu_a;
+        size_t a_size = a->mat_shape->size * sizeof(float);
+        checkCudaErr(cudaMalloc((void**)&gpu_a, a_size));
+        checkCudaErr(cudaMemcpy(gpu_a, &a->data[0], a_size, cudaMemcpyHostToDevice));
+
         float* gpu_b;
+        size_t b_size = b->mat_shape->size * sizeof(float);
+        checkCudaErr(cudaMalloc((void**)&gpu_b, b_size));
+        checkCudaErr(cudaMemcpy(gpu_b, &b->data[0], b_size, cudaMemcpyHostToDevice));
+
         float* gpu_target;
+        size_t target_size = target->mat_shape->size * sizeof(float);
+        checkCudaErr(cudaMalloc((void**)&gpu_target, target_size));
 
-        cudaMalloc((void**)&gpu_a, msize);
-        cudaMemcpy(gpu_a, &a->data[0], msize, cudaMemcpyHostToDevice);
-        cudaMalloc((void**)&gpu_b, msize);
-        cudaMemcpy(gpu_b, &b->data[0], msize, cudaMemcpyHostToDevice);
-        cudaMalloc((void**)&gpu_target, msize);
+        dim3 blockSize = dim3(BLOCK_SIZE);
+        dim3 gridSize = dim3((target->mat_shape->size + BLOCK_SIZE - 1) / BLOCK_SIZE);
+        add<<<gridSize, blockSize>>>(gpu_a, gpu_b, gpu_target, target->mat_shape->size);
+        checkCudaErr(cudaPeekAtLastError());
 
-        dim3 blockSize = dim3(1024);
-        dim3 gridSize = dim3((size + blockSize.x - 1) / blockSize.x);
-        add<<<gridSize, blockSize>>>(gpu_a, gpu_b, gpu_target, size);
-
-        cudaMemcpy(&target->data[0], gpu_target, msize, cudaMemcpyDeviceToHost);
+        checkCudaErr(cudaMemcpy(&target->data[0], gpu_target, target_size, cudaMemcpyDeviceToHost));
 
         cudaFree(gpu_a);
         cudaFree(gpu_b);

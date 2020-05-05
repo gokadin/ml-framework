@@ -1,5 +1,6 @@
 package tensor
 
+//#cgo LDFLAGS: -L${SRCDIR} -Wl,-rpath,${SRCDIR} -lm -lsoftmax
 //#include <softmax.h>
 import "C"
 

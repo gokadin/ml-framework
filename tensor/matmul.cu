@@ -2,6 +2,7 @@
 #include <cuda.h>
 #include "tensor.h"
 #include "cudautils.h"
+#include "matmul.cuh"
 
 const int BLOCK_SIZE = 32;
 

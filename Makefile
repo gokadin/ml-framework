@@ -16,5 +16,5 @@ compile:
 	nvcc --ptxas-options=-v --compiler-options '-fPIC' -arch=${ARCH} -code=${CODE} -o ${TENSOR_DIR}/librelu.so --shared ${TENSOR_DIR}/relu.cu
 	nvcc --ptxas-options=-v --compiler-options '-fPIC' -arch=${ARCH} -code=${CODE} -o ${TENSOR_DIR}/libsum.so --shared ${TENSOR_DIR}/sum.cu
 	nvcc --ptxas-options=-v --compiler-options '-fPIC' -arch=${ARCH} -code=${CODE} -o ${TENSOR_DIR}/libsoftmax.so --shared ${TENSOR_DIR}/softmax.cu
-	nvcc --ptxas-options=-v --compiler-options '-fPIC' -arch=${ARCH} -code=${CODE} -o ${TENSOR_DIR}/libsoftmaxcrossentropy.so --shared ${TENSOR_DIR}/softmax-cross-entropy.cu ${TENSOR_DIR}/sum.cu
-	nvcc --ptxas-options=-v --compiler-options '-fPIC' -arch=${ARCH} -code=${CODE} -o ${TENSOR_DIR}/liblinear.so --shared ${TENSOR_DIR}/linear.cu
+	nvcc --ptxas-options=-v --compiler-options '-fPIC' -arch=${ARCH} -code=${CODE} -o ${TENSOR_DIR}/liblinear.so --shared ${TENSOR_DIR}/linear.cu ${TENSOR_DIR}/softmax-cross-entropy.cu ${TENSOR_DIR}/matmul.cu ${TENSOR_DIR}/sum.cu
+	nvcc --ptxas-options=-v --compiler-options '-fPIC' -arch=${ARCH} -code=${CODE} -o ${TENSOR_DIR}/libsoftmaxcrossentropy.so --shared ${TENSOR_DIR}/softmax-cross-entropy.cu

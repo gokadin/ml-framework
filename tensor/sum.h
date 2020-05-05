@@ -1,3 +1,3 @@
 #include "tensor.h"
 
-int sum(TENSOR *a, int axis, TENSOR *target);
+int gpu_sum_forward(TENSOR *a, int axis, TENSOR *target);

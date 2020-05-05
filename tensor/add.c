@@ -33,7 +33,7 @@ int add_forward(TENSOR *target)
 
     if (target->run_on_gpu)
     {
-        return gpu_add(target->op->operands[0], target->op->operands[1], target);
+        return gpu_add_forward(target->op->operands[0], target->op->operands[1], target);
     }
 
     return cpu_add_forward(target->op->operands[0], target->op->operands[1], target);
@@ -44,11 +44,11 @@ int add_backward(TENSOR *target)
     return cpu_add_backward(target->op->operands[0], target->op->operands[1], target);
 }
 
-int cpu_add_forward(TENSOR *tensor, TENSOR *a, TENSOR *b)
+int cpu_add_forward(TENSOR *a, TENSOR *b, TENSOR *target)
 {
-    for (int i = 0; i < tensor->mat_shape->size; i++)
+    for (int i = 0; i < target->mat_shape->size; i++)
     {
-        tensor->data[i] = a->data[i] + b->data[i];
+        target->data[i] = a->data[i] + b->data[i];
     }
 
     return 0;

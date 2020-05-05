@@ -28,10 +28,8 @@ func buildReluTestCases() []reluTestCases {
 }
 
 func Test_relu_forward(t *testing.T) {
-	t.Parallel()
 	for _, test := range buildReluTestCases() {
 		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
 			t.Log(test.name)
 
 			expected := make([]float32, test.a.Shape().Size())
@@ -54,10 +52,8 @@ func Test_relu_forward(t *testing.T) {
 }
 
 func Test_relu_backward(t *testing.T) {
-	t.Parallel()
 	for _, test := range buildReluTestCases() {
 		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
 			t.Log(test.name)
 
 			expectedGrad := make([]float32, test.a.Shape().Size())

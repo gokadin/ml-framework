@@ -46,7 +46,6 @@ int sce_forward(TENSOR *target)
 
     if (target->run_on_gpu)
     {
-        // TODO need to do softmax first
         return gpu_sce_forward(target->op->operands[0], target->op->operands[1], target);
     }
 

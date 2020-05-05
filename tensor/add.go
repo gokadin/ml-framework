@@ -1,5 +1,6 @@
 package tensor
 
+//#cgo LDFLAGS: -L${SRCDIR} -Wl,-rpath,${SRCDIR} -ladd
 //#include <add.h>
 import "C"
 

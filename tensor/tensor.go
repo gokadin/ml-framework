@@ -5,7 +5,7 @@ import (
 )
 
 //#cgo CFLAGS: -I.
-//#cgo LDFLAGS: -L${SRCDIR} -Wl,-rpath,${SRCDIR} -lm -ladd -llinear -lmatmul -lrelu -lsoftmax -lsoftmaxcrossentropy
+//#cgo LDFLAGS: -L${SRCDIR} -Wl,-rpath,${SRCDIR} -lrelu -llinear -lsoftmaxcrossentropy
 //#include <tensor.h>
 import "C"
 

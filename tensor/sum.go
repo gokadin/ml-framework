@@ -1,9 +1,8 @@
 package tensor
 
-//#cgo CFLAGS: -I.
-//#cgo LDFLAGS: -L${SRCDIR} -Wl,-rpath,${SRCDIR}  -lsum
 //#include <sum.h>
 import "C"
+
 import (
 	"github.com/gokadin/ml-framework/mat"
 	"log"
@@ -26,7 +25,7 @@ func (ops *opSum) dependencies() []*Tensor {
 }
 
 func (ops *opSum) forward(tensor *Tensor) {
-	C.sum(ops.a._tensor, C.int(ops.axis), tensor._tensor)
+	C.gpu_sum_forward(ops.a._tensor, C.int(ops.axis), tensor._tensor)
 }
 
 func (ops *opSum) backward(tensor *Tensor) {
