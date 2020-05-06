@@ -43,7 +43,7 @@ __global__ void sum1_log_neg(float *a, float *target, int width, int height)
 
 extern "C" {
 
-    void gpu_sce_forward(TENSOR *a, TENSOR* b, TENSOR *target) {
+    void gpu_sce_forward(TENSOR *target, TENSOR *a, TENSOR *b) {
         float* gpu_a;
         size_t a_size = a->mat_shape->size * sizeof(float);
         checkCudaErr(cudaMalloc((void**)&gpu_a, a_size));

@@ -4,60 +4,29 @@
 #include <math.h>
 #include "tensor.h"
 
-OP *alloc_sce(TENSOR *a, TENSOR *b);
-SHAPE sce_target_shape(TENSOR *tensor);
-int sce_forward(TENSOR *target);
-int sce_backward(TENSOR *tensor);
-int gpu_sce_forward(TENSOR *a, TENSOR *b, TENSOR *target);
-int cpu_sce_forward(TENSOR *a, TENSOR *b, TENSOR *target);
+int sce_forward(TENSOR *tensor, TENSOR *a, TENSOR *b);
+int sce_backward(TENSOR *tensor, TENSOR *a, TENSOR *b);
+int gpu_sce_forward(TENSOR *tensor, TENSOR *a, TENSOR *b);
+int cpu_sce_forward(TENSOR *tensor, TENSOR *a, TENSOR *b);
 int gpu_sce_backward(TENSOR *tensor, TENSOR *a, TENSOR *b);
 int cpu_sce_backward(TENSOR *tensor, TENSOR *a, TENSOR *b);
 
-OP *alloc_sce(TENSOR *a, TENSOR *b)
+int sce_forward(TENSOR *target, TENSOR *a, TENSOR *b)
 {
-    OP *op = (OP*)malloc(sizeof(OP));
-
-    op->forward = sce_forward;
-    op->backward = sce_backward;
-    op->target_shape = sce_target_shape;
-
-    op->operands = malloc(sizeof(TENSOR*) * 2);
-    op->operands[0] = a;
-    op->operands[1] = b;
-
-    return op;
-}
-
-SHAPE sce_target_shape(TENSOR *tensor)
-{
-    SHAPE shape;
-    shape.x = 1;
-    shape.y = 1;
-    shape.size = 1;
-    return shape;
-}
-
-int sce_forward(TENSOR *target)
-{
-    if (!shapes_equal(target->op->operands[0]->mat_shape, target->op->operands[1]->mat_shape))
-    {
-        return 1;
-    }
-
     if (target->run_on_gpu)
     {
-        return gpu_sce_forward(target->op->operands[0], target->op->operands[1], target);
+        return gpu_sce_forward(target, a, b);
     }
 
-    return cpu_sce_forward(target->op->operands[0], target->op->operands[1], target);
+    return cpu_sce_forward(target, a, b);
 }
 
-int sce_backward(TENSOR *tensor)
+int sce_backward(TENSOR *tensor, TENSOR *a, TENSOR *b)
 {
-    return cpu_sce_backward(tensor, tensor->op->operands[0], tensor->op->operands[1]);
+    return cpu_sce_backward(tensor, a, b);
 }
 
-int cpu_sce_forward(TENSOR *a, TENSOR *b, TENSOR *target)
+int cpu_sce_forward(TENSOR *target, TENSOR *a, TENSOR *b)
 {
     float partial[a->mat_shape->size];
     for (int i = 0; i < a->mat_shape->x; i++)

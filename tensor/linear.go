@@ -22,10 +22,17 @@ func (o *opLinear) forwardShape() Shape {
 }
 
 func (o *opLinear) backwardShapes(shape Shape) []Shape {
-	return []Shape{} // finish
+	return []Shape{
+		{shape.X, o.a.Shape().Y},
+		{o.x.Shape().X, shape.Y},
+		{1, shape.Y},
+	}
 }
 
 func (o *opLinear) forward(tensor *Tensor) {
+	if o.a.Shape().Y != o.x.Shape().X || o.b.Shape().Y != o.x.Shape().Y {
+		handleIncompatibleShapes("linear", o.a.Shape(), o.x.Shape(), o.b.Shape())
+	}
 	C.linear_forward(tensor._tensor, o.a._tensor, o.x._tensor, o.b._tensor)
 }
 
@@ -34,7 +41,8 @@ func (o *opLinear) backward(tensor *Tensor) {
 }
 
 func Linear(a, x, b *Tensor) *Tensor {
-	result := OfShape(a.Shape().X, b.Shape().Y)
-	result.op = &opLinear{a, x, b}
+	o := &opLinear{a, x, b}
+	result := OfShape(o.forwardShape().ToArray()...)
+	result.op = o
 	return result
 }

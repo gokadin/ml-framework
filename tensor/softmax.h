@@ -4,53 +4,28 @@
 #include <math.h>
 #include "tensor.h"
 
-OP *alloc_softmax(TENSOR *a);
-SHAPE softmax_target_shape(TENSOR *tensor);
-int softmax_forward(TENSOR *target);
-int softmax_backward(TENSOR *tensor);
-int gpu_softmax_forward(TENSOR *a, TENSOR *target);
-int cpu_softmax_forward(TENSOR *a, TENSOR *target);
+int softmax_forward(TENSOR *tensor, TENSOR *a);
+int softmax_backward(TENSOR *tensor, TENSOR *a);
+int gpu_softmax_forward(TENSOR *tensor, TENSOR *a);
+int cpu_softmax_forward(TENSOR *tensor, TENSOR *a);
 
-OP *alloc_softmax(TENSOR *a)
-{
-    OP *op = (OP*)malloc(sizeof(OP));
-
-    op->forward = softmax_forward;
-    op->backward = softmax_backward;
-    op->target_shape = softmax_target_shape;
-
-    op->operands = malloc(sizeof(TENSOR*));
-    op->operands[0] = a;
-
-    return op;
-}
-
-SHAPE softmax_target_shape(TENSOR *tensor)
-{
-    SHAPE shape;
-    shape.x = tensor->mat_shape->x;
-    shape.y = tensor->mat_shape->y;
-    shape.size = tensor->mat_shape->size;
-    return shape;
-}
-
-int softmax_forward(TENSOR *target)
+int softmax_forward(TENSOR *target, TENSOR *a)
 {
     if (target->run_on_gpu)
     {
-        return gpu_softmax_forward(target->op->operands[0], target);
+        return gpu_softmax_forward(target, a);
     }
 
-    return cpu_softmax_forward(target->op->operands[0], target);
+    return cpu_softmax_forward(target, a);
 }
 
-int softmax_backward(TENSOR *tensor)
+int softmax_backward(TENSOR *tensor, TENSOR *a)
 {
     // backward softmax is disabled
     return 0;
 }
 
-int cpu_softmax_forward(TENSOR *a, TENSOR *target)
+int cpu_softmax_forward(TENSOR *target, TENSOR *a)
 {
     for (int i = 0; i < a->mat_shape->x; i++)
     {

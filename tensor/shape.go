@@ -12,3 +12,7 @@ func (s Shape) ToArray() []int {
 func (s Shape) Size() int {
 	return s.X * s.Y
 }
+
+func (s Shape) Equals(other Shape) bool {
+	return s.X == other.X && s.Y == other.Y
+}

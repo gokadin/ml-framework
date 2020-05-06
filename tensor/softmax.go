@@ -39,8 +39,8 @@ func (o *opSoftmax) backward(tensor *Tensor) {
 }
 
 func Softmax(a *Tensor) *Tensor {
-	result := OfShape(a.Shape().X, a.Shape().Y)
-	result.op = &opSoftmax{a}
-	result._tensor.op = C.alloc_softmax(a._tensor)
+	o := &opSoftmax{a}
+	result := OfShape(o.forwardShape().ToArray()...)
+	result.op = o
 	return result
 }

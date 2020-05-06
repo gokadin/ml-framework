@@ -218,20 +218,17 @@ func (t *Tensor) Copy() *Tensor {
 }
 
 func (t *Tensor) forward() {
-	if t.op.name() == operationAdd || t.op.name() == operationMatmul || t.op.name() == operationRelu || t.op.name() == operationSoftmaxCrossEntropy || t.op.name() == operationSoftmax {
-		handleOpResult(int(C.forward(t._tensor)))
-	} else {
-		t.op.forward(t)
-	}
+	t.reshapeMat(t.op.forwardShape().ToArray()...)
+	t.op.forward(t)
 	t.ready = true
 }
 
 func (t *Tensor) backward() {
-	if t.op.name() == operationAdd || t.op.name() == operationMatmul || t.op.name() == operationRelu || t.op.name() == operationSoftmaxCrossEntropy || t.op.name() == operationSoftmax {
-		handleOpResult(int(C.backward(t._tensor)))
-	} else {
-		t.op.backward(t)
+	shapes := t.op.backwardShapes(t.Shape())
+	for i := 0; i < len(shapes); i++ {
+		t.op.dependencies()[i].reshapeGrad(shapes[i].ToArray()...)
 	}
+	t.op.backward(t)
 	t.ready = false
 }
 

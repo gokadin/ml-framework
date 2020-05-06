@@ -33,7 +33,7 @@ int linear_backward(TENSOR *tensor, TENSOR *a, TENSOR *x, TENSOR *b)
 
 int cpu_linear_forward(TENSOR *tensor, TENSOR *a, TENSOR *x, TENSOR *b)
 {
-    cpu_matmul_forward(a, x, tensor);
+    cpu_matmul_forward(tensor, a, x);
     for (int i = 0; i < tensor->mat_shape->x; i++)
     {
         for (int j = 0; j < tensor->mat_shape->y; j++)

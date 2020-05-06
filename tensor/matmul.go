@@ -21,24 +21,27 @@ func (o *opMatmul) forwardShape() Shape {
 	return Shape{o.a.Shape().X, o.b.Shape().Y}
 }
 
-// TODO
-func (o *opMatmul) backwardShapes(tensorShape Shape) []Shape {
-	return []Shape{tensorShape, tensorShape}
+func (o *opMatmul) backwardShapes(shape Shape) []Shape {
+	return []Shape{
+		{shape.X, o.a.Shape().Y},
+		{o.b.Shape().X, shape.Y},
+	}
 }
 
 func (o *opMatmul) forward(tensor *Tensor) {
-	//aMat := mat.NewMat32f(mat.WithShape(omm.a.Shape().X, omm.a.Shape().Y), omm.a.ToFloat32())
-	//bMat := mat.NewMat32f(mat.WithShape(omm.b.Shape().X, omm.b.Shape().Y), omm.b.ToFloat32())
-	//tensor.SetData(mat.MatMulParallel(aMat, bMat).Data())
+	if o.a.Shape().Y != o.b.Shape().X {
+		handleIncompatibleShapes("linear", o.a.Shape(), o.b.Shape())
+	}
+	C.matmul_forward(tensor._tensor, o.a._tensor, o.b._tensor)
 }
 
 func (o *opMatmul) backward(tensor *Tensor) {
-	//C.gpu_matmul_backward(tensor._tensor, omm.a._tensor, omm.b._tensor)
+	C.matmul_backward(tensor._tensor, o.a._tensor, o.b._tensor)
 }
 
 func Matmul(a, b *Tensor) *Tensor {
-	result := OfShape(a.Shape().X, b.Shape().Y)
-	result.op = &opMatmul{a, b}
-	result._tensor.op = C.alloc_matmul(a._tensor, b._tensor)
+	o := &opMatmul{a, b}
+	result := OfShape(o.forwardShape().ToArray()...)
+	result.op = o
 	return result
 }

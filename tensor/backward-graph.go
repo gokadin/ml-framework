@@ -98,10 +98,6 @@ func (bg *backwardGraph) run() {
 
 func executeBackwardOp(tensor *Tensor, in chan bool, listeners []chan bool) {
 	for range in {
-		shapes := tensor.op.backwardShapes(tensor.Shape())
-		for i := 0; i < len(shapes); i++ {
-			tensor.op.dependencies()[i].reshapeGrad(shapes[i].ToArray()...)
-		}
 		tensor.backward()
 		for _, listener := range listeners {
 			listener <- true

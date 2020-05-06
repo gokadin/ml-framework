@@ -27,7 +27,7 @@ __global__ void softmax(float *a, float *target, int x, int y)
 
 extern "C" {
 
-    void gpu_softmax_forward(TENSOR *a, TENSOR *target) {
+    void gpu_softmax_forward(TENSOR *target, TENSOR *a) {
         float* gpu_a;
         size_t a_size = a->mat_shape->size * sizeof(float);
         checkCudaErr(cudaMalloc((void**)&gpu_a, a_size));
@@ -40,7 +40,7 @@ extern "C" {
         dim3 blockSize = dim3(BLOCK_SIZE, BLOCK_SIZE);
         dim3 gridSize = dim3((a->mat_shape->y + BLOCK_SIZE - 1) / BLOCK_SIZE, (a->mat_shape->x + BLOCK_SIZE - 1) / BLOCK_SIZE);
         softmax<<<gridSize, blockSize>>>(gpu_a, gpu_target, a->mat_shape->x, a->mat_shape->y);
-        checkCudaErr(cudaPeekAtLastError());
+        checkCudaKernelErr("softmax", blockSize, gridSize);
 
         checkCudaErr(cudaMemcpy(&target->data[0], gpu_target, target_size, cudaMemcpyDeviceToHost));
 

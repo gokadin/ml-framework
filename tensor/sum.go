@@ -32,9 +32,12 @@ func (o *opSum) forwardShape() Shape {
 	return Shape{o.a.Shape().X, 1}
 }
 
-// TODO
-func (o *opSum) backwardShapes(tensorShape Shape) []Shape {
-	return []Shape{tensorShape, tensorShape}
+func (o *opSum) backwardShapes(shape Shape) []Shape {
+	if o.axis == 0 {
+		return []Shape{{o.originalShape.X, shape.Y}}
+	}
+
+	return []Shape{{shape.X, shape.Y * o.originalShape.Y}}
 }
 
 func (o *opSum) forward(tensor *Tensor) {

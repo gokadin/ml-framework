@@ -22,32 +22,20 @@ func (o *opRelu) forwardShape() Shape {
 }
 
 func (o *opRelu) backwardShapes(tensorShape Shape) []Shape {
-	return []Shape{tensorShape, tensorShape}
+	return []Shape{tensorShape}
 }
 
 func (o *opRelu) forward(tensor *Tensor) {
-	//C.relu(opw.a._tensor, tensor._tensor)
-	//tensor.SetData(mat.Apply(tensor.ToMat32f(), func(value float32) float32 {
-	//	if value > 0 {
-	//		return value
-	//	}
-	//	return 0
-	//}).Data())
+	C.relu_forward(tensor._tensor, o.a._tensor)
 }
 
 func (o *opRelu) backward(tensor *Tensor) {
-	//d := mat.Apply(tensor.ToMat32f(), func(value float32) float32 {
-	//	if value > 0 {
-	//		return 1
-	//	}
-	//	return 0
-	//})
-	//opw.a.SetGradient(mat.Mul(tensor.GradientToMat32(), d).Data())
+	C.relu_backward(tensor._tensor, o.a._tensor)
 }
 
 func Relu(a *Tensor) *Tensor {
-	result := OfShape(a.Shape().X, a.Shape().Y)
-	result.op = &opRelu{a}
-	result._tensor.op = C.alloc_relu(a._tensor)
+	o := &opRelu{a}
+	result := OfShape(o.forwardShape().ToArray()...)
+	result.op = o
 	return result
 }

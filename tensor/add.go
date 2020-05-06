@@ -27,17 +27,19 @@ func (o *opAdd) backwardShapes(tensorShape Shape) []Shape {
 }
 
 func (o *opAdd) forward(tensor *Tensor) {
-	//C.forward(tensor._tensor)
+	if !o.a.Shape().Equals(o.b.Shape()) {
+		handleIncompatibleShapes("add", o.a.Shape(), o.b.Shape())
+	}
+	C.add_forward(tensor._tensor, o.a._tensor, o.b._tensor)
 }
 
 func (o *opAdd) backward(tensor *Tensor) {
-	//oa.a.SetGradient(tensor.GradientToFloat32())
-	//oa.b.SetGradient(tensor.GradientToFloat32())
+	C.add_backward(tensor._tensor, o.a._tensor, o.b._tensor)
 }
 
 func Add(a, b *Tensor) *Tensor {
-	result := OfShape(a.Shape().ToArray()...)
-	result.op = &opAdd{a, b}
-	result._tensor.op = C.alloc_add(a._tensor, b._tensor)
+	o := &opAdd{a, b}
+	result := OfShape(o.forwardShape().ToArray()...)
+	result.op = o
 	return result
 }
