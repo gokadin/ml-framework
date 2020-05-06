@@ -15,26 +15,33 @@ type opMul struct {
 	a, b *Tensor
 }
 
-func (om *opMul) name() string {
+func (o *opMul) name() string {
 	return operationMul
 }
 
-func (om *opMul) dependencies() []*Tensor {
-	return []*Tensor{om.a, om.b}
+func (o *opMul) dependencies() []*Tensor {
+	return []*Tensor{o.a, o.b}
 }
 
-func (om *opMul) forward(tensor *Tensor) {
-	C.mul(om.a._tensor, om.b._tensor, tensor._tensor)
+func (o *opMul) forwardShape() Shape {
+	return o.a.Shape()
 }
 
+func (o *opMul) backwardShapes(tensorShape Shape) []Shape {
+	return []Shape{tensorShape, tensorShape}
+}
 
-func (om *opMul) backward(tensor *Tensor) {
-	if om.a.isGradientEnabled {
-		om.a.SetGradient(mat.Mul(tensor.GradientToMat32(), om.b.ToMat32f()).Data())
+func (o *opMul) forward(tensor *Tensor) {
+	C.mul(o.a._tensor, o.b._tensor, tensor._tensor)
+}
+
+func (o *opMul) backward(tensor *Tensor) {
+	if o.a.isGradientEnabled {
+		o.a.SetGradient(mat.Mul(tensor.GradientToMat32(), o.b.ToMat32f()).Data())
 	}
 
-	if om.b.isGradientEnabled {
-		om.b.SetGradient(mat.Mul(tensor.GradientToMat32(), om.a.ToMat32f()).Data())
+	if o.b.isGradientEnabled {
+		o.b.SetGradient(mat.Mul(tensor.GradientToMat32(), o.a.ToMat32f()).Data())
 	}
 }
 

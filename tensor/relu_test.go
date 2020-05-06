@@ -56,8 +56,12 @@ func Test_relu_backward(t *testing.T) {
 		t.Run(test.name, func(t *testing.T) {
 			t.Log(test.name)
 
+			c := Relu(test.a)
+			c.RunOnGpu(test.runOnGpu)
+			c.forward()
+			c.SetGradient(mat.Ones32f(c.Shape().Size()))
 			expectedGrad := make([]float32, test.a.Shape().Size())
-			agfl32 := test.a.GradientToFloat32()
+			agfl32 := c.GradientToFloat32()
 			for i := 0; i < len(expectedGrad); i++ {
 				if agfl32[i] > 0 {
 					expectedGrad[i] = 1
@@ -65,10 +69,6 @@ func Test_relu_backward(t *testing.T) {
 					expectedGrad[i] = 0
 				}
 			}
-			c := Relu(test.a)
-			c.RunOnGpu(test.runOnGpu)
-			c.forward()
-			c.SetGradient(mat.Ones32f(c.Shape().Size()))
 
 			c.backward()
 

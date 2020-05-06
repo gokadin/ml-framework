@@ -10,19 +10,27 @@ type opAdd struct {
 	a, b *Tensor
 }
 
-func (oa *opAdd) name() string {
+func (o *opAdd) name() string {
 	return operationAdd
 }
 
-func (oa *opAdd) dependencies() []*Tensor {
-	return []*Tensor{oa.a, oa.b}
+func (o *opAdd) dependencies() []*Tensor {
+	return []*Tensor{o.a, o.b}
 }
 
-func (oa *opAdd) forward(tensor *Tensor) {
+func (o *opAdd) forwardShape() Shape {
+	return o.a.Shape()
+}
+
+func (o *opAdd) backwardShapes(tensorShape Shape) []Shape {
+	return []Shape{tensorShape, tensorShape}
+}
+
+func (o *opAdd) forward(tensor *Tensor) {
 	//C.forward(tensor._tensor)
 }
 
-func (oa *opAdd) backward(tensor *Tensor) {
+func (o *opAdd) backward(tensor *Tensor) {
 	//oa.a.SetGradient(tensor.GradientToFloat32())
 	//oa.b.SetGradient(tensor.GradientToFloat32())
 }

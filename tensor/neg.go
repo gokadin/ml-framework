@@ -10,20 +10,28 @@ type opNeg struct {
 	a *Tensor
 }
 
-func (opn *opNeg) name() string {
+func (o *opNeg) name() string {
 	return operationNeg
 }
 
-func (opn *opNeg) dependencies() []*Tensor {
-	return []*Tensor{opn.a}
+func (o *opNeg) dependencies() []*Tensor {
+	return []*Tensor{o.a}
 }
 
-func (opn *opNeg) forward(tensor *Tensor) {
-	tensor.SetData(mat.Neg(opn.a.ToMat32f()).Data())
+func (o *opNeg) forwardShape() Shape {
+	return o.a.Shape()
 }
 
-func (opn *opNeg) backward(tensor *Tensor) {
-	opn.a.SetGradient(tensor.GradientToFloat32())
+func (o *opNeg) backwardShapes(tensorShape Shape) []Shape {
+	return []Shape{tensorShape, tensorShape}
+}
+
+func (o *opNeg) forward(tensor *Tensor) {
+	tensor.SetData(mat.Neg(o.a.ToMat32f()).Data())
+}
+
+func (o *opNeg) backward(tensor *Tensor) {
+	o.a.SetGradient(tensor.GradientToFloat32())
 }
 
 func Neg(a *Tensor) *Tensor {

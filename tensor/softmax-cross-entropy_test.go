@@ -37,3 +37,22 @@ func Test_softmaxCrossEntropy_forward(t *testing.T) {
 		})
 	}
 }
+
+func Test_softmaxCrossEntropy_backward(t *testing.T) {
+	for _, test := range buildSoftmaxCrossEntropyTestCases() {
+		t.Run(test.name, func(t *testing.T) {
+			t.Log(test.name)
+
+			c := SoftmaxCrossEntropy(test.a, test.b)
+			c.RunOnGpu(test.runOnGpu)
+			c.forward()
+			c.SetGradient(mat.Ones32f(c.Shape().Size()))
+			expandedGrad := mat.Expand(mat.Expand(c.GradientToMat32(), 1, test.a.Shape().Y), 0, test.a.Shape().X)
+			expectedGrad := mat.Mul(expandedGrad, mat.Sub(test.a.ToMat32f(), test.b.ToMat32f())).Data()
+
+			c.backward()
+
+			assert.Equal(t, expectedGrad, test.a.GradientToFloat32())
+		})
+	}
+}

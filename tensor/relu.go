@@ -9,15 +9,23 @@ type opRelu struct {
 	a *Tensor
 }
 
-func (opw *opRelu) name() string {
+func (o *opRelu) name() string {
 	return operationRelu
 }
 
-func (opw *opRelu) dependencies() []*Tensor {
-	return []*Tensor{opw.a}
+func (o *opRelu) dependencies() []*Tensor {
+	return []*Tensor{o.a}
 }
 
-func (opw *opRelu) forward(tensor *Tensor) {
+func (o *opRelu) forwardShape() Shape {
+	return o.a.Shape()
+}
+
+func (o *opRelu) backwardShapes(tensorShape Shape) []Shape {
+	return []Shape{tensorShape, tensorShape}
+}
+
+func (o *opRelu) forward(tensor *Tensor) {
 	//C.relu(opw.a._tensor, tensor._tensor)
 	//tensor.SetData(mat.Apply(tensor.ToMat32f(), func(value float32) float32 {
 	//	if value > 0 {
@@ -27,7 +35,7 @@ func (opw *opRelu) forward(tensor *Tensor) {
 	//}).Data())
 }
 
-func (opw *opRelu) backward(tensor *Tensor) {
+func (o *opRelu) backward(tensor *Tensor) {
 	//d := mat.Apply(tensor.ToMat32f(), func(value float32) float32 {
 	//	if value > 0 {
 	//		return 1

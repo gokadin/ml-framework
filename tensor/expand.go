@@ -17,20 +17,29 @@ type opExpand struct {
 	copies int
 }
 
-func (ope *opExpand) name() string {
+func (o *opExpand) name() string {
 	return operationExpand
 }
 
-func (ope *opExpand) dependencies() []*Tensor {
-	return []*Tensor{ope.a}
+func (o *opExpand) dependencies() []*Tensor {
+	return []*Tensor{o.a}
 }
 
-func (ope *opExpand) forward(tensor *Tensor) {
-	C.expand(ope.a._tensor, C.int(ope.axis), C.int(ope.copies), tensor._tensor)
+func (o *opExpand) forwardShape() Shape {
+	return Shape{o.a.Shape().X, o.a.Shape().Y * o.copies}
 }
 
-func (ope *opExpand) backward(tensor *Tensor) {
-	ope.a.SetGradient(mat.Sum(tensor.GradientToMat32(), 0).Data())
+// TODO
+func (o *opExpand) backwardShapes(tensorShape Shape) []Shape {
+	return []Shape{tensorShape, tensorShape}
+}
+
+func (o *opExpand) forward(tensor *Tensor) {
+	C.expand(o.a._tensor, C.int(o.axis), C.int(o.copies), tensor._tensor)
+}
+
+func (o *opExpand) backward(tensor *Tensor) {
+	o.a.SetGradient(mat.Sum(tensor.GradientToMat32(), 0).Data())
 }
 
 func Expand(a *Tensor, axis, copies int) *Tensor {

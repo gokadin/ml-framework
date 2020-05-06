@@ -11,21 +11,29 @@ type opDivScalar struct {
 	scalar float32
 }
 
-func (opw *opDivScalar) name() string {
+func (o *opDivScalar) name() string {
 	return operationDivScalar
 }
 
-func (opw *opDivScalar) dependencies() []*Tensor {
-	return []*Tensor{opw.a}
+func (o *opDivScalar) dependencies() []*Tensor {
+	return []*Tensor{o.a}
 }
 
-func (opw *opDivScalar) forward(tensor *Tensor) {
-	tensor.SetData(mat.DivScalar(opw.a.ToMat32f(), opw.scalar).Data())
+func (o *opDivScalar) forwardShape() Shape {
+	return o.a.Shape()
 }
 
-func (opw *opDivScalar) backward(tensor *Tensor) {
-	multiplier := 1.0 / opw.scalar
-	opw.a.SetGradient(mat.MulScalar(tensor.GradientToMat32(), multiplier).Data())
+func (o *opDivScalar) backwardShapes(tensorShape Shape) []Shape {
+	return []Shape{tensorShape, tensorShape}
+}
+
+func (o *opDivScalar) forward(tensor *Tensor) {
+	tensor.SetData(mat.DivScalar(o.a.ToMat32f(), o.scalar).Data())
+}
+
+func (o *opDivScalar) backward(tensor *Tensor) {
+	multiplier := 1.0 / o.scalar
+	o.a.SetGradient(mat.MulScalar(tensor.GradientToMat32(), multiplier).Data())
 }
 
 func DivScalar(a *Tensor, scalar float32) *Tensor {

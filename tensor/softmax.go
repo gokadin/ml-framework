@@ -14,20 +14,28 @@ type opSoftmax struct {
 	a *Tensor
 }
 
-func (opw *opSoftmax) name() string {
+func (o *opSoftmax) name() string {
 	return operationSoftmax
 }
 
-func (opw *opSoftmax) dependencies() []*Tensor {
-	return []*Tensor{opw.a}
+func (o *opSoftmax) dependencies() []*Tensor {
+	return []*Tensor{o.a}
 }
 
-func (opw *opSoftmax) forward(tensor *Tensor) {
-	tensor.SetData(mat.Softmax(opw.a.ToMat32f()).Data())
+func (o *opSoftmax) forwardShape() Shape {
+	return o.a.Shape()
 }
 
-func (opw *opSoftmax) backward(tensor *Tensor) {
-	opw.a.SetGradient(tensor.GradientToFloat32())
+func (o *opSoftmax) backwardShapes(tensorShape Shape) []Shape {
+	return []Shape{tensorShape}
+}
+
+func (o *opSoftmax) forward(tensor *Tensor) {
+	tensor.SetData(mat.Softmax(o.a.ToMat32f()).Data())
+}
+
+func (o *opSoftmax) backward(tensor *Tensor) {
+	o.a.SetGradient(tensor.GradientToFloat32())
 }
 
 func Softmax(a *Tensor) *Tensor {

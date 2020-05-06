@@ -11,24 +11,32 @@ type opPow struct {
 	power float32
 }
 
-func (opw *opPow) name() string {
+func (o *opPow) name() string {
 	return operationPow
 }
 
-func (opw *opPow) dependencies() []*Tensor {
-	return []*Tensor{opw.a}
+func (o *opPow) dependencies() []*Tensor {
+	return []*Tensor{o.a}
 }
 
-func (opw *opPow) forward(tensor *Tensor) {
-	tensor.SetData(mat.Pow(opw.a.ToMat32f(), float64(opw.power)).Data())
+func (o *opPow) forwardShape() Shape {
+	return o.a.Shape()
 }
 
-func (opw *opPow) backward(tensor *Tensor) {
-	if opw.power == 2 {
-		opw.a.SetGradient(mat.Mul(tensor.GradientToMat32(), mat.MulScalar(opw.a.ToMat32f(), 2)).Data())
+func (o *opPow) backwardShapes(tensorShape Shape) []Shape {
+	return []Shape{tensorShape, tensorShape}
+}
+
+func (o *opPow) forward(tensor *Tensor) {
+	tensor.SetData(mat.Pow(o.a.ToMat32f(), float64(o.power)).Data())
+}
+
+func (o *opPow) backward(tensor *Tensor) {
+	if o.power == 2 {
+		o.a.SetGradient(mat.Mul(tensor.GradientToMat32(), mat.MulScalar(o.a.ToMat32f(), 2)).Data())
 		return
 	}
-	opw.a.SetGradient(mat.Mul(tensor.GradientToMat32(), mat.MulScalar(mat.Pow(opw.a.ToMat32f(), float64(opw.power) - 1), opw.power)).Data())
+	o.a.SetGradient(mat.Mul(tensor.GradientToMat32(), mat.MulScalar(mat.Pow(o.a.ToMat32f(), float64(o.power) - 1), o.power)).Data())
 }
 
 func Pow(a *Tensor, power float32) *Tensor {

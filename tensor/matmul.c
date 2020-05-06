@@ -66,8 +66,8 @@ int cpu_matmul_forward(TENSOR *a, TENSOR *b, TENSOR *target)
 }
 
 // TODO
-int cpu_matmul_backward(TENSOR *target, TENSOR *a, TENSOR *x)
+int cpu_matmul_backward(TENSOR *tensor, TENSOR *a, TENSOR *b)
 {
-    return gpu_matmul_backward(target, target->op->operands[0], target->op->operands[1]);
+    return gpu_matmul_backward(tensor, a, b);
 //    return 0;
 }

@@ -10,20 +10,28 @@ type opLog struct {
 	a *Tensor
 }
 
-func (opw *opLog) name() string {
+func (o *opLog) name() string {
 	return operationLog
 }
 
-func (opw *opLog) dependencies() []*Tensor {
-	return []*Tensor{opw.a}
+func (o *opLog) dependencies() []*Tensor {
+	return []*Tensor{o.a}
 }
 
-func (opw *opLog) forward(tensor *Tensor) {
-	tensor.SetData(mat.Log(opw.a.ToMat32f()).Data())
+func (o *opLog) forwardShape() Shape {
+	return o.a.Shape()
 }
 
-func (opw *opLog) backward(tensor *Tensor) {
-	opw.a.SetGradient(mat.DivScalarBy(tensor.GradientToMat32(), 1).Data())
+func (o *opLog) backwardShapes(tensorShape Shape) []Shape {
+	return []Shape{tensorShape, tensorShape}
+}
+
+func (o *opLog) forward(tensor *Tensor) {
+	tensor.SetData(mat.Log(o.a.ToMat32f()).Data())
+}
+
+func (o *opLog) backward(tensor *Tensor) {
+	o.a.SetGradient(mat.DivScalarBy(tensor.GradientToMat32(), 1).Data())
 }
 
 func Log(a *Tensor) *Tensor {

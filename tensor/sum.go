@@ -16,23 +16,36 @@ type opSum struct {
 	originalShape Shape
 }
 
-func (ops *opSum) name() string {
+func (o *opSum) name() string {
 	return operationSum
 }
 
-func (ops *opSum) dependencies() []*Tensor {
-	return []*Tensor{ops.a}
+func (o *opSum) dependencies() []*Tensor {
+	return []*Tensor{o.a}
 }
 
-func (ops *opSum) forward(tensor *Tensor) {
-	C.gpu_sum_forward(ops.a._tensor, C.int(ops.axis), tensor._tensor)
+func (o *opSum) forwardShape() Shape {
+	if o.axis == 0 {
+		return Shape{1, o.a.Shape().Y}
+	}
+
+	return Shape{o.a.Shape().X, 1}
 }
 
-func (ops *opSum) backward(tensor *Tensor) {
-	if ops.axis == 0 {
-		ops.a.SetGradient(mat.Expand(tensor.GradientToMat32(), 0, ops.originalShape.X).Data())
-	} else if ops.axis == 1 {
-		ops.a.SetGradient(mat.Expand(tensor.GradientToMat32(), 1, ops.originalShape.Y).Data())
+// TODO
+func (o *opSum) backwardShapes(tensorShape Shape) []Shape {
+	return []Shape{tensorShape, tensorShape}
+}
+
+func (o *opSum) forward(tensor *Tensor) {
+	C.gpu_sum_forward(o.a._tensor, C.int(o.axis), tensor._tensor)
+}
+
+func (o *opSum) backward(tensor *Tensor) {
+	if o.axis == 0 {
+		o.a.SetGradient(mat.Expand(tensor.GradientToMat32(), 0, o.originalShape.X).Data())
+	} else if o.axis == 1 {
+		o.a.SetGradient(mat.Expand(tensor.GradientToMat32(), 1, o.originalShape.Y).Data())
 	}
 }
 

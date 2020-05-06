@@ -74,6 +74,10 @@ func (t *Tensor) initializeNativeTensor(shape []int) {
 }
 
 func (t *Tensor) reshapeMat(shape ...int) {
+	if shape[0] == int(t._mat_shape.x) && shape[1] == int(t._mat_shape.y) {
+		return
+	}
+
 	t._mat_shape.x = C.int(shape[0])
 	t._mat_shape.y = C.int(shape[1])
 	t._mat_shape.size = C.int(shape[0] * shape[1])
@@ -83,6 +87,10 @@ func (t *Tensor) reshapeMat(shape ...int) {
 }
 
 func (t *Tensor) reshapeGrad(shape ...int) {
+	if shape[0] == int(t._grad_shape.x) && shape[1] == int(t._grad_shape.y) {
+		return
+	}
+
 	t._grad_shape.x = C.int(shape[0])
 	t._grad_shape.y = C.int(shape[1])
 	t._grad_shape.size = C.int(shape[0] * shape[1])
@@ -210,9 +218,7 @@ func (t *Tensor) Copy() *Tensor {
 }
 
 func (t *Tensor) forward() {
-	if t.op.name() == operationAdd || t.op.name() == operationLinear || t.op.name() == operationMatmul || t.op.name() == operationRelu || t.op.name() == operationSoftmaxCrossEntropy || t.op.name() == operationSoftmax {
-		_shape := C.calculate_op_shape(t._tensor)
-		t.Reshape(int(_shape.x), int(_shape.y))
+	if t.op.name() == operationAdd || t.op.name() == operationMatmul || t.op.name() == operationRelu || t.op.name() == operationSoftmaxCrossEntropy || t.op.name() == operationSoftmax {
 		handleOpResult(int(C.forward(t._tensor)))
 	} else {
 		t.op.forward(t)
@@ -221,12 +227,8 @@ func (t *Tensor) forward() {
 }
 
 func (t *Tensor) backward() {
-	if t.op.name() == operationAdd || t.op.name() == operationLinear || t.op.name() == operationMatmul || t.op.name() == operationRelu || t.op.name() == operationSoftmaxCrossEntropy || t.op.name() == operationSoftmax {
-		if t.op.name() == operationLinear {
-			handleOpResult(int(C.backward(t._tensor)))
-		} else {
-			handleOpResult(int(C.backward(t._tensor)))
-		}
+	if t.op.name() == operationAdd || t.op.name() == operationMatmul || t.op.name() == operationRelu || t.op.name() == operationSoftmaxCrossEntropy || t.op.name() == operationSoftmax {
+		handleOpResult(int(C.backward(t._tensor)))
 	} else {
 		t.op.backward(t)
 	}

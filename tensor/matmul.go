@@ -9,21 +9,30 @@ type opMatmul struct {
 	a, b *Tensor
 }
 
-func (omm *opMatmul) name() string {
+func (o *opMatmul) name() string {
 	return operationMatmul
 }
 
-func (omm *opMatmul) dependencies() []*Tensor {
-	return []*Tensor{omm.a, omm.b}
+func (o *opMatmul) dependencies() []*Tensor {
+	return []*Tensor{o.a, o.b}
 }
 
-func (omm *opMatmul) forward(tensor *Tensor) {
+func (o *opMatmul) forwardShape() Shape {
+	return Shape{o.a.Shape().X, o.b.Shape().Y}
+}
+
+// TODO
+func (o *opMatmul) backwardShapes(tensorShape Shape) []Shape {
+	return []Shape{tensorShape, tensorShape}
+}
+
+func (o *opMatmul) forward(tensor *Tensor) {
 	//aMat := mat.NewMat32f(mat.WithShape(omm.a.Shape().X, omm.a.Shape().Y), omm.a.ToFloat32())
 	//bMat := mat.NewMat32f(mat.WithShape(omm.b.Shape().X, omm.b.Shape().Y), omm.b.ToFloat32())
 	//tensor.SetData(mat.MatMulParallel(aMat, bMat).Data())
 }
 
-func (omm *opMatmul) backward(tensor *Tensor) {
+func (o *opMatmul) backward(tensor *Tensor) {
 	//C.gpu_matmul_backward(tensor._tensor, omm.a._tensor, omm.b._tensor)
 }
 

@@ -53,6 +53,7 @@ func executeForwardOp(tensor *Tensor, in, out chan bool, threshold int) {
 
 		counter = 0
 		if !tensor.ready {
+			tensor.reshapeMat(tensor.op.forwardShape().ToArray()...)
 			tensor.forward()
 		}
 		out <- true

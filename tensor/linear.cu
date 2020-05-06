@@ -25,7 +25,7 @@ __global__ void linear(float *a, float *x, float *b, float *c, int m, int n, int
 
 extern "C" {
 
-    int gpu_linear_forward(const TENSOR *a, const TENSOR *x, const TENSOR* b, TENSOR *target)
+    int gpu_linear_forward(const TENSOR *target, const TENSOR *a, const TENSOR* x, TENSOR *b)
     {
         float* gpu_a;
         size_t a_size = a->mat_shape->size * sizeof(float);

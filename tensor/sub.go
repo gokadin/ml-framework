@@ -8,25 +8,33 @@ type opSub struct {
 	a, b *Tensor
 }
 
-func (os *opSub) name() string {
+func (o *opSub) name() string {
 	return operationSub
 }
 
-func (os *opSub) dependencies() []*Tensor {
-	return []*Tensor{os.a, os.b}
+func (o *opSub) dependencies() []*Tensor {
+	return []*Tensor{o.a, o.b}
 }
 
-func (os *opSub) forward(tensor *Tensor) {
-	tensor.SetData(mat.Sub(os.a.ToMat32f(), os.b.ToMat32f()).Data())
+func (o *opSub) forwardShape() Shape {
+	return o.a.Shape()
 }
 
-func (os *opSub) backward(tensor *Tensor) {
-	if os.a.isGradientEnabled {
-		os.a.SetGradient(tensor.GradientToFloat32())
+func (o *opSub) backwardShapes(tensorShape Shape) []Shape {
+	return []Shape{tensorShape, tensorShape}
+}
+
+func (o *opSub) forward(tensor *Tensor) {
+	tensor.SetData(mat.Sub(o.a.ToMat32f(), o.b.ToMat32f()).Data())
+}
+
+func (o *opSub) backward(tensor *Tensor) {
+	if o.a.isGradientEnabled {
+		o.a.SetGradient(tensor.GradientToFloat32())
 	}
 
-	if os.b.isGradientEnabled {
-		os.b.SetGradient(mat.Neg(tensor.GradientToMat32()).Data())
+	if o.b.isGradientEnabled {
+		o.b.SetGradient(mat.Neg(tensor.GradientToMat32()).Data())
 	}
 }
 
