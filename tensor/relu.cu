@@ -26,7 +26,7 @@ __global__ void relu_grad(float *cg, float *ag, int size)
 
     for (int i = index; i < size; i += stride) {
         if (cg[i] > 0) {
-            ag[i] = 1;
+            ag[i] = 1 * cg[i];
         } else {
             ag[i] = 0;
         }

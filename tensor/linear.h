@@ -53,12 +53,12 @@ int cpu_linear_backward(TENSOR *tensor, TENSOR *a, TENSOR *x, TENSOR *b)
         return code;
     }
 
-    for (int i = 0; i < b->grad_shape->y; i++)
+    for (int i = 0; i < tensor->grad_shape->y; i++)
     {
         float sum = 0;
         for (int j = 0; j < tensor->grad_shape->x; j++)
         {
-            sum += tensor->grad[i * b->grad_shape->y + j];
+            sum += tensor->grad[j * tensor->grad_shape->y + i];
         }
         b->grad[i] = sum;
     }

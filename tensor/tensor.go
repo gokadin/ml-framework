@@ -34,6 +34,8 @@ func New() *Tensor {
 	t.initializeNativeTensor([]int{1, 1})
 	//runtime.SetFinalizer(t, free)
 
+	//t._tensor.run_on_gpu = C.bool(false)
+
 	return t
 }
 

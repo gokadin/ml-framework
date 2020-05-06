@@ -18,12 +18,12 @@ func buildLinearTestCases() []linearTestCases {
 	return []linearTestCases{
 		{"1x1 GPU", OfShape(1, 1).SetData([]float32{1}), OfShape(1, 1).SetData([]float32{2}), OfShape(1, 1).SetData([]float32{3}), true},
 		{"1x1 CPU", OfShape(1, 1).SetData([]float32{1}), OfShape(1, 1).SetData([]float32{2}), OfShape(1, 1).SetData([]float32{3}), false},
-		{"2x2 GPU", Ones(2, 2), Ones(2, 2), Ones(1, 2), true},
-		{"2x2 CPU", Ones(2, 2), Ones(2, 2), Ones(1, 2), false},
-		{"4x6 and 6x4 + 1x4 GPU", Ones(4, 6), Ones(6, 4), Ones(1, 4), true},
-		{"4x6 and 6x4 + 1x4 CPU", Ones(4, 6), Ones(6, 4), Ones(1, 4), false},
-		{"1000x784 and 784x128 + 1x128 GPU", Ones(1000, 784), Ones(784, 128), Ones(1, 128), true},
-		{"1000x784 and 784x128 + 1x128 CPU", Ones(1000, 784), Ones(784, 128), Ones(1, 128), false},
+		{"2x2 GPU", From(InitRandom, 2, 2), From(InitRandom, 2, 2), From(InitRandom, 1, 2), true},
+		{"2x2 CPU", From(InitRandom, 2, 2), From(InitRandom, 2, 2), From(InitRandom, 1, 2), false},
+		{"4x6 and 6x4 + 1x4 GPU", From(InitRandom, 4, 6), From(InitRandom, 6, 4), From(InitRandom, 1, 4), true},
+		{"4x6 and 6x4 + 1x4 CPU", From(InitRandom, 4, 6), From(InitRandom, 6, 4), From(InitRandom, 1, 4), false},
+		{"1000x784 and 784x128 + 1x128 GPU", From(InitRandom, 1000, 784), From(InitRandom, 784, 128), From(InitRandom, 1, 128), true},
+		{"1000x784 and 784x128 + 1x128 CPU", From(InitRandom, 1000, 784), From(InitRandom, 784, 128), From(InitRandom, 1, 128), false},
 	}
 }
 
@@ -38,7 +38,7 @@ func Test_linear_forward(t *testing.T) {
 
 			c.forward()
 
-			assert.Equal(t, expected, c.ToFloat32())
+			assert.InDeltaSlice(t, expected, c.ToFloat32(), 0.0001)
 		})
 	}
 }
@@ -52,16 +52,16 @@ func Test_linear_backward(t *testing.T) {
 			c.RunOnGpu(test.runOnGpu)
 
 			c.forward()
-			c.SetGradient(mat.Ones32f(test.a.Shape().X * test.b.Shape().Y))
+			c.SetGradient(mat.Random32f(test.a.Shape().X * test.b.Shape().Y))
 			expectedAGrad := mat.MatMulParallel(c.GradientToMat32(), mat.Transpose(test.x.ToMat32f())).Data()
 			expectedXGrad := mat.Transpose(mat.MatMulParallel(mat.Transpose(c.GradientToMat32()), test.a.ToMat32f())).Data()
 			expectedBGrad := mat.Sum(c.GradientToMat32(), 0).Data()
 
 			c.backward()
 
-			assert.Equal(t, expectedAGrad, test.a.GradientToFloat32())
-			assert.Equal(t, expectedXGrad, test.x.GradientToFloat32())
-			assert.Equal(t, expectedBGrad, test.b.GradientToFloat32())
+			assert.InDeltaSlice(t, expectedAGrad, test.a.GradientToFloat32(), 0.0001)
+			assert.InDeltaSlice(t, expectedXGrad, test.x.GradientToFloat32(), 0.0001)
+			assert.InDeltaSlice(t, expectedBGrad, test.b.GradientToFloat32(), 0.0001)
 		})
 	}
 }

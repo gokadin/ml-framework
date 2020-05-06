@@ -18,8 +18,8 @@ func buildReluTestCases() []reluTestCases {
 		{"1x1 CPU", OfShape(1, 1).SetData([]float32{1}), false},
 		{"2x2 GPU", OfShape(2, 2).SetData([]float32{1, 2, -3, 4}), true},
 		{"2x2 CPU", OfShape(2, 2).SetData([]float32{1, 2, -3, 4}), false},
-		{"1200x2 ones GPU", Ones(1200, 2), true},
-		{"1200x2 ones CPU", Ones(1200, 2), false},
+		{"1200x2 ones GPU", From(InitRandom, 1200, 2), true},
+		{"1200x2 ones CPU", From(InitRandom, 1200, 2), false},
 		{"1200x2 zeros GPU", Zeros(1200, 2), true},
 		{"1200x2 zeros CPU", Zeros(1200, 2), false},
 		{"2x1200 ones GPU", Ones(2, 1200), true},
@@ -46,7 +46,7 @@ func Test_relu_forward(t *testing.T) {
 
 			c.forward()
 
-			assert.Equal(t, expected, c.ToFloat32())
+			assert.InDeltaSlice(t, expected, c.ToFloat32(), 0.0001)
 		})
 	}
 }
@@ -59,7 +59,7 @@ func Test_relu_backward(t *testing.T) {
 			c := Relu(test.a)
 			c.RunOnGpu(test.runOnGpu)
 			c.forward()
-			c.SetGradient(mat.Ones32f(c.Shape().Size()))
+			c.SetGradient(mat.Random32f(c.Shape().Size()))
 			expectedGrad := make([]float32, test.a.Shape().Size())
 			agfl32 := c.GradientToFloat32()
 			for i := 0; i < len(expectedGrad); i++ {
@@ -72,7 +72,7 @@ func Test_relu_backward(t *testing.T) {
 
 			c.backward()
 
-			assert.Equal(t, c.GradientToFloat32(), test.a.GradientToFloat32())
+			assert.InDeltaSlice(t, c.GradientToFloat32(), test.a.GradientToFloat32(), 0.0001)
 		})
 	}
 }
