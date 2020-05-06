@@ -53,7 +53,7 @@ int cpu_relu_backward(TENSOR *tensor, TENSOR *a)
     {
         if (tensor->grad[i] > 0)
         {
-            a->grad[i] = 1;
+            a->grad[i] = 1 * tensor->grad[i];
         }
         else
         {
