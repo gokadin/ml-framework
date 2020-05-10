@@ -51,9 +51,9 @@ int cpu_relu_backward(TENSOR *tensor, TENSOR *a)
 {
     for (int i = 0; i < tensor->grad_shape->size; i++)
     {
-        if (tensor->grad[i] > 0)
+        if (tensor->data[i] > 0)
         {
-            a->grad[i] = 1 * tensor->grad[i];
+            a->grad[i] = tensor->grad[i];
         }
         else
         {

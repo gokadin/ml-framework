@@ -12,7 +12,7 @@ __global__ void softmax(float *a, float *target, int x, int y)
 
     if (col < y && row < x)
     {
-        float sum = 0;
+        double sum = 0;
         for (int j = 0; j < y; j++)
         {
             sum += exp(a[row * y + j]);
@@ -20,7 +20,7 @@ __global__ void softmax(float *a, float *target, int x, int y)
 
         for (int j = 0; j < y; j++)
         {
-            target[row * y + j] = exp(a[row * y + j]) / sum;
+            target[row * y + j] = (float)(exp(a[row * y + j]) / sum);
         }
     }
 }

@@ -1,12 +1,7 @@
 package tensor
 
-//#cgo LDFLAGS: -L${SRCDIR} -Wl,-rpath,${SRCDIR} -lm -lsoftmax
 //#include <softmax.h>
 import "C"
-
-import (
-	"github.com/gokadin/ml-framework/mat"
-)
 
 const operationSoftmax = "opSoftmax"
 
@@ -31,7 +26,7 @@ func (o *opSoftmax) backwardShapes(tensorShape Shape) []Shape {
 }
 
 func (o *opSoftmax) forward(tensor *Tensor) {
-	tensor.SetData(mat.Softmax(o.a.ToMat32f()).Data())
+	C.softmax_forward(tensor._tensor, o.a._tensor)
 }
 
 func (o *opSoftmax) backward(tensor *Tensor) {

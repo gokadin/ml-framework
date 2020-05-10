@@ -22,7 +22,9 @@ __global__ void softmax_mul(float *a, float *b, float *target, int x, int y)
 
         for (int j = 0; j < y; j++)
         {
-            target[row * y + j] = (exp(a[row * y + j]) / sum) * b[row * y + j];
+            int index = row * y + j;
+            a[index] = exp(a[index]) / sum;
+            target[index] = a[index] * b[index];
         }
     }
 }
@@ -69,19 +71,23 @@ extern "C" {
         softmax_mul<<<gridSize, blockSize>>>(gpu_a, gpu_b, gpu_softmax_mul_target, a->mat_shape->x, a->mat_shape->y);
         checkCudaKernelErr("softmax_mul", blockSize, gridSize);
 
+        checkCudaErr(cudaMemcpy(&a->data[0], gpu_a, a_size, cudaMemcpyDeviceToHost));
+
         // SUM1 - LOG - NEG
 
         float* gpu_sum1_target;
         size_t sum1_target_size = a->mat_shape->x * sizeof(float);
         checkCudaErr(cudaMalloc((void**)&gpu_sum1_target, sum1_target_size));
 
+        blockSize.x = BLOCK_SIZE;
+        blockSize.y = 1;
         gridSize.x = (a->mat_shape->x + BLOCK_SIZE - 1) / BLOCK_SIZE;
+        gridSize.y = 1;
         sum1_log_neg<<<gridSize, blockSize>>>(gpu_softmax_mul_target, gpu_sum1_target, a->mat_shape->y, a->mat_shape->x);
         checkCudaKernelErr("sum1_log_neg", blockSize, gridSize);
 
         // SUM0
 
-        gridSize.x = 1;
         sum0<<<gridSize, blockSize>>>(gpu_sum1_target, gpu_target, 1, a->mat_shape->x);
         checkCudaKernelErr("sum0", blockSize, gridSize);
 

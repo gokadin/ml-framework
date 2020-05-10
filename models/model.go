@@ -42,7 +42,6 @@ func (m *Model) TrainableVariables() []*tensor.Tensor {
 }
 
 func (m *Model) Build(input *tensor.Tensor) *tensor.Tensor {
-	m.trainableVariables = make([]*tensor.Tensor, 0)
 	pred := input
 	for _, module := range m.modules {
 		pred = module.Build(pred)

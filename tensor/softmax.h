@@ -29,15 +29,15 @@ int cpu_softmax_forward(TENSOR *target, TENSOR *a)
 {
     for (int i = 0; i < a->mat_shape->x; i++)
     {
-        float sum = 0;
+        double sum = 0;
         for (int j = 0; j < a->mat_shape->y; j++)
         {
-            sum += expf(a->data[i * a->mat_shape->y + j]);
+            sum += exp(a->data[i * a->mat_shape->y + j]);
         }
         for (int j = 0; j < a->mat_shape->y; j++)
         {
             int index = i * a->mat_shape->y + j;
-            target->data[index] = expf(a->data[index]) / sum;
+            target->data[index] = exp(a->data[index]) / sum;
         }
     }
 

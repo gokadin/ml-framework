@@ -42,7 +42,7 @@ func Test_softmax_forward(t *testing.T) {
 
 			c.forward()
 
-			assert.InDeltaSlice(t, expected, c.ToFloat32(), 0.00001)
+			assert.InDeltaSlice(t, expected, c.ToFloat32(), 0.000001)
 		})
 	}
 }

@@ -22,6 +22,7 @@ func (d *linear) Build(input *tensor.Tensor) *tensor.Tensor {
 	if !d.isInitialized {
 		d.weights = tensor.From(tensor.InitXavier, input.Shape().Y, d.unitCount).SetName(fmt.Sprintf("linear layer (%d) weights", d.unitCount))
 		d.bias = tensor.Zeros(1, d.unitCount).SetName(fmt.Sprintf("linear layer (%d) biases", d.unitCount))
+		d.isInitialized = true
 	}
 
 	return tensor.Linear(input, d.weights, d.bias)

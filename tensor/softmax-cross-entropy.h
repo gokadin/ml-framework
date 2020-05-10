@@ -28,7 +28,6 @@ int sce_backward(TENSOR *tensor, TENSOR *a, TENSOR *b)
 
 int cpu_sce_forward(TENSOR *target, TENSOR *a, TENSOR *b)
 {
-    float partial[a->mat_shape->size];
     for (int i = 0; i < a->mat_shape->x; i++)
     {
         float sum = 0;
@@ -39,7 +38,7 @@ int cpu_sce_forward(TENSOR *target, TENSOR *a, TENSOR *b)
         for (int j = 0; j < a->mat_shape->y; j++)
         {
             int index = i * a->mat_shape->y + j;
-            partial[index] = (expf(a->data[index]) / sum) * b->data[index];
+            a->data[index] = (expf(a->data[index]) / sum);
         }
     }
 
@@ -50,7 +49,7 @@ int cpu_sce_forward(TENSOR *target, TENSOR *a, TENSOR *b)
         for (int j = 0; j < a->mat_shape->y; j++)
         {
             int index = i * a->mat_shape->y + j;
-            sum1[i] += partial[index];
+            sum1[i] += a->data[index] * b->data[index];
         }
         sum1[i] = -logf(sum1[i]);
     }

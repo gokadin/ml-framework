@@ -2,6 +2,7 @@ package tensor
 
 //#include <linear.h>
 import "C"
+import "github.com/gokadin/ml-framework/mat"
 
 const operationLinear = "opLinear"
 
@@ -37,6 +38,9 @@ func (o *opLinear) forward(tensor *Tensor) {
 }
 
 func (o *opLinear) backward(tensor *Tensor) {
+	tg := tensor.GradientToFloat32()
+	o.b.SetGradient(mat.Sum(mat.NewMat32f(mat.WithShape(tensor.Shape().X, tensor.Shape().Y), tensor.GradientToFloat32()), 0).Data())
+	_ = tg
 	C.linear_backward(tensor._tensor, o.a._tensor, o.x._tensor, o.b._tensor)
 }
 
