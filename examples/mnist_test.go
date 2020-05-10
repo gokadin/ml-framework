@@ -16,7 +16,7 @@ func Test_mnist(t *testing.T) {
 		modules.Linear(10))
 
 	runner.Configure(runners.ModelConfig{
-		Epochs: 30,
+		Epochs: 5,
 		Loss:   modules.LossSoftmaxCrossEntropy,
 	})
 

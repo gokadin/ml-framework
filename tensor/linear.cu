@@ -64,12 +64,12 @@ extern "C" {
     int gpu_linear_backward(const TENSOR *tensor, const TENSOR *a, const TENSOR *x, TENSOR *b)
     {
         float* gpu_tensor_grad;
-        size_t gpu_tensor_grad_size = tensor->grad_shape->x * tensor->grad_shape->y * sizeof(float);
+        size_t gpu_tensor_grad_size = tensor->grad_shape->size * sizeof(float);
         checkCudaErr(cudaMalloc((void**)&gpu_tensor_grad, gpu_tensor_grad_size));
         checkCudaErr(cudaMemcpy(gpu_tensor_grad, &tensor->grad[0], gpu_tensor_grad_size, cudaMemcpyHostToDevice));
 
         float* gpu_a;
-        size_t a_size = a->mat_shape->x * a->mat_shape->y * sizeof(float);
+        size_t a_size = a->mat_shape->size * sizeof(float);
         checkCudaErr(cudaMalloc((void**)&gpu_a, a_size));
         checkCudaErr(cudaMemcpy(gpu_a, &a->data[0], a_size, cudaMemcpyHostToDevice));
 
@@ -77,16 +77,16 @@ extern "C" {
         checkCudaErr(cudaMalloc(&gpu_a_grad, a_size));
 
         float* gpu_b;
-        size_t b_size = b->mat_shape->x * b->mat_shape->y * sizeof(float);
+        size_t b_size = b->mat_shape->size * sizeof(float);
         checkCudaErr(cudaMalloc((void**)&gpu_b, b_size));
         checkCudaErr(cudaMemcpy(gpu_b, &b->data[0], b_size, cudaMemcpyHostToDevice));
 
         float* gpu_b_grad;
-        size_t b_grad_size = b->grad_shape->x * b->grad_shape->y * sizeof(float);
+        size_t b_grad_size = b->grad_shape->size * sizeof(float);
         checkCudaErr(cudaMalloc(&gpu_b_grad, b_grad_size));
 
         float* gpu_x;
-        size_t x_size = x->mat_shape->x * x->mat_shape->y * sizeof(float);
+        size_t x_size = x->mat_shape->size * sizeof(float);
         checkCudaErr(cudaMalloc((void**)&gpu_x, x_size));
         checkCudaErr(cudaMemcpy(gpu_x, &x->data[0], x_size, cudaMemcpyHostToDevice));
 
