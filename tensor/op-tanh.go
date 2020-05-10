@@ -11,17 +11,24 @@ type opTanh struct {
 	a *Tensor
 }
 
-func (opw *opTanh) name() string {
+func (o *opTanh) name() string {
 	return operationTanh
 }
 
-func (opw *opTanh) dependencies() []*Tensor {
-	return []*Tensor{opw.a}
+func (o *opTanh) dependencies() []*Tensor {
+	return []*Tensor{o.a}
 }
 
-func (opw *opTanh) forward(tensor *Tensor) {
-	tensor.adjustShape(opw.a.shape)
-	tensor.SetData(mat.Apply(opw.a.ToMat32f(), func(value float32) float32 {
+func (o *opTanh) forwardShape() Shape {
+	return o.a.Shape()
+}
+
+func (o *opTanh) backwardShapes(tensorShape Shape) []Shape {
+	return []Shape{tensorShape}
+}
+
+func (o *opTanh) forward(tensor *Tensor) {
+	tensor.SetData(mat.Apply(o.a.ToMat32f(), func(value float32) float32 {
 		z := float64(value)
 		expZ := math.Exp(z)
 		negExpZ := math.Exp(-z)
@@ -29,12 +36,13 @@ func (opw *opTanh) forward(tensor *Tensor) {
 	}).Data())
 }
 
-func (opw *opTanh) backward(tensor *Tensor) {
-	opw.a.SetGradient(mat.Mul(tensor.GradientToMat32(), mat.SubFromScalar(mat.Pow(tensor.ToMat32f(), 2), 1)).Data())
+func (o *opTanh) backward(tensor *Tensor) {
+	o.a.SetGradient(mat.Mul(tensor.GradientToMat32(), mat.SubFromScalar(mat.Pow(tensor.ToMat32f(), 2), 1)).Data())
 }
 
 func Tanh(a *Tensor) *Tensor {
-	result := Variable(a.shape.X, a.shape.Y)
-	result.op = &opTanh{a}
+	o := &opTanh{a}
+	result := OfShape(o.forwardShape().ToArray()...)
+	result.op = o
 	return result
 }
