@@ -11,11 +11,12 @@ func Test_mnist(t *testing.T) {
 	dataset := datasets.From("mnist").SetBatchSize(1000)
 
 	runner := runners.BuildModelRunner(
-		modules.Dense(128, modules.ActivationRelu),
-		modules.Dense(10, modules.ActivationSoftmax))
+		modules.Linear(128),
+		modules.Relu(),
+		modules.Linear(10))
 
 	runner.Configure(runners.ModelConfig{
-		Epochs: 20,
+		Epochs: 5,
 		Loss:   modules.LossSoftmaxCrossEntropy,
 	})
 

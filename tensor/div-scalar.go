@@ -1,0 +1,43 @@
+package tensor
+
+import (
+	"github.com/gokadin/ml-framework/mat"
+)
+
+const operationDivScalar = "opDivScalar"
+
+type opDivScalar struct {
+	a *Tensor
+	scalar float32
+}
+
+func (o *opDivScalar) name() string {
+	return operationDivScalar
+}
+
+func (o *opDivScalar) dependencies() []*Tensor {
+	return []*Tensor{o.a}
+}
+
+func (o *opDivScalar) forwardShape() Shape {
+	return o.a.Shape()
+}
+
+func (o *opDivScalar) backwardShapes(tensorShape Shape) []Shape {
+	return []Shape{tensorShape, tensorShape}
+}
+
+func (o *opDivScalar) forward(tensor *Tensor) {
+	tensor.SetData(mat.DivScalar(o.a.ToMat32f(), o.scalar).Data())
+}
+
+func (o *opDivScalar) backward(tensor *Tensor) {
+	multiplier := 1.0 / o.scalar
+	o.a.SetGradient(mat.MulScalar(tensor.GradientToMat32(), multiplier).Data())
+}
+
+func DivScalar(a *Tensor, scalar float32) *Tensor {
+	result := OfShape(a.Shape().X, a.Shape().Y)
+	result.op = &opDivScalar{a, scalar}
+	return result
+}

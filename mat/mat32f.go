@@ -3,6 +3,7 @@ package mat
 import (
 	"log"
 	"math"
+	"math/rand"
 )
 
 type Mat32f struct {
@@ -20,6 +21,14 @@ func Ones32f(size int) []float32 {
 
 func Zeros32f(size int) []float32 {
 	return initialValues32f(size, 0)
+}
+
+func Random32f(size int) []float32 {
+	result := make([]float32, size)
+	for i := 0; i < size; i++ {
+		result[i] = rand.Float32()
+	}
+	return result
 }
 
 func initialValues32f(size int, initialValue float32) []float32 {

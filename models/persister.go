@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/gokadin/ml-framework/mat"
 	"github.com/gokadin/ml-framework/modules"
-	"github.com/gokadin/ml-framework/tensor"
 	"log"
 	"os"
 	"strconv"
@@ -17,19 +16,18 @@ const (
 	maxFloatsPerLine				  = 300
 	persisterTypeKey                  = "TYPE"
 	persisterModelType                = "MODEL"
-	//persisterModelConfigCriterionKey  = "CRITERION"
-	//persisterModelConfigOptimizerKey  = "OPTIMIZER"
-	//persisterModelConfigEpochsKey     = "EPOCHS"
-	//persisterModelConfigLearningRateKey     = "LEARNING_RATE"
 	persisterModelModuleKey           = "MODULE"
 	persisterModelModuleEndKey        = "MODULE_END"
 	persisterModelModuleSHAPEKEY      = "SHAPE"
-	persisterModelModuleActivationKey = "ACTIVATION"
 	persisterModelModuleWeightsBeginKey    = "WEIGHTS_BEGIN"
 	persisterModelModuleWeightsKey    = "WEIGHTS"
 	persisterModelModuleBiasesBeginKey     = "BIASES_BEGIN"
 	persisterModelModuleBiasesKey     = "BIASES"
 )
+
+/*
+	THIS IS NOT FUNCTIONAL
+ */
 
 func saveModel(model *Model, name string) {
 	_ = os.Mkdir(modelStoreRoot, os.ModePerm)
@@ -58,7 +56,6 @@ func Restore(name string) *Model {
 	model := NewModel()
 	scanner := bufio.NewScanner(file)
 	var moduleShape mat.Shape
-	var moduleActivationFunction string
 	var moduleWeights []float32
 	var moduleWeightsIndex int
 	var moduleBiases []float32
@@ -92,9 +89,6 @@ func Restore(name string) *Model {
 			moduleShape.X, _ = strconv.Atoi(parameters[0])
 			moduleShape.Y, _ = strconv.Atoi(parameters[1])
 			break
-		case persisterModelModuleActivationKey:
-			moduleActivationFunction = strings.TrimSpace(split[1])
-			break
 		case persisterModelModuleWeightsBeginKey:
 			moduleWeights = make([]float32, moduleShape.X * moduleShape.Y)
 			moduleWeightsIndex = 0
@@ -120,8 +114,7 @@ func Restore(name string) *Model {
 			}
 			break
 		case persisterModelModuleEndKey:
-			module := modules.Dense(moduleShape.Y, moduleActivationFunction)
-			module.InitializeWith(tensor.Variable(moduleShape.X, moduleShape.Y).SetData(moduleWeights), tensor.Variable(1, moduleShape.Y).SetData(moduleBiases))
+			module := modules.Linear(moduleShape.Y)
 			model.Add(module)
 			break
 		}
@@ -144,7 +137,6 @@ func modelToString(model *Model) string {
 
 		content += fmt.Sprintf("%s: DENSE\n", persisterModelModuleKey)
 		content += fmt.Sprintf("%s: %d %d\n", persisterModelModuleSHAPEKEY, parameters[0].Shape().X, parameters[0].Shape().Y)
-		content += fmt.Sprintf("%s: %s\n", persisterModelModuleActivationKey, module.GetActivation())
 		content += fmt.Sprintf("%s", persisterModelModuleWeightsBeginKey)
 		for i, value := range parameters[0].ToFloat32() {
 			if i % maxFloatsPerLine == 0 {

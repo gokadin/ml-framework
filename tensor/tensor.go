@@ -2,12 +2,11 @@ package tensor
 
 import (
 	"github.com/gokadin/ml-framework/mat"
-	"log"
-	"runtime"
 )
 
 //#cgo CFLAGS: -I.
-//#include <tensor.cpp>
+//#cgo LDFLAGS: -L${SRCDIR} -Wl,-rpath,${SRCDIR} -lrelu -lsoftmax -llinear -lsoftmaxcrossentropy -lm
+//#include <tensor.h>
 import "C"
 
 var nextId int
@@ -15,42 +14,105 @@ var nextId int
 type Tensor struct {
 	id                int
 	name              string
-	shape             Shape
 	op                op
 	isGradientEnabled bool
 	ready             bool
+	_mat_shape        *C.SHAPE
+	_grad_shape       *C.SHAPE
 	_data             []C.float
 	_grad             []C.float
 	_tensor           *C.TENSOR
 }
 
-func Variable(shapeArray ...int) *Tensor {
-	if len(shapeArray) != 2 {
-		log.Fatal("only shapes of 2 dimensions are supported for the moment")
-	}
-	shape := Shape{X: shapeArray[0], Y: shapeArray[1]}
-
+func New() *Tensor {
 	nextId++
 	t := &Tensor{
-		id:    nextId,
-		shape: shape,
+		id: nextId,
 	}
 
-	t._tensor = C.alloc_tensor()
-	t.initializeNativeTensor(shape)
-	runtime.SetFinalizer(t, free)
+	t._tensor = C.alloc_tensor(C.int(nextId))
+	t.initializeNativeTensor([]int{1, 1})
+	//runtime.SetFinalizer(t, free)
+
+	//t._tensor.run_on_gpu = C.bool(false)
 
 	return t
 }
 
-func (t *Tensor) initializeNativeTensor(shape Shape) {
-	t._data = make([]C.float, shape.X*shape.Y)
-	t._grad = make([]C.float, shape.X*shape.Y)
+func OfShape(shape ...int) *Tensor {
+	if len(shape) != 2 {
+		panic("only 2D shapes are supported")
+	}
 
-	t._tensor.grad = &t._grad[0]
+	t := New()
+	t.reshapeMat(shape[0], shape[1])
+	t.reshapeGrad(shape[0], shape[1])
+	return t
+}
+
+func Ones(shape ...int) *Tensor {
+	t := OfShape(shape...)
+	t.SetData(mat.Ones32f(shape[0] * shape[1]))
+	return t
+}
+
+func Zeros(shape ...int) *Tensor {
+	t := OfShape(shape...)
+	t.SetData(mat.Zeros32f(shape[0] * shape[1]))
+	return t
+}
+
+func From(initializer string, shape ...int) *Tensor {
+	return initializeParameter(initializer, shape...)
+}
+
+func (t *Tensor) initializeNativeTensor(shape []int) {
+	t._mat_shape = &C.SHAPE{}
+	t._grad_shape = &C.SHAPE{}
+	t._tensor.mat_shape = t._mat_shape
+	t._tensor.grad_shape = t._grad_shape
+	t.reshapeMat(shape[0], shape[1])
+	t.reshapeGrad(shape[0], shape[1])
+}
+
+func (t *Tensor) reshapeMat(shape ...int) {
+	if shape[0] == int(t._mat_shape.x) && shape[1] == int(t._mat_shape.y) {
+		return
+	}
+
+	t._mat_shape.x = C.int(shape[0])
+	t._mat_shape.y = C.int(shape[1])
+	t._mat_shape.size = C.int(shape[0] * shape[1])
+
+	t._data = make([]C.float, shape[0]*shape[1])
 	t._tensor.data = &t._data[0]
-	t._tensor.shapeX = C.int(shape.X)
-	t._tensor.shapeY = C.int(shape.Y)
+}
+
+func (t *Tensor) reshapeGrad(shape ...int) {
+	if shape[0] == int(t._grad_shape.x) && shape[1] == int(t._grad_shape.y) {
+		return
+	}
+
+	t._grad_shape.x = C.int(shape[0])
+	t._grad_shape.y = C.int(shape[1])
+	t._grad_shape.size = C.int(shape[0] * shape[1])
+
+	t._grad = make([]C.float, shape[0]*shape[1])
+	t._tensor.grad = &t._grad[0]
+}
+
+func (t *Tensor) Reshape(shape ...int) *Tensor {
+	if len(shape) != 2 {
+		panic("only 2D shapes are supported")
+	}
+
+	if shape[0] == int(t._mat_shape.x) && shape[1] == int(t._mat_shape.y) {
+		return t
+	}
+
+	t.reshapeMat(shape...)
+
+	return t
 }
 
 func free(t *Tensor) {
@@ -70,7 +132,15 @@ func (t *Tensor) SetName(name string) *Tensor {
 	return t
 }
 
+func (t *Tensor) RunOnGpu(value bool) {
+	t._tensor.run_on_gpu = C.bool(value)
+}
+
 func (t *Tensor) SetData(data []float32) *Tensor {
+	if len(data) > int(t._mat_shape.size) {
+		panic("given data is bigger than tensor size")
+	}
+
 	for i := 0; i < len(data); i++ {
 		t._data[i] = C.float(data[i])
 	}
@@ -88,7 +158,7 @@ func (t *Tensor) SetGradient(grad []float32) {
 }
 
 func (t *Tensor) ToFloat32() []float32 {
-	result := make([]float32, t.shape.X*t.shape.Y)
+	result := make([]float32, t.Shape().Size())
 	for i := 0; i < len(result); i++ {
 		result[i] = float32(t._data[i])
 	}
@@ -96,7 +166,7 @@ func (t *Tensor) ToFloat32() []float32 {
 }
 
 func (t *Tensor) ToFloat64() []float64 {
-	result := make([]float64, t.shape.X*t.shape.Y)
+	result := make([]float64, t._mat_shape.size)
 	for i := 0; i < len(result); i++ {
 		result[i] = float64(t._data[i])
 	}
@@ -104,15 +174,15 @@ func (t *Tensor) ToFloat64() []float64 {
 }
 
 func (t *Tensor) ToMat32f() *mat.Mat32f {
-	result := make([]float32, t.shape.X*t.shape.Y)
+	result := make([]float32, t._mat_shape.size)
 	for i := 0; i < len(result); i++ {
 		result[i] = float32(t._data[i])
 	}
-	return mat.NewMat32f(mat.WithShape(t.shape.X, t.shape.Y), result)
+	return mat.NewMat32f(mat.WithShape(t.Shape().X, t.Shape().Y), result)
 }
 
 func (t *Tensor) GradientToFloat32() []float32 {
-	result := make([]float32, t.shape.X*t.shape.Y)
+	result := make([]float32, t._mat_shape.size)
 	for i := 0; i < len(result); i++ {
 		result[i] = float32(t._grad[i])
 	}
@@ -120,46 +190,47 @@ func (t *Tensor) GradientToFloat32() []float32 {
 }
 
 func (t *Tensor) GradientToMat32() *mat.Mat32f {
-	result := make([]float32, t.shape.X*t.shape.Y)
+	result := make([]float32, t.Shape().Size())
 	for i := 0; i < len(result); i++ {
 		result[i] = float32(t._grad[i])
 	}
-	return mat.NewMat32f(mat.WithShape(t.shape.X, t.shape.Y), result)
+	return mat.NewMat32f(mat.WithShape(int(t._grad_shape.x), int(t._grad_shape.y)), result)
 }
 
 func (t *Tensor) Reduce(grad []float32) {
-	for i := 0; i < len(t._data); i++ {
+	for i := 0; i < t.Shape().Size(); i++ {
 		t._data[i] -= C.float(grad[i])
 	}
 }
 
 func (t *Tensor) Shape() Shape {
-	return t.shape
-}
-
-func (t *Tensor) Size() int {
-	return t.shape.X * t.shape.Y
-}
-
-func (t *Tensor) adjustShape(shape Shape) {
-	if t.shape.X != shape.X || t.shape.Y != t.shape.Y {
-		t.shape = shape
-		t.initializeNativeTensor(shape)
+	return Shape{
+		X: int(t._mat_shape.x),
+		Y: int(t._mat_shape.y),
 	}
 }
 
-func (t *Tensor) Reshape(shape ...int) *Tensor {
-	t.shape = Shape{X: shape[0], Y: shape[1]}
-	t.initializeNativeTensor(t.shape)
-	return t
+func (t *Tensor) Copy() *Tensor {
+	tensor := New()
+	tensor.reshapeMat(int(t._mat_shape.x), int(t._mat_shape.y))
+	tensor.reshapeGrad(int(t._grad_shape.x), int(t._grad_shape.y))
+	tensor.SetData(t.ToFloat32())
+	tensor.SetGradient(t.GradientToFloat32())
+	return tensor
 }
 
 func (t *Tensor) forward() {
+	t.reshapeMat(t.op.forwardShape().ToArray()...)
 	t.op.forward(t)
 	t.ready = true
 }
 
 func (t *Tensor) backward() {
+	shapes := t.op.backwardShapes(t.Shape())
+	for i := 0; i < len(shapes); i++ {
+		t.op.dependencies()[i].reshapeGrad(shapes[i].ToArray()...)
+	}
 	t.op.backward(t)
 	t.ready = false
 }
+

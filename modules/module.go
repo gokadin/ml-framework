@@ -5,10 +5,7 @@ import (
 )
 
 type Module interface {
-	Type() string
-	Forward(input *tensor.Tensor) *tensor.Tensor
+	Build(input *tensor.Tensor) *tensor.Tensor
 	GetParameters() []*tensor.Tensor
-	GetActivation() string
-	Initialize(inputSize int)
-	InitializeWith(weights, biases *tensor.Tensor)
+	Copy() Module
 }

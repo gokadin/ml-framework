@@ -37,37 +37,23 @@ func (m *Model) Add(module modules.Module) *Model {
 	return m
 }
 
-func (m *Model) Initialize(inputSize int) {
-	if m.isInitialized {
-		return
-	}
-
-	for _, module := range m.modules {
-		module.Initialize(inputSize)
-		inputSize = module.GetParameters()[0].Shape().Y
-	}
-
-	m.isInitialized = true
-}
-
 func (m *Model) TrainableVariables() []*tensor.Tensor {
 	return m.trainableVariables
 }
 
-func (m *Model) Predict(input *tensor.Tensor) *tensor.Tensor {
-	m.trainableVariables = make([]*tensor.Tensor, 0)
+func (m *Model) Build(input *tensor.Tensor) *tensor.Tensor {
 	pred := input
 	for _, module := range m.modules {
-		pred = module.Forward(pred)
+		pred = module.Build(pred)
 		m.trainableVariables = append(m.trainableVariables, module.GetParameters()...)
 	}
 	return pred
 }
 
-func (m *Model) PredictNoGrad(input *tensor.Tensor) *tensor.Tensor {
+func (m *Model) BuildNoGrad(input *tensor.Tensor) *tensor.Tensor {
 	pred := input
 	for _, module := range m.modules {
-		pred = module.Forward(pred)
+		pred = module.Build(pred)
 	}
 	return pred
 }
@@ -84,19 +70,8 @@ func (m *Model) Copy() *Model {
 	duplicate := NewModel()
 
 	for _, module := range m.modules {
-		var duplicateModule modules.Module
-		switch module.Type() {
-		case "dense":
-			duplicateModule = modules.Dense(module.GetParameters()[0].Shape().Y, module.GetActivation())
-			break
-		}
-		duplicateModule.InitializeWith(
-			tensor.Variable(module.GetParameters()[0].Shape().X, module.GetParameters()[0].Shape().Y).SetData(module.GetParameters()[0].ToFloat32()),
-			tensor.Variable(module.GetParameters()[1].Shape().X, module.GetParameters()[1].Shape().Y).SetData(module.GetParameters()[1].ToFloat32()))
-		duplicate.Add(duplicateModule)
+		duplicate.Add(module.Copy())
 	}
-
-	duplicate.Initialize(m.modules[0].GetParameters()[0].Shape().Y)
 
 	return duplicate
 }

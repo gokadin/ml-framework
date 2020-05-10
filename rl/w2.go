@@ -40,9 +40,9 @@ package rl
 //
 //	for i := 0; i < w.model.Configuration().Epochs; i++ {
 //		x.SetData(dataset.Get(datasets.TrainingSetX).Data().Data())
-//		pred := w.model.Predict(x)
+//		pred := w.model.Build(x)
 //
-//		graph.Forward(pred)
+//		graph.Build(pred)
 //
 //		aveSoftmax := softmax(pred.ToFloat32())
 //		action := w.agent.choose(aveSoftmax)
@@ -54,7 +54,7 @@ package rl
 //		y.SetData(predMat)
 //
 //		loss := w.model.Loss(pred, y)
-//		graph.Forward(loss)
+//		graph.Build(loss)
 //		graph.Backward(loss, w.model.TrainableVariables()...)
 //
 //		w.model.Optimizer().Update(w.model.TrainableVariables()...)

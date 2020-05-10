@@ -43,5 +43,5 @@ func newCrossEntropyCriterion() *crossEntropyCriterion {
 }
 
 func (cec *crossEntropyCriterion) Forward(pred, target *tensor.Tensor) *tensor.Tensor {
-	return tensor.CrossEntropy(pred, target)
+	return tensor.SoftmaxCrossEntropy(pred, target)
 }

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <cuda.h>
 #include "tensor.h"
+#include "cudautils.h"
 
 const int BLOCK_SIZE = 1024;
 
@@ -34,32 +35,34 @@ __global__ void sum1(float *a, float *target, int width, int height)
 
 extern "C" {
 
-    void sum(TENSOR *a, int axis, TENSOR *target) {
+    void gpu_sum_forward(TENSOR *a, int axis, TENSOR *target) {
         float* gpu_a;
-        size_t size = a->shapeX * a->shapeY * sizeof(float);
-        cudaMalloc((void**)&gpu_a, size);
-        cudaMemcpy(gpu_a, &a->data[0], size, cudaMemcpyHostToDevice);
+        size_t a_size = a->mat_shape->size * sizeof(float);
+        checkCudaErr(cudaMalloc((void**)&gpu_a, a_size));
+        checkCudaErr(cudaMemcpy(gpu_a, &a->data[0], a_size, cudaMemcpyHostToDevice));
 
         float* gpu_target;
         size_t size_target;
 
         if (axis == 0) {
-            size_target = a->shapeY * sizeof(float);
-            cudaMalloc((void**)&gpu_target, size_target);
+            size_target = a->mat_shape->y * sizeof(float);
+            checkCudaErr(cudaMalloc((void**)&gpu_target, size_target));
 
             dim3 blockSize(BLOCK_SIZE);
-            dim3 gridSize((a->shapeY + BLOCK_SIZE - 1) / BLOCK_SIZE);
-            sum0<<<gridSize, blockSize>>>(gpu_a, gpu_target, a->shapeY, a->shapeX);
+            dim3 gridSize((a->mat_shape->y + BLOCK_SIZE - 1) / BLOCK_SIZE);
+            sum0<<<gridSize, blockSize>>>(gpu_a, gpu_target, a->mat_shape->y, a->mat_shape->x);
+            checkCudaKernelErr("sum0", blockSize, gridSize);
         } else if (axis == 1) {
-            size_target = a->shapeX * sizeof(float);
-            cudaMalloc((void**)&gpu_target, size_target);
+            size_target = a->mat_shape->x * sizeof(float);
+            checkCudaErr(cudaMalloc((void**)&gpu_target, size_target));
 
             dim3 blockSize(BLOCK_SIZE);
-            dim3 gridSize((a->shapeX + BLOCK_SIZE - 1) / BLOCK_SIZE);
-            sum1<<<gridSize, blockSize>>>(gpu_a, gpu_target, a->shapeY, a->shapeX);
+            dim3 gridSize((a->mat_shape->x + BLOCK_SIZE - 1) / BLOCK_SIZE);
+            sum1<<<gridSize, blockSize>>>(gpu_a, gpu_target, a->mat_shape->y, a->mat_shape->x);
+            checkCudaKernelErr("sum1", blockSize, gridSize);
         }
 
-        cudaMemcpy(&target->data[0], gpu_target, size_target, cudaMemcpyDeviceToHost);
+        checkCudaErr(cudaMemcpy(&target->data[0], gpu_target, size_target, cudaMemcpyDeviceToHost));
 
         cudaFree(gpu_a);
         cudaFree(gpu_target);

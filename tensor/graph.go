@@ -1,10 +1,5 @@
 package tensor
 
-//#cgo CFLAGS: -I.
-//#cgo LDFLAGS: -L${SRCDIR} -Wl,-rpath,${SRCDIR}
-//#include <graph.h>
-import "C"
-
 type Graph struct {
 	forwardGraphs map[int]*forwardGraph
 	backwardGraphs map[int]*backwardGraph
