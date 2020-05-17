@@ -23,7 +23,7 @@ func (o *opNeg) forwardShape() Shape {
 }
 
 func (o *opNeg) backwardShapes(tensorShape Shape) []Shape {
-	return []Shape{tensorShape, tensorShape}
+	return []Shape{tensorShape}
 }
 
 func (o *opNeg) forward(tensor *Tensor) {
@@ -35,7 +35,8 @@ func (o *opNeg) backward(tensor *Tensor) {
 }
 
 func Neg(a *Tensor) *Tensor {
-	result := OfShape(a.Shape().X, a.Shape().Y)
-	result.op = &opNeg{a}
+	o := &opNeg{a}
+	result := OfShape(o.forwardShape().ToArray()...)
+	result.op = o
 	return result
 }

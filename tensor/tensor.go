@@ -53,6 +53,7 @@ func OfShape(shape ...int) *Tensor {
 func Ones(shape ...int) *Tensor {
 	t := OfShape(shape...)
 	t.SetData(mat.Ones32f(shape[0] * shape[1]))
+	t.ready = false
 	return t
 }
 
@@ -111,6 +112,7 @@ func (t *Tensor) Reshape(shape ...int) *Tensor {
 	}
 
 	t.reshapeMat(shape...)
+	t.ready = false
 
 	return t
 }
@@ -182,7 +184,7 @@ func (t *Tensor) ToMat32f() *mat.Mat32f {
 }
 
 func (t *Tensor) GradientToFloat32() []float32 {
-	result := make([]float32, t._mat_shape.size)
+	result := make([]float32, t._grad_shape.size)
 	for i := 0; i < len(result); i++ {
 		result[i] = float32(t._grad[i])
 	}
@@ -190,7 +192,7 @@ func (t *Tensor) GradientToFloat32() []float32 {
 }
 
 func (t *Tensor) GradientToMat32() *mat.Mat32f {
-	result := make([]float32, t.Shape().Size())
+	result := make([]float32, int(t._grad_shape.size))
 	for i := 0; i < len(result); i++ {
 		result[i] = float32(t._grad[i])
 	}
@@ -210,6 +212,13 @@ func (t *Tensor) Shape() Shape {
 	}
 }
 
+func (t *Tensor) GradShape() Shape {
+	return Shape{
+		X: int(t._grad_shape.x),
+		Y: int(t._grad_shape.y),
+	}
+}
+
 func (t *Tensor) Copy() *Tensor {
 	tensor := New()
 	tensor.reshapeMat(int(t._mat_shape.x), int(t._mat_shape.y))
@@ -219,6 +228,24 @@ func (t *Tensor) Copy() *Tensor {
 	return tensor
 }
 
+func (t *Tensor) IsReady() bool {
+	if !t.ready {
+		return false
+	}
+
+	if t.op == nil {
+		return true
+	}
+
+	for _, dependency := range t.op.dependencies() {
+		if dependency != nil && !dependency.ready {
+			return false
+		}
+	}
+
+	return true
+}
+
 func (t *Tensor) forward() {
 	t.reshapeMat(t.op.forwardShape().ToArray()...)
 	t.op.forward(t)
@@ -226,7 +253,7 @@ func (t *Tensor) forward() {
 }
 
 func (t *Tensor) backward() {
-	shapes := t.op.backwardShapes(t.Shape())
+	shapes := t.op.backwardShapes(t.GradShape())
 	for i := 0; i < len(shapes); i++ {
 		t.op.dependencies()[i].reshapeGrad(shapes[i].ToArray()...)
 	}

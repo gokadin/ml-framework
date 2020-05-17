@@ -65,3 +65,42 @@ func Test_linear_backward(t *testing.T) {
 		})
 	}
 }
+
+func Test_linear_forward_invalid_shapes_between_a_x(t *testing.T) {
+	a := OfShape(1, 2)
+	x := OfShape(1, 2)
+	b := OfShape(1, 2)
+	c := Linear(a, x, b)
+
+	assert.Panics(t, c.forward)
+}
+
+func Test_linear_forward_invalid_shapes_for_b(t *testing.T) {
+	a := OfShape(1, 2)
+	x := OfShape(2, 3)
+	b := OfShape(1, 2)
+	c := Linear(a, x, b)
+
+	assert.Panics(t, c.forward)
+}
+
+func Test_linear_forward_reshape(t *testing.T) {
+	a := From(InitRandom, 1, 2)
+	x := From(InitRandom, 2, 3)
+	b := From(InitRandom, 1, 3)
+	c := Linear(a, x, b)
+	expected := mat.Add(mat.MatMul(a.ToMat32f(), x.ToMat32f()), mat.Expand(b.ToMat32f(), 0, a.Shape().X)).Data()
+
+	c.forward()
+
+	assert.InDeltaSlice(t, expected, c.ToFloat32(), 0.000001)
+
+	a.Reshape(3, 2).SetData([]float32{1, 2, 3, 4, 5, 6})
+	expected = mat.Add(mat.MatMul(a.ToMat32f(), x.ToMat32f()), mat.Expand(b.ToMat32f(), 0, a.Shape().X)).Data()
+
+	c.forward()
+
+	assert.Equal(t, []int{3, 3}, c.Shape().ToArray())
+	assert.InDeltaSlice(t, expected, c.ToFloat32(), 0.000001)
+}
+

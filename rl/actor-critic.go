@@ -34,39 +34,44 @@ type actorCriticModel struct {
 
 func (acm *actorCriticModel) predict() {
 	acm.graph = tensor.NewGraph()
-	acm.state = tensor.Variable(1, 4)
-	base := acm.baseModel.Predict(acm.state)
-	acm.policy = acm.actorModel.Predict(base)
-	acm.value = acm.criticModel.Predict(base)
+	acm.state = tensor.OfShape(1, 4)
+	base := acm.baseModel.Build(acm.state)
+	acm.policy = acm.actorModel.Build(base)
+	acm.value = acm.criticModel.Build(base)
 
-	acm.logProbs = tensor.Variable(1, 1)
-	acm.values = tensor.Variable(1, 1)
-	acm.returns = tensor.Variable(1, 1)
-	acm.actorLoss = calculateActorLoss(acm.logProbs, acm.values, acm.returns)
-	acm.criticLoss = calculateCriticLoss(acm.values, acm.returns)
+	acm.logProbs = tensor.OfShape(1, 1)
+	acm.values = tensor.OfShape(1, 1)
+	acm.returns = tensor.OfShape(1, 1)
+	acm.actorLoss = calculateActorLoss(acm.policy, acm.value, acm.returns)
+	acm.criticLoss = calculateCriticLoss(acm.value, acm.returns)
 }
 
 func calculateActorLoss(logProbs, values, returns *tensor.Tensor) *tensor.Tensor {
 	return tensor.Sum(tensor.Sum(tensor.Mul(tensor.Neg(logProbs), tensor.Sub(returns, values)), 1), 0)
 }
 
-func calculateCriticLoss(values, returns *tensor.Tensor) *tensor.Tensor {
-	return tensor.MulScalar(tensor.Sum(tensor.Sum(tensor.Pow(tensor.Sub(values, returns), 2), 1), 0), clc)
+func calculateCriticLoss(value, returns *tensor.Tensor) *tensor.Tensor {
+	return tensor.MulScalar(tensor.Sum(tensor.Sum(tensor.Pow(tensor.Sub(value, returns), 2), 1), 0), clc)
 }
 
-func (acm *actorCriticModel) forward(stateMat []float32) {
+func (acm *actorCriticModel) forward(stateMat []float32, shapeX, shapeY int) {
+	acm.state.Reshape(shapeX, shapeY)
 	acm.state.SetData(stateMat)
 	acm.graph.Forward(acm.policy)
 	acm.graph.Forward(acm.value)
 }
 
-func (acm *actorCriticModel) backward(values []float32, logProbs, returns []float32) {
-	acm.values.Reshape(1, len(values)).SetData(values)
-	acm.logProbs.Reshape(1, len(values)).SetData(logProbs)
-	acm.returns.Reshape(1, len(values)).SetData(returns)
+func (acm *actorCriticModel) backward(states, values []float32, logProbs, returns []float32) {
+	acm.value.Reshape(len(values), 1).SetData(values)
+	acm.policy.Reshape(len(values), 1).SetData(logProbs)
+	acm.returns.Reshape(len(values), 1).SetData(returns)
 
-	acm.graph.Backward(acm.actorLoss, append(acm.baseModel.TrainableVariables(), acm.actorModel.TrainableVariables()...)...)
+	acm.forward(states, len(values), 4)
+	acm.graph.Forward(acm.criticLoss)
+	acm.graph.Forward(acm.actorLoss)
+
 	acm.graph.Backward(acm.criticLoss, acm.criticModel.TrainableVariables()...)
+	acm.graph.Backward(acm.actorLoss, append(acm.baseModel.TrainableVariables(), acm.actorModel.TrainableVariables()...)...)
 }
 
 func RunActorCritic() {
@@ -84,22 +89,24 @@ func worker(model *actorCriticModel) {
 	env, envId := gymClient()
 
 	for i := 0; i < epochs; i++ {
-		values, logProbs, rewards := runEpisode(env, envId, model)
-		updateParams(model, values, logProbs, rewards)
+		states, values, logProbs, rewards := runEpisode(env, envId, model)
+		updateParams(model, states, values, logProbs, rewards)
 	}
 
 	_ = env.Close(envId)
 }
 
-func runEpisode(env *gym.Client, envId gym.InstanceID, model *actorCriticModel) ([]float32, []float32, []float32) {
+func runEpisode(env *gym.Client, envId gym.InstanceID, model *actorCriticModel) ([]float32, []float32, []float32, []float32) {
 	envState, _ := env.Reset(envId)
 	stateMat := obsToState(envState.([]float64))
+	states := make([]float32, 0)
 	values := make([]float32, 0)
 	logProbs := make([]float32, 0)
 	rewards := make([]float32, 0)
 
 	for {
-		model.forward(stateMat)
+		model.forward(stateMat, 1, 4)
+		states = append(states, stateMat...)
 		values = append(values, model.value.ToFloat32()...)
 		action := sampleFrom(model.policy.ToFloat64())
 		logProbs = append(logProbs, model.policy.ToFloat32()[action])
@@ -115,10 +122,10 @@ func runEpisode(env *gym.Client, envId gym.InstanceID, model *actorCriticModel) 
 		rewards = append(rewards, 1)
 	}
 
-	return values, logProbs, rewards
+	return states, values, logProbs, rewards
 }
 
-func updateParams(model *actorCriticModel, values []float32, logProbs, rewards []float32) {
+func updateParams(model *actorCriticModel, states, values []float32, logProbs, rewards []float32) {
 	returns := make([]float32, len(rewards))
 	var partialReturn float32
 	for i := len(rewards) - 1; i >= 0; i-- {
@@ -127,7 +134,7 @@ func updateParams(model *actorCriticModel, values []float32, logProbs, rewards [
 	}
 	mat.Normalize32f(returns)
 
-	model.backward(values, logProbs, returns)
+	model.backward(states, values, logProbs, returns)
 }
 
 func sampleFrom(probabilities []float64) int {
@@ -148,17 +155,22 @@ func sampleFrom(probabilities []float64) int {
 
 func buildBaseModel() *models.Model {
 	return models.Build(
-		modules.Dense(25, modules.ActivationRelu),
-		modules.Dense(50, modules.ActivationRelu))
+		modules.Linear(25),
+		modules.Relu(),
+		modules.Linear(50),
+		modules.Relu())
 }
 
 func buildActorModel() *models.Model {
 	return models.Build(
-		modules.Dense(2, modules.ActivationLogSoftmax))
+		modules.Linear(2),
+		modules.LogSoftmax())
 }
 
 func buildCriticModel() *models.Model {
 	return models.Build(
-		modules.Dense(25, modules.ActivationRelu),
-		modules.Dense(1, modules.ActivationTanh))
+		modules.Linear(25),
+		modules.Relu(),
+		modules.Linear(1),
+		modules.Tanh())
 }

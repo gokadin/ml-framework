@@ -52,9 +52,9 @@ func executeForwardOp(tensor *Tensor, in, out chan bool, threshold int) {
 		}
 
 		counter = 0
-		if !tensor.ready {
-			tensor.forward()
-		}
+		//if !tensor.IsReady() {
+		tensor.forward()
+		//}
 		out <- true
 	}
 }

@@ -24,7 +24,7 @@ func (o *opMulScalar) forwardShape() Shape {
 }
 
 func (o *opMulScalar) backwardShapes(tensorShape Shape) []Shape {
-	return []Shape{tensorShape, tensorShape}
+	return []Shape{tensorShape}
 }
 
 func (o *opMulScalar) forward(tensor *Tensor) {

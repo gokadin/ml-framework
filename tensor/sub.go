@@ -39,7 +39,8 @@ func (o *opSub) backward(tensor *Tensor) {
 }
 
 func Sub(a, b *Tensor) *Tensor {
-	result := OfShape(a.Shape().X, a.Shape().Y)
-	result.op = &opSub{a, b}
+	o := &opSub{a, b}
+	result := OfShape(o.forwardShape().ToArray()...)
+	result.op = o
 	return result
 }
