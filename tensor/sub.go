@@ -25,21 +25,20 @@ func (o *opSub) backwardShapes(tensorShape Shape) []Shape {
 }
 
 func (o *opSub) forward(tensor *Tensor) {
+	if !o.a.Shape().Equals(o.b.Shape()) {
+		handleIncompatibleShapes("sub", o.a.Shape(), o.b.Shape())
+	}
 	tensor.SetData(mat.Sub(o.a.ToMat32f(), o.b.ToMat32f()).Data())
 }
 
 func (o *opSub) backward(tensor *Tensor) {
-	if o.a.isGradientEnabled {
-		o.a.SetGradient(tensor.GradientToFloat32())
-	}
-
-	if o.b.isGradientEnabled {
-		o.b.SetGradient(mat.Neg(tensor.GradientToMat32()).Data())
-	}
+	o.a.SetGradient(tensor.GradientToFloat32())
+	o.b.SetGradient(mat.Neg(tensor.GradientToMat32()).Data())
 }
 
 func Sub(a, b *Tensor) *Tensor {
-	result := OfShape(a.Shape().X, a.Shape().Y)
-	result.op = &opSub{a, b}
+	o := &opSub{a, b}
+	result := OfShape(o.forwardShape().ToArray()...)
+	result.op = o
 	return result
 }
