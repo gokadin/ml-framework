@@ -23,7 +23,7 @@ func (o *opLog) forwardShape() Shape {
 }
 
 func (o *opLog) backwardShapes(tensorShape Shape) []Shape {
-	return []Shape{tensorShape, tensorShape}
+	return []Shape{tensorShape}
 }
 
 func (o *opLog) forward(tensor *Tensor) {
@@ -35,7 +35,8 @@ func (o *opLog) backward(tensor *Tensor) {
 }
 
 func Log(a *Tensor) *Tensor {
-	result := OfShape(a.Shape().X, a.Shape().Y)
-	result.op = &opLog{a}
+	o := &opLog{a}
+	result := OfShape(o.forwardShape().ToArray()...)
+	result.op = o
 	return result
 }
