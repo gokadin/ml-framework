@@ -5,7 +5,6 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include "shape.h"
-#include "op.h"
 
 typedef struct TENSOR {
     float *data;

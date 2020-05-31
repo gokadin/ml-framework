@@ -24,7 +24,7 @@ func (o *opDivScalar) forwardShape() Shape {
 }
 
 func (o *opDivScalar) backwardShapes(tensorShape Shape) []Shape {
-	return []Shape{tensorShape, tensorShape}
+	return []Shape{tensorShape}
 }
 
 func (o *opDivScalar) forward(tensor *Tensor) {
@@ -37,7 +37,8 @@ func (o *opDivScalar) backward(tensor *Tensor) {
 }
 
 func DivScalar(a *Tensor, scalar float32) *Tensor {
-	result := OfShape(a.Shape().X, a.Shape().Y)
-	result.op = &opDivScalar{a, scalar}
+	o := &opDivScalar{a, scalar}
+	result := OfShape(o.forwardShape().ToArray()...)
+	result.op = o
 	return result
 }
