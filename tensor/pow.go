@@ -24,7 +24,7 @@ func (o *opPow) forwardShape() Shape {
 }
 
 func (o *opPow) backwardShapes(tensorShape Shape) []Shape {
-	return []Shape{tensorShape, tensorShape}
+	return []Shape{tensorShape}
 }
 
 func (o *opPow) forward(tensor *Tensor) {
@@ -40,7 +40,8 @@ func (o *opPow) backward(tensor *Tensor) {
 }
 
 func Pow(a *Tensor, power float32) *Tensor {
-	result := OfShape(a.Shape().X, a.Shape().Y)
-	result.op = &opPow{a, power}
+	o := &opPow{a, power}
+	result := OfShape(o.forwardShape().ToArray()...)
+	result.op = o
 	return result
 }
