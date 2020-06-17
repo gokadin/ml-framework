@@ -1,11 +1,11 @@
 package tensor
 
-//#cgo CFLAGS: -I.
-//#cgo LDFLAGS: -L${SRCDIR} -Wl,-rpath,${SRCDIR}  -lexpand
+//#cgo LDFLAGS: -L${SRCDIR} -Wl,-rpath,${SRCDIR} -lexpand
 //#include <expand.h>
 import "C"
 
 import (
+	"fmt"
 	"github.com/gokadin/ml-framework/mat"
 )
 
@@ -26,27 +26,48 @@ func (o *opExpand) dependencies() []*Tensor {
 }
 
 func (o *opExpand) forwardShape() Shape {
-	return Shape{o.a.Shape().X, o.a.Shape().Y * o.copies}
+	if o.axis == 0 && o.a.Shape().X != 1 {
+		handleIncompatibleShapes("expand 0", o.a.Shape())
+	}
+
+	if o.axis == 1 && o.a.Shape().Y != 1 {
+		handleIncompatibleShapes("expand 1", o.a.Shape())
+	}
+
+	if o.axis == 0 {
+		return Shape{o.copies, o.a.Shape().Y}
+	}
+
+	return Shape{o.a.Shape().X, o.copies}
 }
 
-// TODO
-func (o *opExpand) backwardShapes(tensorShape Shape) []Shape {
-	return []Shape{tensorShape, tensorShape}
+func (o *opExpand) backwardShapes(shape Shape) []Shape {
+	if o.axis == 0 {
+		return []Shape{{1, shape.Y}}
+	}
+
+	return []Shape{{shape.X, 1}}
 }
 
 func (o *opExpand) forward(tensor *Tensor) {
-	C.expand(o.a._tensor, C.int(o.axis), C.int(o.copies), tensor._tensor)
+	C.expand_forward(tensor._tensor, o.a._tensor, C.int(o.axis), C.int(o.copies))
 }
 
 func (o *opExpand) backward(tensor *Tensor) {
-	o.a.SetGradient(mat.Sum(tensor.GradientToMat32(), 0).Data())
+	if o.axis == 0 {
+		o.a.SetGradient(mat.Sum(tensor.GradientToMat32(), 0).Data())
+	} else {
+		o.a.SetGradient(mat.Sum(tensor.GradientToMat32(), 1).Data())
+	}
 }
 
 func Expand(a *Tensor, axis, copies int) *Tensor {
-	result := OfShape(copies, a.Shape().Y)
-	if axis == 1 {
-		result.Reshape(a.Shape().X, a.Shape().Y * copies)
+	if axis != 0 && axis != 1 {
+		panic(fmt.Sprintf("invalid axis provided for expand operation: %d. Valid values are 0 and 1", axis))
 	}
-	result.op = &opExpand{a, axis, copies}
+
+	o := &opExpand{a, axis, copies}
+	result := OfShape(o.forwardShape().ToArray()...)
+	result.op = o
 	return result
 }

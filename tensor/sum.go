@@ -4,8 +4,8 @@ package tensor
 import "C"
 
 import (
+	"fmt"
 	"github.com/gokadin/ml-framework/mat"
-	"log"
 )
 
 const operationSum = "opSum"
@@ -53,14 +53,12 @@ func (o *opSum) backward(tensor *Tensor) {
 }
 
 func Sum(a *Tensor, axis int) *Tensor {
-	var result *Tensor
-	if axis == 0 {
-		result = OfShape(1, a.Shape().Y)
-	} else if axis == 1 {
-		result = OfShape(a.Shape().X, 1)
-	} else {
-		log.Fatal("axis unknown: " + string(axis))
+	if axis != 0 && axis != 1 {
+		panic(fmt.Sprintf("invalid axis provided for sum operation: %d. Valid values are 0 and 1", axis))
 	}
-	result.op = &opSum{a, axis, a.Shape()}
+
+	o := &opSum{a, axis, a.Shape()}
+	result := OfShape(o.forwardShape().ToArray()...)
+	result.op = o
 	return result
 }

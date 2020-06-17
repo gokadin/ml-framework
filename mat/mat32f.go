@@ -366,6 +366,9 @@ func Sum(a *Mat32f, axis int) *Mat32f {
 	}
 }
 
+/**
+Shape of (A,B) becomes (1,B)
+*/
 func sum0(a *Mat32f) *Mat32f {
 	result := make([]float32, a.shape.Y)
 	for i := 0; i < a.shape.X; i++ {
@@ -376,6 +379,9 @@ func sum0(a *Mat32f) *Mat32f {
 	return NewMat32f(WithShape(1, a.shape.Y), result)
 }
 
+/**
+Shape of (A,B) becomes (A,1)
+*/
 func sum1(a *Mat32f) *Mat32f {
 	result := make([]float32, a.shape.X)
 	for i := 0; i < a.shape.X; i++ {
@@ -398,6 +404,9 @@ func Expand(a *Mat32f, axis, copies int) *Mat32f {
 	}
 }
 
+/**
+	Shape of (A,B) becomes (A*copies,B)
+ */
 func expand0(a *Mat32f, copies int) *Mat32f {
 	if a.shape.X != 1 {
 		log.Fatalf("incompatible matrix size for Expand operation on X axis -> %dx%d", a.shape.X, a.shape.Y)
@@ -412,6 +421,9 @@ func expand0(a *Mat32f, copies int) *Mat32f {
 	return NewMat32f(WithShape(copies, a.shape.Y), result)
 }
 
+/**
+Shape of (A,B) becomes (A,B*copies)
+*/
 func expand1(a *Mat32f, copies int) *Mat32f {
 	if a.shape.X == 0 || a.shape.Y != 1 {
 		log.Fatalf("incompatible matrix size for Expand operation on Y axis -> %dx%d", a.shape.X, a.shape.Y)
@@ -420,10 +432,10 @@ func expand1(a *Mat32f, copies int) *Mat32f {
 	result := make([]float32, a.shape.X * a.shape.Y * copies)
 	for i := 0; i < a.shape.X; i++ {
 		for j := 0; j < copies; j++ {
-			result[i * copies + j] = a.data[i * a.shape.Y]
+			result[i * copies + j] = a.data[i]
 		}
 	}
-	return NewMat32f(WithShape(a.shape.X, a.shape.Y * copies), result)
+	return NewMat32f(WithShape(a.shape.X, copies), result)
 }
 
 func (m *Mat32f) Equals32f(other *Mat32f) bool {
