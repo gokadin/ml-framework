@@ -23,7 +23,7 @@ func (o *opLeakyRelu) forwardShape() Shape {
 }
 
 func (o *opLeakyRelu) backwardShapes(tensorShape Shape) []Shape {
-	return []Shape{tensorShape, tensorShape}
+	return []Shape{tensorShape}
 }
 
 func (o *opLeakyRelu) forward(tensor *Tensor) {
@@ -46,7 +46,8 @@ func (o *opLeakyRelu) backward(tensor *Tensor) {
 }
 
 func LeakyRelu(a *Tensor) *Tensor {
-	result := OfShape(a.Shape().X, a.Shape().Y)
-	result.op = &opLeakyRelu{a}
+	o := &opLeakyRelu{a}
+	result := OfShape(o.forwardShape().ToArray()...)
+	result.op = o
 	return result
 }
