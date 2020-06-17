@@ -24,7 +24,7 @@ func (o *opSigmoid) forwardShape() Shape {
 }
 
 func (o *opSigmoid) backwardShapes(tensorShape Shape) []Shape {
-	return []Shape{tensorShape, tensorShape}
+	return []Shape{tensorShape}
 }
 
 func (o *opSigmoid) forward(tensor *Tensor) {
@@ -38,7 +38,8 @@ func (o *opSigmoid) backward(tensor *Tensor) {
 }
 
 func Sigmoid(a *Tensor) *Tensor {
-	result := OfShape(a.Shape().X, a.Shape().Y)
-	result.op = &opSigmoid{a}
+	o := &opSigmoid{a}
+	result := OfShape(o.forwardShape().ToArray()...)
+	result.op = o
 	return result
 }
