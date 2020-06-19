@@ -2,13 +2,15 @@ package tensor
 
 type forwardGraph struct {
 	startChannels []chan bool
-	done chan bool
+	done          chan bool
+	kill          chan bool
 }
 
 func buildForwardGraph(tensor *Tensor) *forwardGraph {
 	fg := &forwardGraph{
 		startChannels: make([]chan bool, 0),
-		done: make(chan bool),
+		done:          make(chan bool),
+		kill:          make(chan bool),
 	}
 
 	fg.build(tensor, fg.done)
@@ -32,7 +34,7 @@ func (fg *forwardGraph) build(tensor *Tensor, lastChan chan bool) {
 		fg.startChannels = append(fg.startChannels, c)
 	}
 
-	go executeForwardOp(tensor, c, lastChan, activeDependencyCount)
+	go executeForwardOp(tensor, c, lastChan, fg.kill, activeDependencyCount)
 }
 
 func (fg *forwardGraph) run() {
@@ -43,18 +45,27 @@ func (fg *forwardGraph) run() {
 	<-fg.done
 }
 
-func executeForwardOp(tensor *Tensor, in, out chan bool, threshold int) {
-	counter := 0
-	for range in {
-		counter++
-		if counter != threshold {
-			continue
-		}
+func (fg *forwardGraph) close() {
+	close(fg.kill)
+}
 
-		counter = 0
-		if !tensor.ready {
-			tensor.forward()
+func executeForwardOp(tensor *Tensor, in, out, kill chan bool, threshold int) {
+	counter := 0
+	for {
+		select {
+		case <-in:
+			counter++
+			if counter != threshold {
+				break
+			}
+
+			counter = 0
+			if !tensor.ready {
+				tensor.forward()
+			}
+			out <- true
+		case <-kill:
+			return
 		}
-		out <- true
 	}
 }

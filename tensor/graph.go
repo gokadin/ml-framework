@@ -40,3 +40,13 @@ func generateMapKey(tensors []*Tensor) int {
 	}
 	return key
 }
+
+func (g *Graph) Close() {
+	for _, fg := range g.forwardGraphs {
+		fg.close()
+	}
+
+	for _, bg := range g.backwardGraphs {
+		bg.close()
+	}
+}

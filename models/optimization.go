@@ -24,6 +24,7 @@ const (
 
 type Optimizer interface {
     Update(parameters ...*tensor.Tensor)
+    Close()
 }
 
 func NewOptimizer(optimizerType string) Optimizer {
@@ -60,6 +61,10 @@ func (do defaultOptimizer) Update(parameters ...*tensor.Tensor) {
     }
 }
 
+func (do defaultOptimizer) Close() {
+
+}
+
 type momentumOptimizer struct {
     learningRate float32
     momentum float32
@@ -92,6 +97,10 @@ func (mo momentumOptimizer) Update(parameters ...*tensor.Tensor) {
 	}
 }
 
+func (mo momentumOptimizer) Close() {
+
+}
+
 type adamOptimizer struct {
     learningRate float32
     beta1 float32
@@ -99,6 +108,7 @@ type adamOptimizer struct {
     epsStable float32
     workerMap map[int]chan bool
     out chan bool
+    kill chan bool
 }
 
 func newAdamOptimizer(overrides []float32) *adamOptimizer {
@@ -109,6 +119,7 @@ func newAdamOptimizer(overrides []float32) *adamOptimizer {
         epsStable: defaultEpsStable,
         workerMap: make(map[int]chan bool),
         out: make(chan bool),
+        kill: make(chan bool),
     }
     if len(overrides) >= 1 {
         o.learningRate = overrides[0]
@@ -131,7 +142,7 @@ func (ao *adamOptimizer) Update(parameters ...*tensor.Tensor) {
         if !ok {
             in = make(chan bool)
             ao.workerMap[parameter.Id()] = in
-            go adamUpdate(parameter, in, ao.out, ao.beta1, ao.beta2, ao.epsStable, ao.learningRate)
+            go adamUpdate(parameter, in, ao.out, ao.kill, ao.beta1, ao.beta2, ao.epsStable, ao.learningRate)
         }
 
         in <- true
@@ -146,23 +157,32 @@ func (ao *adamOptimizer) Update(parameters ...*tensor.Tensor) {
     }
 }
 
-func adamUpdate(parameter *tensor.Tensor, in, out chan bool, beta1, beta2, epsStable, learningRate float32) {
+func (ao *adamOptimizer) Close() {
+    close(ao.kill)
+}
+
+func adamUpdate(parameter *tensor.Tensor, in, out, kill chan bool, beta1, beta2, epsStable, learningRate float32) {
     mean := mat.NewMat32fZeros(mat.WithShape(parameter.Shape().X, parameter.Shape().Y))
     velocity := mat.NewMat32fZeros(mat.WithShape(parameter.Shape().X, parameter.Shape().Y))
     var count float64 = 0
 
-    for range in {
-    	count++
-        g := parameter.GradientToMat32()
+    for {
+        select {
+    	case <- in:
+            count++
+            g := parameter.GradientToMat32()
 
-        mean = mat.Add(mat.MulScalar(mean, beta1), mat.MulScalar(g, 1 - beta1))
-        velocity = mat.Add(mat.MulScalar(velocity, beta2), mat.MulScalar(mat.Pow(g, 2), 1 - beta2))
+            mean = mat.Add(mat.MulScalar(mean, beta1), mat.MulScalar(g, 1 - beta1))
+            velocity = mat.Add(mat.MulScalar(velocity, beta2), mat.MulScalar(mat.Pow(g, 2), 1 - beta2))
 
-        biasCorr := mat.DivScalar(mean, 1 - float32(math.Pow(float64(beta1), count)))
-        sqrtBiasCorr := mat.DivScalar(velocity, 1 - float32(math.Pow(float64(beta2), count)))
+            biasCorr := mat.DivScalar(mean, 1 - float32(math.Pow(float64(beta1), count)))
+            sqrtBiasCorr := mat.DivScalar(velocity, 1 - float32(math.Pow(float64(beta2), count)))
 
-        parameter.Reduce(mat.Div(mat.MulScalar(biasCorr, learningRate), mat.AddScalar(mat.Sqrt(sqrtBiasCorr), epsStable)).Data())
+            parameter.Reduce(mat.Div(mat.MulScalar(biasCorr, learningRate), mat.AddScalar(mat.Sqrt(sqrtBiasCorr), epsStable)).Data())
 
-        out <- true
+            out <- true
+        case <- kill:
+            return
+        }
     }
 }

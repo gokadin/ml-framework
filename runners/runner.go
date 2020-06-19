@@ -98,6 +98,9 @@ func (r *runner) Fit(dataset *datasets.Dataset) {
 		}
 	}
 
+	graph.Close()
+	r.optimizer.Close()
+
 	r.metric.events.trainingFinished <- true
 }
 
@@ -114,6 +117,8 @@ func (r *runner) Run(dataset *datasets.Dataset) {
 	loss := r.criterion.Forward(y, target)
 
 	graph.Forward(loss)
+
+	graph.Close()
 
 	fmt.Printf("Error: %f Accuracy: %.2f\n", averageLoss(loss), accuracyOneHot(y, target))
 }

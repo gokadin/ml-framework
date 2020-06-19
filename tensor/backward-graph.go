@@ -1,10 +1,13 @@
 package tensor
 
-import "github.com/gokadin/ml-framework/mat"
+import (
+	"github.com/gokadin/ml-framework/mat"
+)
 
 type backwardGraph struct {
 	start     chan bool
 	done      chan bool
+	kill      chan bool
 	doneCount int
 	root      *Tensor
 	graph     map[int]*backwardMapping
@@ -20,6 +23,7 @@ func buildBackwardGraph(derivatives []*Tensor, of *Tensor) *backwardGraph {
 	bg := &backwardGraph{
 		start:     make(chan bool),
 		done:      make(chan bool),
+		kill:      make(chan bool),
 		root:      of,
 		graph:     make(map[int]*backwardMapping),
 	}
@@ -79,7 +83,7 @@ func (bg *backwardGraph) buildGraph(derivatives []*Tensor, root, parent *Tensor)
 
 func (bg *backwardGraph) bootGraph() {
 	for _, mapping := range bg.graph {
-		go executeBackwardOp(mapping.tensor, mapping.in, mapping.listeners)
+		go executeBackwardOp(mapping.tensor, mapping.in, bg.kill, mapping.listeners)
 	}
 }
 
@@ -96,11 +100,20 @@ func (bg *backwardGraph) run() {
 	}
 }
 
-func executeBackwardOp(tensor *Tensor, in chan bool, listeners []chan bool) {
-	for range in {
-		tensor.backward()
-		for _, listener := range listeners {
-			listener <- true
+func (bg *backwardGraph) close() {
+	close(bg.kill)
+}
+
+func executeBackwardOp(tensor *Tensor, in, kill chan bool, listeners []chan bool) {
+	for {
+		select {
+		case <- in:
+			tensor.backward()
+			for _, listener := range listeners {
+				listener <- true
+			}
+		case <- kill:
+			return
 		}
 	}
 }
