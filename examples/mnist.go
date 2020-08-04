@@ -9,13 +9,13 @@ import (
 func RunMnist() {
 	dataset := datasets.From("mnist").SetBatchSize(1000)
 
-	runner := runners.BuildModelRunner(
+	runner := runners.BuildFromModules(
 		modules.Linear(128),
 		modules.Relu(),
 		modules.Linear(10))
 
 	runner.Configure(runners.ModelConfig{
-		Epochs: 5,
+		Epochs: 3,
 		Loss:   modules.LossSoftmaxCrossEntropy,
 	})
 

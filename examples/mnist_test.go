@@ -10,7 +10,7 @@ import (
 func Test_mnist(t *testing.T) {
 	dataset := datasets.From("mnist").SetBatchSize(1000)
 
-	runner := runners.BuildModelRunner(
+	runner := runners.BuildFromModules(
 		modules.Linear(128),
 		modules.Relu(),
 		modules.Linear(10))

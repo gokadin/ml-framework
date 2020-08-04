@@ -16,9 +16,22 @@ type runner struct {
 	metric        *metric
 }
 
-func BuildModelRunner(modules ...modules.Module) *runner {
+func BuildFromModules(modules ...modules.Module) *runner {
 	runner := &runner{
 		model: models.Build(modules...),
+		configuration:      ModelConfig{},
+	}
+
+	runner.metric = newMetric(&runner.configuration)
+	runner.configuration.populateDefaults()
+	runner.metric.start()
+
+	return runner
+}
+
+func BuildFromModel(model *models.Model) *runner {
+	runner := &runner{
+		model: model,
 		configuration:      ModelConfig{},
 	}
 

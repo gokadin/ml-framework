@@ -9,7 +9,7 @@ import (
 func RunXor() {
 	dataset := datasets.From("xor").SetBatchSize(4)
 
-	runner := runners.BuildModelRunner(
+	runner := runners.BuildFromModules(
 		modules.Linear(2),
 		modules.Sigmoid(),
 		modules.Linear(1))
