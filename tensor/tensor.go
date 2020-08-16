@@ -2,6 +2,8 @@ package tensor
 
 import (
 	"github.com/gokadin/ml-framework/mat"
+	"os"
+	"strconv"
 )
 
 //#cgo CFLAGS: -I.
@@ -34,7 +36,13 @@ func New() *Tensor {
 	t.initializeNativeTensor([]int{1, 1})
 	//runtime.SetFinalizer(t, free)
 
-	//t._tensor.run_on_gpu = C.bool(false)
+	runOnGpuEnv := os.Getenv("RUN_ON_GPU")
+	runOnGpu, err := strconv.ParseBool(runOnGpuEnv)
+	if err == nil {
+		if !runOnGpu {
+			t._tensor.run_on_gpu = C.bool(false)
+		}
+	}
 
 	return t
 }
@@ -233,4 +241,3 @@ func (t *Tensor) backward() {
 	t.op.backward(t)
 	t.ready = false
 }
-
