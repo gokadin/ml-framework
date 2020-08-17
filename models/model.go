@@ -5,6 +5,7 @@ import (
 	"github.com/gokadin/ml-framework/modules"
 	"github.com/gokadin/ml-framework/tensor"
 	"github.com/jaypipes/ghw"
+	"gorgonia.org/cu"
 	"math/rand"
 	"runtime"
 	"time"
@@ -30,6 +31,8 @@ func NewModel() *Model {
 	for _, card := range gpu.GraphicsCards {
 		fmt.Printf(" %v\n", card)
 	}
+
+	fmt.Printf("CUDA version: %v\n", cu.Version())
 
 	model := &Model{
 		trainableVariables: make([]*tensor.Tensor, 0),
