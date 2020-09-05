@@ -12,6 +12,7 @@ const (
 	defaultLearningRate = 0.001
 	defaultOptimizerType = models.OptimizerAdam
 	defaultLoss = modules.LossMeanSquared
+	defaultLogFolder = "logs"
 )
 
 type ModelConfig struct {
@@ -22,6 +23,8 @@ type ModelConfig struct {
 	OptimizerOverrides []float32
 	LearningRate float32
 	Loss string
+	LogFolder string
+	LogToFile bool
 }
 
 func (mc *ModelConfig) populateDefaults() {
@@ -47,5 +50,9 @@ func (mc *ModelConfig) populateDefaults() {
 
 	if mc.Loss == "" {
 		mc.Loss = defaultLoss
+	}
+
+	if mc.LogFolder == "" {
+		mc.LogFolder = defaultLogFolder
 	}
 }

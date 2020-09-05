@@ -1,11 +1,8 @@
 package models
 
 import (
-	"fmt"
 	"github.com/gokadin/ml-framework/modules"
 	"github.com/gokadin/ml-framework/tensor"
-	"github.com/jaypipes/ghw"
-	"gorgonia.org/cu"
 	"math/rand"
 	"runtime"
 	"time"
@@ -20,19 +17,6 @@ type Model struct {
 func NewModel() *Model {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 	rand.Seed(time.Now().UTC().UnixNano())
-
-	gpu, err := ghw.GPU()
-	if err != nil {
-		fmt.Printf("Error getting GPU info: %v", err)
-	}
-
-	fmt.Printf("%v\n", gpu)
-
-	for _, card := range gpu.GraphicsCards {
-		fmt.Printf(" %v\n", card)
-	}
-
-	fmt.Printf("CUDA version: %v\n", cu.Version())
 
 	model := &Model{
 		trainableVariables: make([]*tensor.Tensor, 0),
