@@ -34,7 +34,9 @@ func (l *Logger) Initialize() {
 }
 
 func (l *Logger) Event(category string, value string) {
-	l.writeToFile(category + ".log", value)
+	if l.LogToFile {
+		l.writeToFile(category + ".log", value)
+	}
 }
 
 func (l *Logger) Trace(value string) {
@@ -63,7 +65,7 @@ func (l *Logger) Fatal(value string) {
 
 func (l *Logger) writeLog(level, value string) {
 	logLine := formatLogLine(level, value)
-	fmt.Println(logLine)
+	fmt.Print(logLine)
 	if l.LogToFile {
 		l.writeToFile("log.log", logLine)
 	}
@@ -76,7 +78,7 @@ func (l *Logger) writeToFile(filename string, value string) {
 	}
 	defer f.Close()
 
-	if _, err := f.WriteString(value + "\n"); err != nil {
+	if _, err := f.WriteString(value); err != nil {
 		log.Fatal(err)
 	}
 }

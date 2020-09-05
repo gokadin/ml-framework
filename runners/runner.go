@@ -21,17 +21,7 @@ type runner struct {
 }
 
 func BuildFromModules(modules ...modules.Module) *runner {
-	runner := &runner{
-		model:         models.Build(modules...),
-		configuration: ModelConfig{},
-		logger: telemetry.NewLogger(),
-	}
-
-	runner.metric = newMetric(&runner.configuration, runner.logger)
-	runner.configuration.populateDefaults()
-	runner.metric.start()
-
-	return runner
+	return BuildFromModel(models.Build(modules...))
 }
 
 func BuildFromModel(model *models.Model) *runner {
@@ -44,6 +34,23 @@ func BuildFromModel(model *models.Model) *runner {
 	runner.metric = newMetric(&runner.configuration, runner.logger)
 	runner.configuration.populateDefaults()
 	runner.metric.start()
+
+	runner.logger.LogToFile = runner.configuration.LogToFile
+	runner.logger.LogFolder = runner.configuration.LogFolder
+	runner.logger.Initialize()
+
+	gpu, err := ghw.GPU()
+	if err != nil {
+		runner.logger.Info(fmt.Sprintf("Error getting GPU info: %v", err))
+	}
+
+	runner.logger.Info(fmt.Sprintf("%v\n", gpu))
+
+	for _, card := range gpu.GraphicsCards {
+		runner.logger.Info(fmt.Sprintf(" %v\n", card))
+	}
+
+	runner.logger.Info(fmt.Sprintf("CUDA version: %v\n", cu.Version()))
 
 	return runner
 }
@@ -68,23 +75,6 @@ func (r *runner) Optimizer() models.Optimizer {
 func (r *runner) Initialize() {
 	r.criterion = modules.NewCriterion(r.configuration.Loss)
 	r.optimizer = models.NewOptimizer(r.configuration.Optimizer)
-	r.logger.LogToFile = r.configuration.LogToFile
-	r.logger.LogFolder = r.configuration.LogFolder
-	r.logger.Initialize()
-
-	gpu, err := ghw.GPU()
-	if err != nil {
-		r.logger.Info(fmt.Sprintf("Error getting GPU info: %v", err))
-	}
-
-	r.logger.Info(fmt.Sprintf("%v\n", gpu))
-
-	for _, card := range gpu.GraphicsCards {
-		r.logger.Info(fmt.Sprintf(" %v\n", card))
-	}
-
-	r.logger.Info(fmt.Sprintf("CUDA version: %v\n", cu.Version()))
-
 }
 
 func (r *runner) Fit(dataset *datasets.Dataset) {
