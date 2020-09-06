@@ -35,10 +35,6 @@ func BuildFromModel(model *models.Model) *runner {
 	runner.configuration.populateDefaults()
 	runner.metric.start()
 
-	runner.logger.LogToFile = runner.configuration.LogToFile
-	runner.logger.LogFolder = runner.configuration.LogFolder
-	runner.logger.Initialize()
-
 	gpu, err := ghw.GPU()
 	if err != nil {
 		runner.logger.Info(fmt.Sprintf("Error getting GPU info: %v", err))
@@ -75,6 +71,10 @@ func (r *runner) Optimizer() models.Optimizer {
 func (r *runner) Initialize() {
 	r.criterion = modules.NewCriterion(r.configuration.Loss)
 	r.optimizer = models.NewOptimizer(r.configuration.Optimizer)
+
+	r.logger.LogToFile = r.configuration.LogToFile
+	r.logger.LogFolder = r.configuration.LogFolder
+	r.logger.Initialize()
 }
 
 func (r *runner) Fit(dataset *datasets.Dataset) {
