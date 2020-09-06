@@ -18,7 +18,6 @@ func Test_mnist(t *testing.T) {
 	runner.Configure(runners.ModelConfig{
 		Epochs: 1,
 		Loss:   modules.LossSoftmaxCrossEntropy,
-		LogToFile: true,
 	})
 
 	runner.Fit(dataset)
