@@ -28,7 +28,7 @@ func (l *Logger) Initialize() {
 	}
 
 	if _, err := os.Stat(l.LogFolder); os.IsNotExist(err) {
-		err := os.Mkdir(l.LogFolder, 0766)
+		err := os.Mkdir(l.LogFolder, 0777)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -74,7 +74,8 @@ func (l *Logger) writeLog(level, value string) {
 }
 
 func (l *Logger) writeToFile(filename string, value string) {
-	f, err := os.OpenFile(l.LogFolder+"/"+filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0766)
+	f, err := os.OpenFile(l.LogFolder+"/"+filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0777)
+	fmt.Println("wrote to " + l.LogFolder + "/" + filename)
 	if err != nil {
 		log.Fatal(err)
 	}
