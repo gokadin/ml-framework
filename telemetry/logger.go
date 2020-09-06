@@ -75,7 +75,6 @@ func (l *Logger) writeLog(level, value string) {
 
 func (l *Logger) writeToFile(filename string, value string) {
 	f, err := os.OpenFile(l.LogFolder+"/"+filename, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0777)
-	fmt.Println("wrote to " + l.LogFolder + "/" + filename)
 	if err != nil {
 		log.Fatal(err)
 	}
