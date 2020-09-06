@@ -44,13 +44,13 @@ func BuildFromModel(model *models.Model) *runner {
 		runner.logger.Info(fmt.Sprintf("Error getting GPU info: %v", err))
 	}
 
-	runner.logger.Info(fmt.Sprintf("%v\n", gpu))
+	runner.logger.Info(fmt.Sprintf("%v", gpu))
 
 	for _, card := range gpu.GraphicsCards {
-		runner.logger.Info(fmt.Sprintf(" %v\n", card))
+		runner.logger.Info(fmt.Sprintf("%v", card))
 	}
 
-	runner.logger.Info(fmt.Sprintf("CUDA version: %v\n", cu.Version()))
+	runner.logger.Info(fmt.Sprintf("CUDA version: %v", cu.Version()))
 
 	return runner
 }

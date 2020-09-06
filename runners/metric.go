@@ -97,8 +97,8 @@ func (m *metric) receiveEvents() {
 			optimizerTimeAveMs := m.timings["optimizer"].timeAveMs / (int64(m.timings["optimizer"].iteration) + 1)
 			m.timings["optimizer"].timeAveMs = 0
 			m.timings["optimizer"].iteration = 0
-			m.logger.Info(fmt.Sprintf("epoch %d finished in %dms with loss %f\n", m.timings["epoch"].iteration, epochTimeMs, epochLoss))
-			m.logger.Info(fmt.Sprintf("ave batch: %dms ave forward: %dms ave backward: %dms ave optim %dms\n", batchTimeAveMs, forwardTimeAveMs, backwardTimeAveMs, optimizerTimeAveMs))
+			m.logger.Info(fmt.Sprintf("epoch %d finished in %dms with loss %f", m.timings["epoch"].iteration, epochTimeMs, epochLoss))
+			m.logger.Info(fmt.Sprintf("ave batch: %dms ave forward: %dms ave backward: %dms ave optim %dms", batchTimeAveMs, forwardTimeAveMs, backwardTimeAveMs, optimizerTimeAveMs))
 		case batch := <-m.events.batchStarted:
 			m.timings["batch"].iteration = batch
 			m.timings["batch"].timeMs = time.Now().UnixNano()
