@@ -147,5 +147,5 @@ func (r *runner) Run(dataset *datasets.Dataset) {
 
 	graph.Close()
 
-	fmt.Printf("Error: %f Accuracy: %.2f\n", averageLoss(loss), accuracyOneHot(y, target))
+	r.logger.Info(fmt.Sprintf("Error: %f Accuracy: %.2f\n", averageLoss(loss), accuracyOneHot(y, target)))
 }
