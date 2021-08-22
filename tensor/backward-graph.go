@@ -1,7 +1,7 @@
 package tensor
 
 import (
-	"github.com/gokadin/ml-framework/mat"
+	"ml-framework/mat"
 )
 
 type backwardGraph struct {
@@ -14,18 +14,18 @@ type backwardGraph struct {
 }
 
 type backwardMapping struct {
-	tensor *Tensor
-	in chan bool
+	tensor    *Tensor
+	in        chan bool
 	listeners []chan bool
 }
 
 func buildBackwardGraph(derivatives []*Tensor, of *Tensor) *backwardGraph {
 	bg := &backwardGraph{
-		start:     make(chan bool),
-		done:      make(chan bool),
-		kill:      make(chan bool),
-		root:      of,
-		graph:     make(map[int]*backwardMapping),
+		start: make(chan bool),
+		done:  make(chan bool),
+		kill:  make(chan bool),
+		root:  of,
+		graph: make(map[int]*backwardMapping),
 	}
 
 	bg.buildGraph(derivatives, of, nil)
@@ -107,12 +107,12 @@ func (bg *backwardGraph) close() {
 func executeBackwardOp(tensor *Tensor, in, kill chan bool, listeners []chan bool) {
 	for {
 		select {
-		case <- in:
+		case <-in:
 			tensor.backward()
 			for _, listener := range listeners {
 				listener <- true
 			}
-		case <- kill:
+		case <-kill:
 			return
 		}
 	}

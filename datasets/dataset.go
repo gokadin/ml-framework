@@ -1,9 +1,9 @@
 package datasets
 
 import (
-	"github.com/gokadin/ml-framework/mat"
 	"log"
 	"math/rand"
+	"ml-framework/mat"
 )
 
 const TrainingSetX = "trainingSetX"
@@ -14,16 +14,16 @@ const ValidationSetY = "validationSetY"
 const defaultBatchSize = 1
 
 type Dataset struct {
-	name string
-	sets map[string]*set
-	batchSize int
-	batchCounter int
+	name          string
+	sets          map[string]*set
+	batchSize     int
+	batchCounter  int
 	shouldShuffle bool
 }
 
 func NewDataset() *Dataset {
 	return &Dataset{
-		sets: make(map[string]*set),
+		sets:      make(map[string]*set),
 		batchSize: defaultBatchSize,
 	}
 }
@@ -113,7 +113,7 @@ func (d *Dataset) BatchCounter() int {
 func (d *Dataset) shuffleData() {
 	matX := d.sets[TrainingSetX].data.Data()
 	matY := d.sets[TrainingSetY].data.Data()
-	rand.Shuffle(d.sets[TrainingSetX].data.Shape().X * d.sets[TrainingSetX].data.Shape().Y, func(i, j int) {
+	rand.Shuffle(d.sets[TrainingSetX].data.Shape().X*d.sets[TrainingSetX].data.Shape().Y, func(i, j int) {
 		matX[i], matX[j] = matX[j], matX[i]
 		matY[i], matY[j] = matY[i], matY[i]
 	})

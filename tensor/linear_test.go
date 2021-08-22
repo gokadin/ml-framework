@@ -1,16 +1,16 @@
 package tensor
 
 import (
-	"github.com/gokadin/ml-framework/mat"
 	"github.com/stretchr/testify/assert"
+	"ml-framework/mat"
 	"testing"
 )
 
 type linearTestCases struct {
-	name string
-	a *Tensor
-	x *Tensor
-	b *Tensor
+	name     string
+	a        *Tensor
+	x        *Tensor
+	b        *Tensor
 	runOnGpu bool
 }
 

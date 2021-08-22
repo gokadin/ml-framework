@@ -2,13 +2,13 @@ package runners
 
 import (
 	"fmt"
-	"github.com/gokadin/ml-framework/datasets"
-	"github.com/gokadin/ml-framework/models"
-	"github.com/gokadin/ml-framework/modules"
-	"github.com/gokadin/ml-framework/telemetry"
-	"github.com/gokadin/ml-framework/tensor"
 	"github.com/jaypipes/ghw"
 	"gorgonia.org/cu"
+	"ml-framework/datasets"
+	"ml-framework/models"
+	"ml-framework/modules"
+	"ml-framework/telemetry"
+	"ml-framework/tensor"
 )
 
 type runner struct {
@@ -28,7 +28,7 @@ func BuildFromModel(model *models.Model) *runner {
 	runner := &runner{
 		model:         model,
 		configuration: ModelConfig{},
-		logger: telemetry.NewLogger(),
+		logger:        telemetry.NewLogger(),
 	}
 
 	runner.metric = newMetric(&runner.configuration, runner.logger)

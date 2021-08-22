@@ -1,6 +1,6 @@
 package main
 
-import "github.com/gokadin/ml-framework/examples"
+import "ml-framework/examples"
 
 func main() {
 	examples.RunMnist()

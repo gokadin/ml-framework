@@ -1,14 +1,14 @@
 package tensor
 
 import (
-	"github.com/gokadin/ml-framework/mat"
 	"github.com/stretchr/testify/assert"
+	"ml-framework/mat"
 	"testing"
 )
 
 type negTestCases struct {
-	name string
-	a *Tensor
+	name     string
+	a        *Tensor
 	runOnGpu bool
 }
 
@@ -69,4 +69,3 @@ func Test_neg_forward_reshape(t *testing.T) {
 	assert.Equal(t, a.Shape().ToArray(), c.Shape().ToArray())
 	assert.Equal(t, expected, c.ToFloat32())
 }
-

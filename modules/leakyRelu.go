@@ -1,10 +1,10 @@
 package modules
 
 import (
-	"github.com/gokadin/ml-framework/tensor"
+	"ml-framework/tensor"
 )
 
-type leakyRelu struct {}
+type leakyRelu struct{}
 
 func LeakyRelu() *leakyRelu {
 	return &leakyRelu{}

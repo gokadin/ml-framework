@@ -1,13 +1,13 @@
 package tensor
 
 import (
-	"github.com/gokadin/ml-framework/mat"
+	"ml-framework/mat"
 )
 
 const operationPow = "opPow"
 
 type opPow struct {
-	a *Tensor
+	a     *Tensor
 	power float32
 }
 
@@ -36,7 +36,7 @@ func (o *opPow) backward(tensor *Tensor) {
 		o.a.SetGradient(mat.Mul(tensor.GradientToMat32(), mat.MulScalar(o.a.ToMat32f(), 2)).Data())
 		return
 	}
-	o.a.SetGradient(mat.Mul(tensor.GradientToMat32(), mat.MulScalar(mat.Pow(o.a.ToMat32f(), float64(o.power) - 1), o.power)).Data())
+	o.a.SetGradient(mat.Mul(tensor.GradientToMat32(), mat.MulScalar(mat.Pow(o.a.ToMat32f(), float64(o.power)-1), o.power)).Data())
 }
 
 func Pow(a *Tensor, power float32) *Tensor {

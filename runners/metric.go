@@ -2,7 +2,7 @@ package runners
 
 import (
 	"fmt"
-	"github.com/gokadin/ml-framework/telemetry"
+	"ml-framework/telemetry"
 	"strconv"
 	"time"
 )

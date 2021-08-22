@@ -1,6 +1,6 @@
 FROM iron/go:dev
 
-ENV SRC_DIR=/go/src/github.com/gokadin/ml-framework
+ENV SRC_DIR=/go/src/ml-framework
 
 WORKDIR $SRC_DIR
 

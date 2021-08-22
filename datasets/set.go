@@ -1,6 +1,6 @@
 package datasets
 
-import "github.com/gokadin/ml-framework/mat"
+import "ml-framework/mat"
 
 type set struct {
 	data *mat.Mat32f

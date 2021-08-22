@@ -1,10 +1,10 @@
 package modules
 
 import (
-	"github.com/gokadin/ml-framework/mat"
-	"github.com/gokadin/ml-framework/tensor"
 	"github.com/stretchr/testify/assert"
 	"math"
+	"ml-framework/mat"
+	"ml-framework/tensor"
 	"testing"
 )
 

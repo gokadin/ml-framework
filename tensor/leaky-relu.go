@@ -1,7 +1,7 @@
 package tensor
 
 import (
-	"github.com/gokadin/ml-framework/mat"
+	"ml-framework/mat"
 )
 
 const operationLeakyRelu = "opLeakyRelu"

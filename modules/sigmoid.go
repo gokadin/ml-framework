@@ -1,10 +1,10 @@
 package modules
 
 import (
-	"github.com/gokadin/ml-framework/tensor"
+	"ml-framework/tensor"
 )
 
-type sigmoid struct {}
+type sigmoid struct{}
 
 func Sigmoid() *sigmoid {
 	return &sigmoid{}
@@ -21,4 +21,3 @@ func (d *sigmoid) GetParameters() []*tensor.Tensor {
 func (d *sigmoid) Copy() Module {
 	return Sigmoid()
 }
-

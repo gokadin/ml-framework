@@ -6,7 +6,7 @@ Currently the main purpose is for learning how to implement each of a major fram
 
 ## Documentation
 
-[https://github.com/gokadin/ml-framework/wiki](https://github.com/gokadin/ml-framework/wiki)
+[https://ml-framework/wiki](https://ml-framework/wiki)
 
 ## Features
 

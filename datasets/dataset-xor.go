@@ -1,8 +1,8 @@
 package datasets
 
 import (
-	"github.com/gokadin/ml-framework/mat"
 	"log"
+	"ml-framework/mat"
 )
 
 const xorName = "xor"

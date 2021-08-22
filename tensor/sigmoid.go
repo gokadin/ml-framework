@@ -1,8 +1,8 @@
 package tensor
 
 import (
-	"github.com/gokadin/ml-framework/mat"
 	"math"
+	"ml-framework/mat"
 )
 
 const operationSigmoid = "opSigmoid"

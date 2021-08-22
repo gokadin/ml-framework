@@ -1,9 +1,9 @@
 package models
 
 import (
-	"github.com/gokadin/ml-framework/modules"
-	"github.com/gokadin/ml-framework/tensor"
 	"math/rand"
+	"ml-framework/modules"
+	"ml-framework/tensor"
 	"runtime"
 	"time"
 )

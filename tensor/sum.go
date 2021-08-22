@@ -5,14 +5,14 @@ import "C"
 
 import (
 	"fmt"
-	"github.com/gokadin/ml-framework/mat"
+	"ml-framework/mat"
 )
 
 const operationSum = "opSum"
 
 type opSum struct {
-	a *Tensor
-	axis int
+	a             *Tensor
+	axis          int
 	originalShape Shape
 }
 

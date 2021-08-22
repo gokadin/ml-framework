@@ -1,16 +1,16 @@
 package tensor
 
 import (
-	"github.com/gokadin/ml-framework/mat"
 	"github.com/stretchr/testify/assert"
+	"ml-framework/mat"
 	"testing"
 )
 
 type expandTestCases struct {
-	name string
-	a *Tensor
-	axis int
-	copies int
+	name     string
+	a        *Tensor
+	axis     int
+	copies   int
 	runOnGpu bool
 }
 

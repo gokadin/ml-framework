@@ -1,30 +1,30 @@
 package runners
 
 import (
-	"github.com/gokadin/ml-framework/models"
-	"github.com/gokadin/ml-framework/modules"
+	"ml-framework/models"
+	"ml-framework/modules"
 )
 
 const (
-	defaultEpochs = 0
-	defaultMaxError = 0.001
+	defaultEpochs           = 0
+	defaultMaxError         = 0.001
 	defaultValidOutputRange = 0.1
-	defaultLearningRate = 0.001
-	defaultOptimizerType = models.OptimizerAdam
-	defaultLoss = modules.LossMeanSquared
-	defaultLogFolder = "logs"
+	defaultLearningRate     = 0.001
+	defaultOptimizerType    = models.OptimizerAdam
+	defaultLoss             = modules.LossMeanSquared
+	defaultLogFolder        = "logs"
 )
 
 type ModelConfig struct {
-	Epochs int
-	MaxError float32
-	ValidOutputRange float32
-	Optimizer string
+	Epochs             int
+	MaxError           float32
+	ValidOutputRange   float32
+	Optimizer          string
 	OptimizerOverrides []float32
-	LearningRate float32
-	Loss string
-	LogFolder string
-	LogToFile bool
+	LearningRate       float32
+	Loss               string
+	LogFolder          string
+	LogToFile          bool
 }
 
 func (mc *ModelConfig) populateDefaults() {

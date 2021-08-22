@@ -1,20 +1,20 @@
 package datasets
 
 import (
-	"github.com/gokadin/ml-framework/mat"
 	"log"
+	"ml-framework/mat"
 )
 
 func bytesToMat(bytes []byte, numOfSamples, headerOffset int) *mat.Mat32f {
-	if (len(bytes) - headerOffset) % numOfSamples != 0 {
+	if (len(bytes)-headerOffset)%numOfSamples != 0 {
 		log.Fatal("Could not transform raw data into usable Dataset")
 	}
 
 	sampleLength := (len(bytes) - headerOffset) / numOfSamples
-	data := make([]float32, numOfSamples * sampleLength)
+	data := make([]float32, numOfSamples*sampleLength)
 	for i := 0; i < numOfSamples; i++ {
 		for j := 0; j < sampleLength; j++ {
-			data[i * sampleLength + j] = float32(bytes[headerOffset + (i * sampleLength + j)])
+			data[i*sampleLength+j] = float32(bytes[headerOffset+(i*sampleLength+j)])
 		}
 	}
 
@@ -31,9 +31,9 @@ func oneHotEncode(m *mat.Mat32f, depth int) *mat.Mat32f {
 		value := int(result.At(i * depth))
 		for j := 0; j < depth; j++ {
 			if value == j {
-				result.Set(i * depth + j, 1)
+				result.Set(i*depth+j, 1)
 			} else {
-				result.Set(i * depth + j, 0)
+				result.Set(i*depth+j, 0)
 			}
 		}
 	}

@@ -1,14 +1,14 @@
 package tensor
 
 import (
-	"github.com/gokadin/ml-framework/mat"
 	"github.com/stretchr/testify/assert"
+	"ml-framework/mat"
 	"testing"
 )
 
 type softmaxTestCases struct {
-	name string
-	a *Tensor
+	name     string
+	a        *Tensor
 	runOnGpu bool
 }
 

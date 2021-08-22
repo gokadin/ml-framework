@@ -1,6 +1,6 @@
 package tensor
 
-import "github.com/gokadin/ml-framework/mat"
+import "ml-framework/mat"
 
 const operationSub = "opSub"
 

@@ -1,19 +1,19 @@
 package models
 
 import (
-	"github.com/gokadin/ml-framework/mat"
-	"github.com/gokadin/ml-framework/tensor"
 	"github.com/stretchr/testify/assert"
+	"ml-framework/mat"
+	"ml-framework/tensor"
 	"testing"
 )
 
 const (
 	someNonDefaultLearningRate float32 = 5.0
-	someNonDefaultMomentum float32 = 4.0
-	someNonDefaultBeta1 float32 = 6.0
-	someNonDefaultBeta2 float32 = 7.0
-	someNonDefaultEpsStable float32 = 8.0
-	someBatchSize = 3
+	someNonDefaultMomentum     float32 = 4.0
+	someNonDefaultBeta1        float32 = 6.0
+	someNonDefaultBeta2        float32 = 7.0
+	someNonDefaultEpsStable    float32 = 8.0
+	someBatchSize                      = 3
 )
 
 func Test_defaultOptimizer_initializesWithDefaultLearningRate(t *testing.T) {
@@ -36,7 +36,7 @@ func Test_defaultOptimizer_update(t *testing.T) {
 	graph := tensor.NewGraph()
 	graph.Forward(t3)
 	graph.Backward(t3, t1)
-	expected := mat.Sub(t1.Data(), mat.MulScalar(t1.Gradient(), o.learningRate / float32(someBatchSize)))
+	expected := mat.Sub(t1.Data(), mat.MulScalar(t1.Gradient(), o.learningRate/float32(someBatchSize)))
 
 	o.Update(t1, someBatchSize, 0)
 

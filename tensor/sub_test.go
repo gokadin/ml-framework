@@ -1,15 +1,15 @@
 package tensor
 
 import (
-	"github.com/gokadin/ml-framework/mat"
 	"github.com/stretchr/testify/assert"
+	"ml-framework/mat"
 	"testing"
 )
 
 type subTestCases struct {
-	name string
-	a *Tensor
-	b *Tensor
+	name     string
+	a        *Tensor
+	b        *Tensor
 	runOnGpu bool
 }
 
@@ -79,5 +79,3 @@ func Test_sub_forward_reshape(t *testing.T) {
 	assert.Equal(t, a.Shape().ToArray(), c.Shape().ToArray())
 	assert.Equal(t, expected, c.ToFloat32())
 }
-
-

@@ -3,31 +3,31 @@ package models
 import (
 	"bufio"
 	"fmt"
-	"github.com/gokadin/ml-framework/mat"
-	"github.com/gokadin/ml-framework/modules"
 	"log"
+	"ml-framework/mat"
+	"ml-framework/modules"
 	"os"
 	"strconv"
 	"strings"
 )
 
 const (
-	modelStoreRoot                    = ".cache/models"
-	maxFloatsPerLine				  = 300
-	persisterTypeKey                  = "TYPE"
-	persisterModelType                = "MODEL"
-	persisterModelModuleKey           = "MODULE"
-	persisterModelModuleEndKey        = "MODULE_END"
-	persisterModelModuleSHAPEKEY      = "SHAPE"
-	persisterModelModuleWeightsBeginKey    = "WEIGHTS_BEGIN"
-	persisterModelModuleWeightsKey    = "WEIGHTS"
-	persisterModelModuleBiasesBeginKey     = "BIASES_BEGIN"
-	persisterModelModuleBiasesKey     = "BIASES"
+	modelStoreRoot                      = ".cache/models"
+	maxFloatsPerLine                    = 300
+	persisterTypeKey                    = "TYPE"
+	persisterModelType                  = "MODEL"
+	persisterModelModuleKey             = "MODULE"
+	persisterModelModuleEndKey          = "MODULE_END"
+	persisterModelModuleSHAPEKEY        = "SHAPE"
+	persisterModelModuleWeightsBeginKey = "WEIGHTS_BEGIN"
+	persisterModelModuleWeightsKey      = "WEIGHTS"
+	persisterModelModuleBiasesBeginKey  = "BIASES_BEGIN"
+	persisterModelModuleBiasesKey       = "BIASES"
 )
 
 /*
 	THIS IS NOT FUNCTIONAL
- */
+*/
 
 func saveModel(model *Model, name string) {
 	_ = os.Mkdir(modelStoreRoot, os.ModePerm)
@@ -90,7 +90,7 @@ func Restore(name string) *Model {
 			moduleShape.Y, _ = strconv.Atoi(parameters[1])
 			break
 		case persisterModelModuleWeightsBeginKey:
-			moduleWeights = make([]float32, moduleShape.X * moduleShape.Y)
+			moduleWeights = make([]float32, moduleShape.X*moduleShape.Y)
 			moduleWeightsIndex = 0
 			break
 		case persisterModelModuleWeightsKey:
@@ -139,14 +139,14 @@ func modelToString(model *Model) string {
 		content += fmt.Sprintf("%s: %d %d\n", persisterModelModuleSHAPEKEY, parameters[0].Shape().X, parameters[0].Shape().Y)
 		content += fmt.Sprintf("%s", persisterModelModuleWeightsBeginKey)
 		for i, value := range parameters[0].ToFloat32() {
-			if i % maxFloatsPerLine == 0 {
+			if i%maxFloatsPerLine == 0 {
 				content += fmt.Sprintf("\n%s: ", persisterModelModuleWeightsKey)
 			}
 			content += fmt.Sprintf("%g ", value)
 		}
 		content += fmt.Sprintf("\n%s", persisterModelModuleBiasesBeginKey)
 		for i, value := range parameters[1].ToFloat32() {
-			if i % maxFloatsPerLine == 0 {
+			if i%maxFloatsPerLine == 0 {
 				content += fmt.Sprintf("\n%s: ", persisterModelModuleBiasesKey)
 			}
 			content += fmt.Sprintf("%g ", value)

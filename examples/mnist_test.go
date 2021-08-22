@@ -1,9 +1,9 @@
 package examples
 
 import (
-	"github.com/gokadin/ml-framework/datasets"
-	"github.com/gokadin/ml-framework/modules"
-	"github.com/gokadin/ml-framework/runners"
+	"ml-framework/datasets"
+	"ml-framework/modules"
+	"ml-framework/runners"
 	"testing"
 )
 
@@ -16,8 +16,8 @@ func Test_mnist(t *testing.T) {
 		modules.Linear(10))
 
 	runner.Configure(runners.ModelConfig{
-		Epochs: 1,
-		Loss:   modules.LossSoftmaxCrossEntropy,
+		Epochs:    1,
+		Loss:      modules.LossSoftmaxCrossEntropy,
 		LogToFile: true,
 	})
 

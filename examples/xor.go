@@ -1,9 +1,9 @@
 package examples
 
 import (
-	"github.com/gokadin/ml-framework/datasets"
-	"github.com/gokadin/ml-framework/modules"
-	"github.com/gokadin/ml-framework/runners"
+	"ml-framework/datasets"
+	"ml-framework/modules"
+	"ml-framework/runners"
 )
 
 func RunXor() {
@@ -15,7 +15,7 @@ func RunXor() {
 		modules.Linear(1))
 
 	runner.Configure(runners.ModelConfig{
-		Loss:      modules.LossMeanSquared,
+		Loss: modules.LossMeanSquared,
 	})
 
 	runner.Fit(dataset)

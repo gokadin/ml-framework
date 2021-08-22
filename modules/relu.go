@@ -1,10 +1,10 @@
 package modules
 
 import (
-	"github.com/gokadin/ml-framework/tensor"
+	"ml-framework/tensor"
 )
 
-type relu struct {}
+type relu struct{}
 
 func Relu() *relu {
 	return &relu{}
@@ -21,4 +21,3 @@ func (d *relu) GetParameters() []*tensor.Tensor {
 func (d *relu) Copy() Module {
 	return Relu()
 }
-

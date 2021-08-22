@@ -3,29 +3,29 @@ package persistence
 import (
 	"bufio"
 	"fmt"
-	"github.com/gokadin/ml-framework/mat"
 	"log"
+	"ml-framework/mat"
 	"os"
 	"strconv"
 	"strings"
 )
 
 const (
-	modelStoreRoot                    = ".cache/models"
-	maxFloatsPerLine				  = 300
-	persisterTypeKey                  = "TYPE"
-	persisterModelType                = "MODEL"
-	persisterModelConfigCriterionKey  = "CRITERION"
-	persisterModelConfigOptimizerKey  = "OPTIMIZER"
-	persisterModelConfigEpochsKey     = "EPOCHS"
-	persisterModelModuleKey           = "MODULE"
-	persisterModelModuleEndKey        = "MODULE_END"
-	persisterModelModuleSHAPEKEY      = "SHAPE"
-	persisterModelModuleActivationKey = "ACTIVATION"
-	persisterModelModuleWeightsBeginKey    = "WEIGHTS_BEGIN"
-	persisterModelModuleWeightsKey    = "WEIGHTS"
-	persisterModelModuleBiasesBeginKey     = "BIASES_BEGIN"
-	persisterModelModuleBiasesKey     = "BIASES"
+	modelStoreRoot                      = ".cache/models"
+	maxFloatsPerLine                    = 300
+	persisterTypeKey                    = "TYPE"
+	persisterModelType                  = "MODEL"
+	persisterModelConfigCriterionKey    = "CRITERION"
+	persisterModelConfigOptimizerKey    = "OPTIMIZER"
+	persisterModelConfigEpochsKey       = "EPOCHS"
+	persisterModelModuleKey             = "MODULE"
+	persisterModelModuleEndKey          = "MODULE_END"
+	persisterModelModuleSHAPEKEY        = "SHAPE"
+	persisterModelModuleActivationKey   = "ACTIVATION"
+	persisterModelModuleWeightsBeginKey = "WEIGHTS_BEGIN"
+	persisterModelModuleWeightsKey      = "WEIGHTS"
+	persisterModelModuleBiasesBeginKey  = "BIASES_BEGIN"
+	persisterModelModuleBiasesKey       = "BIASES"
 )
 
 func BuildDefinition(name string) *modelDefinition {
@@ -75,7 +75,7 @@ func BuildDefinition(name string) *modelDefinition {
 			moduleActivationFunction = strings.TrimSpace(split[1])
 			break
 		case persisterModelModuleWeightsBeginKey:
-			moduleWeights = make([]float32, moduleShape.X * moduleShape.Y)
+			moduleWeights = make([]float32, moduleShape.X*moduleShape.Y)
 			moduleWeightsIndex = 0
 			break
 		case persisterModelModuleWeightsKey:
@@ -100,11 +100,11 @@ func BuildDefinition(name string) *modelDefinition {
 			break
 		case persisterModelModuleEndKey:
 			module := &moduleDefinition{
-				Type: "dense",
-				Shape: &ShapeDefinition{X: moduleShape.X, Y: moduleShape.Y},
+				Type:       "dense",
+				Shape:      &ShapeDefinition{X: moduleShape.X, Y: moduleShape.Y},
 				Activation: moduleActivationFunction,
-				Weights: moduleWeights,
-				Biases: moduleBiases,
+				Weights:    moduleWeights,
+				Biases:     moduleBiases,
 			}
 			model.Modules = append(model.Modules, module)
 			break
@@ -115,17 +115,17 @@ func BuildDefinition(name string) *modelDefinition {
 }
 
 type modelDefinition struct {
-	Name string `json:"name"`
-	Modules []*moduleDefinition `json:"modules"`
+	Name          string                   `json:"name"`
+	Modules       []*moduleDefinition      `json:"modules"`
 	Configuration *configurationDefinition `json:"configuration"`
 }
 
 type moduleDefinition struct {
-	Type string `json:"type"`
-	Shape *ShapeDefinition `json:"shape"`
-	Activation string `json:"activation"`
-	Weights []float32 `json:"weights"`
-	Biases []float32 `json:"biases"`
+	Type       string           `json:"type"`
+	Shape      *ShapeDefinition `json:"shape"`
+	Activation string           `json:"activation"`
+	Weights    []float32        `json:"weights"`
+	Biases     []float32        `json:"biases"`
 }
 
 type ShapeDefinition struct {
@@ -134,7 +134,7 @@ type ShapeDefinition struct {
 }
 
 type configurationDefinition struct {
-	Loss string `json:"loss"`
+	Loss      string `json:"loss"`
 	Optimizer string `json:"optimizer"`
-	Epochs int `json:"epochs"`
+	Epochs    int    `json:"epochs"`
 }

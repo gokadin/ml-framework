@@ -6,14 +6,14 @@ import "C"
 
 import (
 	"fmt"
-	"github.com/gokadin/ml-framework/mat"
+	"ml-framework/mat"
 )
 
 const operationExpand = "opExpand"
 
 type opExpand struct {
-	a *Tensor
-	axis int
+	a      *Tensor
+	axis   int
 	copies int
 }
 

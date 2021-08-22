@@ -1,8 +1,8 @@
 package modules
 
 import (
-	"github.com/gokadin/ml-framework/tensor"
 	"log"
+	"ml-framework/tensor"
 )
 
 const (
@@ -26,7 +26,7 @@ func NewCriterion(loss string) Criterion {
 	return nil
 }
 
-type meanSquaredCriterion struct {}
+type meanSquaredCriterion struct{}
 
 func newMeanSquaredCriterion() *meanSquaredCriterion {
 	return &meanSquaredCriterion{}
@@ -36,7 +36,7 @@ func (msc *meanSquaredCriterion) Forward(pred, target *tensor.Tensor) *tensor.Te
 	return tensor.DivScalar(tensor.Sum(tensor.Pow(tensor.Sub(pred, target), 2), 0), float32(pred.Shape().X))
 }
 
-type crossEntropyCriterion struct {}
+type crossEntropyCriterion struct{}
 
 func newCrossEntropyCriterion() *crossEntropyCriterion {
 	return &crossEntropyCriterion{}

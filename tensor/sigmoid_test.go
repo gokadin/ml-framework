@@ -1,15 +1,15 @@
 package tensor
 
 import (
-	"github.com/gokadin/ml-framework/mat"
 	"github.com/stretchr/testify/assert"
 	"math"
+	"ml-framework/mat"
 	"testing"
 )
 
 type sigmoidTestCases struct {
-	name string
-	a *Tensor
+	name     string
+	a        *Tensor
 	runOnGpu bool
 }
 
@@ -63,4 +63,3 @@ func Test_sigmoid_backward(t *testing.T) {
 		})
 	}
 }
-

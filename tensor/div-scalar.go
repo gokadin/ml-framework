@@ -1,13 +1,13 @@
 package tensor
 
 import (
-	"github.com/gokadin/ml-framework/mat"
+	"ml-framework/mat"
 )
 
 const operationDivScalar = "opDivScalar"
 
 type opDivScalar struct {
-	a *Tensor
+	a      *Tensor
 	scalar float32
 }
 

@@ -1,15 +1,15 @@
 package tensor
 
 import (
-	"github.com/gokadin/ml-framework/mat"
 	"github.com/stretchr/testify/assert"
+	"ml-framework/mat"
 	"testing"
 )
 
 type powTestCases struct {
-	name string
-	a *Tensor
-	power float32
+	name     string
+	a        *Tensor
+	power    float32
 	runOnGpu bool
 }
 
@@ -55,7 +55,7 @@ func Test_pow_backward(t *testing.T) {
 			c.RunOnGpu(test.runOnGpu)
 			c.forward()
 			c.SetGradient(mat.Random32f(c.Shape().Size()))
-			expectedGrad := mat.Mul(c.GradientToMat32(), mat.MulScalar(mat.Pow(test.a.ToMat32f(), float64(test.power) - 1), test.power)).Data()
+			expectedGrad := mat.Mul(c.GradientToMat32(), mat.MulScalar(mat.Pow(test.a.ToMat32f(), float64(test.power)-1), test.power)).Data()
 
 			c.backward()
 
@@ -63,4 +63,3 @@ func Test_pow_backward(t *testing.T) {
 		})
 	}
 }
-

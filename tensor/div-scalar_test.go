@@ -1,15 +1,15 @@
 package tensor
 
 import (
-	"github.com/gokadin/ml-framework/mat"
 	"github.com/stretchr/testify/assert"
+	"ml-framework/mat"
 	"testing"
 )
 
 type divScalarTestCases struct {
-	name string
-	a *Tensor
-	scalar float32
+	name     string
+	a        *Tensor
+	scalar   float32
 	runOnGpu bool
 }
 

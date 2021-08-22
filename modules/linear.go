@@ -2,7 +2,7 @@ package modules
 
 import (
 	"fmt"
-	"github.com/gokadin/ml-framework/tensor"
+	"ml-framework/tensor"
 )
 
 type linear struct {

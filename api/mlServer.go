@@ -3,10 +3,9 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gokadin/ml-framework/persistence"
 	"github.com/gorilla/mux"
-	"github.com/gorilla/websocket"
 	"log"
+	"ml-framework/persistence"
 	"net/http"
 )
 
@@ -17,7 +16,7 @@ type MLServer struct {
 func NewMLServer() *MLServer {
 	return &MLServer{
 		upgrader: websocket.Upgrader{
-			ReadBufferSize: 1024,
+			ReadBufferSize:  1024,
 			WriteBufferSize: 1024,
 		},
 	}
@@ -66,7 +65,7 @@ func getProjects(w http.ResponseWriter, r *http.Request) {
 }
 
 type project struct {
-	Id int `json:"id"`
+	Id   int    `json:"id"`
 	Name string `json:"name"`
 }
 
@@ -76,4 +75,3 @@ func describe(w http.ResponseWriter, r *http.Request) {
 
 	_ = json.NewEncoder(w).Encode(persistence.BuildDefinition("experimental-rl-batch"))
 }
-

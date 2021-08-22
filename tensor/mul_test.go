@@ -1,15 +1,15 @@
 package tensor
 
 import (
-	"github.com/gokadin/ml-framework/mat"
 	"github.com/stretchr/testify/assert"
+	"ml-framework/mat"
 	"testing"
 )
 
 type mulTestCase struct {
-	name string
-	a *Tensor
-	b *Tensor
+	name     string
+	a        *Tensor
+	b        *Tensor
 	runOnGpu bool
 }
 
@@ -64,4 +64,3 @@ func Test_mul_backward(t *testing.T) {
 		})
 	}
 }
-

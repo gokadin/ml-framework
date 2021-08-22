@@ -1,7 +1,7 @@
 package modules
 
 import (
-	"github.com/gokadin/ml-framework/tensor"
+	"ml-framework/tensor"
 )
 
 type Module interface {
