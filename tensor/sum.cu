@@ -35,7 +35,7 @@ __global__ void sum1(float *a, float *target, int width, int height)
 
 extern "C" {
 
-    void gpu_sum_forward(TENSOR *a, int axis, TENSOR *target) {
+    __declspec(dllexport) void gpu_sum_forward(TENSOR *a, int axis, TENSOR *target) {
         float* gpu_a;
         size_t a_size = a->mat_shape->size * sizeof(float);
         checkCudaErr(cudaMalloc((void**)&gpu_a, a_size));

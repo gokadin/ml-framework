@@ -17,7 +17,7 @@ __global__ void add(float *a, float* b, float *target, int size)
 
 extern "C" {
 
-    int gpu_add_forward(TENSOR *target, TENSOR* a, TENSOR *b) {
+    __declspec(dllexport) int gpu_add_forward(TENSOR *target, TENSOR* a, TENSOR *b) {
         float* gpu_a;
         size_t a_size = a->mat_shape->size * sizeof(float);
         checkCudaErr(cudaMalloc((void**)&gpu_a, a_size));

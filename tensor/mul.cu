@@ -28,7 +28,7 @@ __global__ void mul_grad(float *a, float *ag, float *b, float *bg, float *cg, in
 
 extern "C" {
 
-    int gpu_mul_forward(TENSOR *target, TENSOR* a, TENSOR *b) {
+    __declspec(dllexport) int gpu_mul_forward(TENSOR *target, TENSOR* a, TENSOR *b) {
         float* gpu_a;
         size_t a_size = a->mat_shape->size * sizeof(float);
         checkCudaErr(cudaMalloc((void**)&gpu_a, a_size));
@@ -57,7 +57,7 @@ extern "C" {
         return 0;
     }
 
-    int gpu_mul_backward(TENSOR *target, TENSOR* a, TENSOR *b) {
+    __declspec(dllexport) int gpu_mul_backward(TENSOR *target, TENSOR* a, TENSOR *b) {
         float* gpu_a;
         size_t a_size = a->mat_shape->size * sizeof(float);
         checkCudaErr(cudaMalloc((void**)&gpu_a, a_size));

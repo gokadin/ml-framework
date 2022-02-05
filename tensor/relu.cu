@@ -35,7 +35,7 @@ __global__ void relu_grad(float *c, float *cg, float *ag, int size)
 
 extern "C" {
 
-    void gpu_relu_forward(TENSOR *target, TENSOR *a) {
+    __declspec(dllexport) void gpu_relu_forward(TENSOR *target, TENSOR *a) {
         float* gpu_a;
         size_t a_size = a->mat_shape->size * sizeof(float);
         checkCudaErr(cudaMalloc((void**)&gpu_a, a_size));
@@ -56,7 +56,7 @@ extern "C" {
         cudaFree(gpu_target);
     }
 
-    void gpu_relu_backward(TENSOR *tensor, TENSOR *a) {
+    __declspec(dllexport) void gpu_relu_backward(TENSOR *tensor, TENSOR *a) {
         float* gpu_tensor;
         size_t tensor_size = tensor->mat_shape->size * sizeof(float);
         checkCudaErr(cudaMalloc((void**)&gpu_tensor, tensor_size));

@@ -25,7 +25,7 @@ __global__ void linear(float *a, float *x, float *b, float *c, int m, int n, int
 
 extern "C" {
 
-    int gpu_linear_forward(const TENSOR *target, const TENSOR *a, const TENSOR* x, TENSOR *b)
+    __declspec(dllexport) int gpu_linear_forward(const TENSOR *target, const TENSOR *a, const TENSOR* x, TENSOR *b)
     {
         float* gpu_a;
         size_t a_size = a->mat_shape->size * sizeof(float);
@@ -61,7 +61,7 @@ extern "C" {
         return 0;
     }
 
-    int gpu_linear_backward(const TENSOR *tensor, const TENSOR *a, const TENSOR *x, TENSOR *b)
+    __declspec(dllexport) int gpu_linear_backward(const TENSOR *tensor, const TENSOR *a, const TENSOR *x, TENSOR *b)
     {
         float* gpu_tensor_grad;
         size_t gpu_tensor_grad_size = tensor->grad_shape->size * sizeof(float);

@@ -27,7 +27,7 @@ __global__ void softmax(float *a, float *target, int x, int y)
 
 extern "C" {
 
-    void gpu_softmax_forward(TENSOR *target, TENSOR *a) {
+    __declspec(dllexport) void gpu_softmax_forward(TENSOR *target, TENSOR *a) {
         float* gpu_a;
         size_t a_size = a->mat_shape->size * sizeof(float);
         checkCudaErr(cudaMalloc((void**)&gpu_a, a_size));

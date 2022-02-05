@@ -3,7 +3,6 @@ package runners
 import (
 	"fmt"
 	"github.com/jaypipes/ghw"
-	"gorgonia.org/cu"
 	"ml-framework/datasets"
 	"ml-framework/models"
 	"ml-framework/modules"
@@ -46,7 +45,7 @@ func BuildFromModel(model *models.Model) *runner {
 		runner.logger.Info(fmt.Sprintf("%v", card))
 	}
 
-	runner.logger.Info(fmt.Sprintf("CUDA version: %v", cu.Version()))
+	//runner.logger.Info(fmt.Sprintf("CUDA version: %v", cu.Version()))
 
 	return runner
 }

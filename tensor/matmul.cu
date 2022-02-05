@@ -66,7 +66,7 @@ __global__ void matmul_b_grad(float *cg, float *a, float *bg, int m, int n, int 
 
 extern "C" {
 
-    void gpu_matmul_forward(const TENSOR *target, const TENSOR *a, TENSOR *b)
+    __declspec(dllexport) void gpu_matmul_forward(const TENSOR *target, const TENSOR *a, TENSOR *b)
     {
         float* gpu_a;
         size_t gpu_a_size = a->mat_shape->size * sizeof(float);
@@ -94,7 +94,7 @@ extern "C" {
         cudaFree(gpu_target);
     }
 
-    void gpu_matmul_backward(const TENSOR *tensor, const TENSOR *a, TENSOR *b)
+    __declspec(dllexport) void gpu_matmul_backward(const TENSOR *tensor, const TENSOR *a, TENSOR *b)
     {
         float* gpu_tensor_grad;
         size_t gpu_tensor_grad_size = tensor->grad_shape->size * sizeof(float);

@@ -32,7 +32,7 @@ __global__ void expand_1(float *a, float *target, int copies, int size_a_x)
 
 extern "C" {
 
-    int gpu_expand_forward(TENSOR *target, TENSOR *a, int axis, int copies) {
+    __declspec(dllexport) int gpu_expand_forward(TENSOR *target, TENSOR *a, int axis, int copies) {
         int size_a = a->mat_shape->x * a->mat_shape->y;
         int size_target = 0;
         if (axis == 0) {
