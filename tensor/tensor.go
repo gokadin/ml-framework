@@ -1,6 +1,7 @@
 package tensor
 
 import (
+	"encoding/json"
 	"ml-framework/mat"
 	"os"
 	"strconv"
@@ -32,6 +33,12 @@ func New() *Tensor {
 		id: nextId,
 	}
 
+	t.init()
+
+	return t
+}
+
+func (t *Tensor) init() {
 	t._tensor = C.alloc_tensor(C.int(nextId))
 	t.initializeNativeTensor([]int{1, 1})
 	//runtime.SetFinalizer(t, free)
@@ -43,8 +50,6 @@ func New() *Tensor {
 			t._tensor.run_on_gpu = C.bool(false)
 		}
 	}
-
-	return t
 }
 
 func OfShape(shape ...int) *Tensor {
@@ -240,4 +245,29 @@ func (t *Tensor) backward() {
 	}
 	t.op.backward(t)
 	t.ready = false
+}
+
+func (t *Tensor) MarshalJSON() ([]byte, error) {
+	return json.Marshal(MarshaledTensor{
+		Name:  t.name,
+		Shape: t.Shape(),
+		Data:  t.ToFloat32(),
+	})
+}
+
+func (t *Tensor) UnmarshalJSON(b []byte) error {
+	marshaledTensor := MarshaledTensor{}
+	json.Unmarshal(b, &marshaledTensor)
+
+	t.init()
+	t.Reshape(marshaledTensor.Shape.X, marshaledTensor.Shape.Y)
+	t.SetData(marshaledTensor.Data)
+
+	return nil
+}
+
+type MarshaledTensor struct {
+	Name  string    `json:"name"`
+	Shape Shape     `json:"shape"`
+	Data  []float32 `json:"data"`
 }

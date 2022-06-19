@@ -4,10 +4,14 @@ import (
 	"ml-framework/tensor"
 )
 
-type relu struct{}
+type relu struct {
+	Type string `json:"type"`
+}
 
 func Relu() *relu {
-	return &relu{}
+	return &relu{
+		Type: "relu",
+	}
 }
 
 func (d *relu) Build(input *tensor.Tensor) *tensor.Tensor {
@@ -20,4 +24,8 @@ func (d *relu) GetParameters() []*tensor.Tensor {
 
 func (d *relu) Copy() Module {
 	return Relu()
+}
+
+func (d *relu) GetType() string {
+	return d.Type
 }

@@ -5,37 +5,43 @@ import (
 	"ml-framework/tensor"
 )
 
-type linear struct {
-	weights       *tensor.Tensor
-	bias          *tensor.Tensor
-	unitCount     int
-	isInitialized bool
+type LinearModule struct {
+	Type          string         `json:"type"`
+	Weights       *tensor.Tensor `json:"weights"`
+	Bias          *tensor.Tensor `json:"bias"`
+	UnitCount     int            `json:"unit_count"`
+	IsInitialized bool           `json:"is_initialized"`
 }
 
-func Linear(unitCount int) *linear {
-	return &linear{
-		unitCount: unitCount,
+func Linear(unitCount int) *LinearModule {
+	return &LinearModule{
+		Type:      "LinearModule",
+		UnitCount: unitCount,
 	}
 }
 
-func (d *linear) Build(input *tensor.Tensor) *tensor.Tensor {
-	if !d.isInitialized {
-		d.weights = tensor.From(tensor.InitXavier, input.Shape().Y, d.unitCount).SetName(fmt.Sprintf("linear layer (%d) weights", d.unitCount))
-		d.bias = tensor.Zeros(1, d.unitCount).SetName(fmt.Sprintf("linear layer (%d) biases", d.unitCount))
-		d.isInitialized = true
+func (d *LinearModule) Build(input *tensor.Tensor) *tensor.Tensor {
+	if !d.IsInitialized {
+		d.Weights = tensor.From(tensor.InitXavier, input.Shape().Y, d.UnitCount).SetName(fmt.Sprintf("LinearModule layer (%d) weights", d.UnitCount))
+		d.Bias = tensor.Zeros(1, d.UnitCount).SetName(fmt.Sprintf("LinearModule layer (%d) biases", d.UnitCount))
+		d.IsInitialized = true
 	}
 
-	return tensor.Linear(input, d.weights, d.bias)
+	return tensor.Linear(input, d.Weights, d.Bias)
 }
 
-func (d *linear) GetParameters() []*tensor.Tensor {
-	return []*tensor.Tensor{d.weights, d.bias}
+func (d *LinearModule) GetParameters() []*tensor.Tensor {
+	return []*tensor.Tensor{d.Weights, d.Bias}
 }
 
-func (d *linear) Copy() Module {
-	module := Linear(d.unitCount)
-	module.isInitialized = d.isInitialized
-	module.weights = d.weights.Copy()
-	module.bias = d.bias.Copy()
+func (d *LinearModule) Copy() Module {
+	module := Linear(d.UnitCount)
+	module.IsInitialized = d.IsInitialized
+	module.Weights = d.Weights.Copy()
+	module.Bias = d.Bias.Copy()
 	return module
+}
+
+func (d *LinearModule) GetType() string {
+	return d.Type
 }

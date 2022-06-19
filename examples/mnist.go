@@ -2,6 +2,7 @@ package examples
 
 import (
 	"ml-framework/datasets"
+	"ml-framework/models"
 	"ml-framework/modules"
 	"ml-framework/runners"
 )
@@ -15,10 +16,20 @@ func RunMnist() {
 		modules.Linear(10))
 
 	runner.Configure(runners.ModelConfig{
-		Epochs: 3,
+		Epochs: 2,
 		Loss:   modules.LossSoftmaxCrossEntropy,
 	})
 
 	runner.Fit(dataset)
+	runner.Run(dataset)
+
+	//runner.GetModel().Save("mnist")
+}
+
+func RunSaved() {
+	dataset := datasets.From("mnist").SetBatchSize(1000)
+
+	runner := runners.BuildFromModel(models.Restore("mnist"))
+
 	runner.Run(dataset)
 }

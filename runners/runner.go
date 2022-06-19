@@ -139,7 +139,7 @@ func (r *runner) Run(dataset *datasets.Dataset) {
 	target := tensor.OfShape(dataset.Get(datasets.ValidationSetY).Data().Shape().X, dataset.Get(datasets.ValidationSetY).Data().Shape().Y).
 		SetData(dataset.Get(datasets.ValidationSetY).Data().Data())
 
-	y := r.model.Build(x)
+	y := r.model.BuildNoGrad(x)
 	loss := r.criterion.Forward(y, target)
 
 	graph.Forward(loss)
@@ -147,4 +147,24 @@ func (r *runner) Run(dataset *datasets.Dataset) {
 	graph.Close()
 
 	r.logger.Info(fmt.Sprintf("Error: %f Accuracy: %.2f\n", averageLoss(loss), accuracyOneHot(y, target)))
+}
+
+func (r *runner) RunSingle(dataset *datasets.Dataset) {
+	graph := tensor.NewGraph()
+	r.Initialize()
+
+	x := tensor.OfShape(dataset.Get(datasets.ValidationSetX).Data().Shape().X, dataset.Get(datasets.ValidationSetX).Data().Shape().Y).
+		SetData(dataset.Get(datasets.ValidationSetX).Data().Data())
+
+	y := r.model.BuildNoGrad(x)
+
+	graph.Forward(y)
+
+	graph.Close()
+
+	r.logger.Info(fmt.Sprintf("Accuracy: %.2f\n", 1.0))
+}
+
+func (r runner) GetModel() *models.Model {
+	return r.model
 }

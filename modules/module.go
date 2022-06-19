@@ -8,4 +8,5 @@ type Module interface {
 	Build(input *tensor.Tensor) *tensor.Tensor
 	GetParameters() []*tensor.Tensor
 	Copy() Module
+	GetType() string
 }

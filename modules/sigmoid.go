@@ -4,10 +4,14 @@ import (
 	"ml-framework/tensor"
 )
 
-type sigmoid struct{}
+type sigmoid struct {
+	Type string `json:"type"`
+}
 
 func Sigmoid() *sigmoid {
-	return &sigmoid{}
+	return &sigmoid{
+		Type: "sigmoid",
+	}
 }
 
 func (d *sigmoid) Build(input *tensor.Tensor) *tensor.Tensor {
@@ -20,4 +24,8 @@ func (d *sigmoid) GetParameters() []*tensor.Tensor {
 
 func (d *sigmoid) Copy() Module {
 	return Sigmoid()
+}
+
+func (d *sigmoid) GetType() string {
+	return d.Type
 }
