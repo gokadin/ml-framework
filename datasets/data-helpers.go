@@ -40,8 +40,8 @@ func oneHotEncode(m *mat.Mat32f, depth int) *mat.Mat32f {
 	return result
 }
 
-func normalize(mat *mat.Mat32f, min, max float32) {
+func normalize(mat *mat.Mat32f, initialMin, initialMax, min, max float32) {
 	mat.Apply(func(value float32) float32 {
-		return (value - min) / (max - min)
+		return (max-min)*(value-initialMin)/(initialMax-initialMin) + min
 	})
 }

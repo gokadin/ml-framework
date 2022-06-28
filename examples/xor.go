@@ -19,5 +19,5 @@ func RunXor() {
 	})
 
 	runner.Fit(dataset)
-	runner.Run(dataset)
+	runner.Validate(dataset)
 }

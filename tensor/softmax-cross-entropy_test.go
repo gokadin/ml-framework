@@ -15,12 +15,8 @@ type softmaxCrossEntropyTestCases struct {
 
 func buildSoftmaxCrossEntropyTestCases() []softmaxCrossEntropyTestCases {
 	return []softmaxCrossEntropyTestCases{
-		{"1x1 GPU", OfShape(1, 1).SetData([]float32{1}), OfShape(1, 1).SetData([]float32{2}), true},
-		{"1x1 CPU", OfShape(1, 1).SetData([]float32{1}), OfShape(1, 1).SetData([]float32{2}), false},
-		{"2x2 GPU", OfShape(2, 2).SetData([]float32{1, 2, 3, 4}), OfShape(2, 2).SetData([]float32{5, 6, 7, 8}), true},
-		{"2x2 CPU", OfShape(2, 2).SetData([]float32{1, 2, 3, 4}), OfShape(2, 2).SetData([]float32{5, 6, 7, 8}), false},
-		{"5x2 GPU", From(InitRandom, 5, 2), From(InitRandom, 5, 2), true},
-		{"5x2 CPU", From(InitRandom, 5, 2), From(InitRandom, 5, 2), false},
+		{"5x3 GPU", From(InitRandom, 5, 3), From(InitRandom, 5, 3), true},
+		{"5x3 CPU", From(InitRandom, 5, 3), From(InitRandom, 5, 3), false},
 		{"2x5 GPU", From(InitRandom, 2, 5), From(InitRandom, 2, 5), true},
 		{"2x5 CPU", From(InitRandom, 2, 5), From(InitRandom, 2, 5), false},
 		{"1000x10 GPU", From(InitRandom, 1000, 10), From(InitRandom, 1000, 10), true},

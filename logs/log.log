@@ -1,0 +1,6 @@
+2022/06/21 14:04:11  INFO  training started
+2022/06/21 14:04:13  INFO  epoch 1 finished in 1134ms with loss 0.720962
+2022/06/21 14:04:13  INFO  ave batch: 17ms ave forward: 4ms ave backward: 6ms ave optim 4ms
+2022/06/21 14:04:13  INFO  training finished
+2022/06/21 14:04:13  INFO  Error: 0.353758 Accuracy: 89.87
+

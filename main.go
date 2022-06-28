@@ -3,6 +3,7 @@ package main
 import "ml-framework/examples"
 
 func main() {
-	examples.RunMnist()
+	//examples.RunMnist()
 	//examples.RunSaved()
+	examples.RunMnistGan()
 }

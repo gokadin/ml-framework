@@ -24,8 +24,8 @@ func loadMNIST() *Dataset {
 	trainX, trainY, valX, valY := getData()
 	trainY = oneHotEncode(trainY, 10)
 	valY = oneHotEncode(valY, 10)
-	normalize(trainX, 0, 255)
-	normalize(valX, 0, 255)
+	normalize(trainX, 0, 255, -1, 1)
+	normalize(valX, 0, 255, -1, 1)
 
 	dataset := NewDataset()
 	dataset.SetName(mnistName)

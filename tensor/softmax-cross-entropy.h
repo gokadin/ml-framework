@@ -49,9 +49,9 @@ int cpu_sce_forward(TENSOR *target, TENSOR *a, TENSOR *b)
         for (int j = 0; j < a->mat_shape->y; j++)
         {
             int index = i * a->mat_shape->y + j;
-            sum1[i] += a->data[index] * b->data[index];
+            sum1[i] += b->data[index] * logf(a->data[index]);
         }
-        sum1[i] = -logf(sum1[i]);
+        sum1[i] = -sum1[i];
     }
 
     float sum0 = 0;

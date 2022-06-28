@@ -8,7 +8,7 @@ import (
 
 type Mat32f struct {
 	shape Shape
-	data []float32
+	data  []float32
 }
 
 func NewMat32f(shape Shape, data []float32) *Mat32f {
@@ -49,7 +49,7 @@ func NewMat32fZeros(shape Shape) *Mat32f {
 
 func newMat32fWithInitialValue(shape Shape, initialValue float32) *Mat32f {
 	m := &Mat32f{shape: shape}
-	m.data = make([]float32, shape.X * shape.Y)
+	m.data = make([]float32, shape.X*shape.Y)
 	for i := 0; i < len(m.data); i++ {
 		m.data[i] = initialValue
 	}
@@ -84,12 +84,12 @@ func (m *Mat32f) ToFloat64() []float64 {
 	return result
 }
 
-func (m *Mat32f) Copy() []float32 {
+func (m *Mat32f) Copy() *Mat32f {
 	result := make([]float32, len(m.data))
 	for i := 0; i < len(m.data); i++ {
 		result[i] = m.data[i]
 	}
-	return result
+	return NewMat32f(m.shape, result)
 }
 
 func (m *Mat32f) At(i int) float32 {
@@ -107,7 +107,7 @@ func (m *Mat32f) Apply(mapping func(float32) float32) {
 }
 
 func Apply(a *Mat32f, mapping func(float32) float32) *Mat32f {
-	result := make([]float32, a.shape.X * a.shape.Y)
+	result := make([]float32, a.shape.X*a.shape.Y)
 	for i := 0; i < len(a.data); i++ {
 		result[i] = mapping(a.data[i])
 	}
@@ -128,7 +128,7 @@ func (m *Mat32f) Add(other *Mat32f) {
 }
 
 func Add(a, b *Mat32f) *Mat32f {
-	result := make([]float32, a.shape.X * a.shape.Y)
+	result := make([]float32, a.shape.X*a.shape.Y)
 	for i := 0; i < len(result); i++ {
 		result[i] = a.data[i] + b.data[i]
 	}
@@ -142,7 +142,7 @@ func (m *Mat32f) AddScalar(scalar float32) {
 }
 
 func AddScalar(a *Mat32f, scalar float32) *Mat32f {
-	result := make([]float32, a.shape.X * a.shape.Y)
+	result := make([]float32, a.shape.X*a.shape.Y)
 	for i := 0; i < len(result); i++ {
 		result[i] = a.data[i] + scalar
 	}
@@ -156,7 +156,7 @@ func (m *Mat32f) Sub(other *Mat32f) {
 }
 
 func Sub(a, b *Mat32f) *Mat32f {
-	result := make([]float32, a.shape.X * a.shape.Y)
+	result := make([]float32, a.shape.X*a.shape.Y)
 	for i := 0; i < len(result); i++ {
 		result[i] = a.data[i] - b.data[i]
 	}
@@ -170,7 +170,7 @@ func (m *Mat32f) Div(other *Mat32f) {
 }
 
 func Div(a, b *Mat32f) *Mat32f {
-	result := make([]float32, a.shape.X * a.shape.Y)
+	result := make([]float32, a.shape.X*a.shape.Y)
 	for i := 0; i < len(result); i++ {
 		result[i] = a.data[i] / b.data[i]
 	}
@@ -184,7 +184,7 @@ func (m *Mat32f) DivScalarBy(scalar float32) {
 }
 
 func DivScalarBy(a *Mat32f, scalar float32) *Mat32f {
-	result := make([]float32, a.shape.X * a.shape.Y)
+	result := make([]float32, a.shape.X*a.shape.Y)
 	for i := 0; i < len(result); i++ {
 		result[i] = scalar / a.data[i]
 	}
@@ -198,7 +198,7 @@ func (m *Mat32f) DivScalar(scalar float32) {
 }
 
 func DivScalar(a *Mat32f, scalar float32) *Mat32f {
-	result := make([]float32, a.shape.X * a.shape.Y)
+	result := make([]float32, a.shape.X*a.shape.Y)
 	for i := 0; i < len(result); i++ {
 		result[i] = a.data[i] / scalar
 	}
@@ -212,7 +212,7 @@ func (m *Mat32f) SubFromScalar(scalar float32) {
 }
 
 func SubFromScalar(a *Mat32f, scalar float32) *Mat32f {
-	result := make([]float32, a.shape.X * a.shape.Y)
+	result := make([]float32, a.shape.X*a.shape.Y)
 	for i := 0; i < len(result); i++ {
 		result[i] = scalar - a.data[i]
 	}
@@ -226,7 +226,7 @@ func (m *Mat32f) Mul(other *Mat32f) {
 }
 
 func Mul(a, b *Mat32f) *Mat32f {
-	result := make([]float32, a.shape.X * a.shape.Y)
+	result := make([]float32, a.shape.X*a.shape.Y)
 	for i := 0; i < len(result); i++ {
 		result[i] = a.data[i] * b.data[i]
 	}
@@ -240,7 +240,7 @@ func (m *Mat32f) MulScalar(scalar float32) {
 }
 
 func MulScalar(a *Mat32f, scalar float32) *Mat32f {
-	result := make([]float32, a.shape.X * a.shape.Y)
+	result := make([]float32, a.shape.X*a.shape.Y)
 	for i := 0; i < len(result); i++ {
 		result[i] = a.data[i] * scalar
 	}
@@ -254,7 +254,7 @@ func (m *Mat32f) Sqrt() {
 }
 
 func Sqrt(a *Mat32f) *Mat32f {
-	result := make([]float32, a.shape.X * a.shape.Y)
+	result := make([]float32, a.shape.X*a.shape.Y)
 	for i := 0; i < len(result); i++ {
 		result[i] = float32(math.Sqrt(float64(a.data[i])))
 	}
@@ -268,7 +268,7 @@ func (m *Mat32f) Pow(power float64) {
 }
 
 func Pow(a *Mat32f, power float64) *Mat32f {
-	result := make([]float32, a.shape.X * a.shape.Y)
+	result := make([]float32, a.shape.X*a.shape.Y)
 	for i := 0; i < len(result); i++ {
 		result[i] = float32(math.Pow(float64(a.data[i]), power))
 	}
@@ -282,7 +282,7 @@ func (m *Mat32f) Exp() {
 }
 
 func Exp(a *Mat32f) *Mat32f {
-	result := make([]float32, a.shape.X * a.shape.Y)
+	result := make([]float32, a.shape.X*a.shape.Y)
 	for i := 0; i < len(result); i++ {
 		result[i] = float32(math.Exp(float64(a.data[i])))
 	}
@@ -296,7 +296,7 @@ func (m *Mat32f) Log() {
 }
 
 func Log(a *Mat32f) *Mat32f {
-	result := make([]float32, a.shape.X * a.shape.Y)
+	result := make([]float32, a.shape.X*a.shape.Y)
 	for i := 0; i < len(result); i++ {
 		result[i] = float32(math.Log(float64(a.data[i])))
 	}
@@ -310,7 +310,7 @@ func (m *Mat32f) Neg() {
 }
 
 func Neg(a *Mat32f) *Mat32f {
-	result := make([]float32, a.shape.X * a.shape.Y)
+	result := make([]float32, a.shape.X*a.shape.Y)
 	for i := 0; i < len(result); i++ {
 		result[i] = -a.data[i]
 	}
@@ -320,7 +320,7 @@ func Neg(a *Mat32f) *Mat32f {
 func (m *Mat32f) Transpose() {
 	for i := 0; i < m.shape.X; i++ {
 		for j := 0; j < m.shape.Y; j++ {
-			m.data[j * m.shape.Y + i] = m.data[i * m.shape.X + j]
+			m.data[j*m.shape.Y+i] = m.data[i*m.shape.X+j]
 		}
 	}
 	temp := m.shape.X
@@ -329,10 +329,10 @@ func (m *Mat32f) Transpose() {
 }
 
 func Transpose(a *Mat32f) *Mat32f {
-	result := make([]float32, a.shape.X * a.shape.Y)
+	result := make([]float32, a.shape.X*a.shape.Y)
 	for i := 0; i < a.shape.X; i++ {
 		for j := 0; j < a.shape.Y; j++ {
-			result[j * a.shape.X + i] = a.data[i * a.shape.Y + j]
+			result[j*a.shape.X+i] = a.data[i*a.shape.Y+j]
 		}
 	}
 	return NewMat32f(WithShape(a.shape.Y, a.shape.X), result)
@@ -343,11 +343,11 @@ func MatMul(a, b *Mat32f) *Mat32f {
 		log.Fatalf("cannot multiply matrices of incompatible sizes -> %dx%d and %dx%d", a.shape.X, a.shape.Y, b.shape.X, b.shape.Y)
 	}
 
-	result := make([]float32, a.shape.X * b.shape.Y)
+	result := make([]float32, a.shape.X*b.shape.Y)
 	for i := 0; i < a.shape.X; i++ {
 		for j := 0; j < b.shape.Y; j++ {
 			for k := 0; k < b.shape.X; k++ {
-				result[i * b.shape.Y + j] += a.data[i * b.shape.X + k] * b.data[k * b.shape.Y + j]
+				result[i*b.shape.Y+j] += a.data[i*b.shape.X+k] * b.data[k*b.shape.Y+j]
 			}
 		}
 	}
@@ -373,7 +373,7 @@ func sum0(a *Mat32f) *Mat32f {
 	result := make([]float32, a.shape.Y)
 	for i := 0; i < a.shape.X; i++ {
 		for j := 0; j < a.shape.Y; j++ {
-			result[j] += a.data[i * a.shape.Y + j]
+			result[j] += a.data[i*a.shape.Y+j]
 		}
 	}
 	return NewMat32f(WithShape(1, a.shape.Y), result)
@@ -386,7 +386,7 @@ func sum1(a *Mat32f) *Mat32f {
 	result := make([]float32, a.shape.X)
 	for i := 0; i < a.shape.X; i++ {
 		for j := 0; j < a.shape.Y; j++ {
-			result[i] += a.data[i * a.shape.Y + j]
+			result[i] += a.data[i*a.shape.Y+j]
 		}
 	}
 	return NewMat32f(WithShape(a.shape.X, 1), result)
@@ -405,17 +405,17 @@ func Expand(a *Mat32f, axis, copies int) *Mat32f {
 }
 
 /**
-	Shape of (A,B) becomes (A*copies,B)
- */
+Shape of (A,B) becomes (A*copies,B)
+*/
 func expand0(a *Mat32f, copies int) *Mat32f {
 	if a.shape.X != 1 {
 		log.Fatalf("incompatible matrix size for Expand operation on X axis -> %dx%d", a.shape.X, a.shape.Y)
 	}
 
-	result := make([]float32, copies * a.shape.Y)
+	result := make([]float32, copies*a.shape.Y)
 	for i := 0; i < copies; i++ {
 		for j := 0; j < a.shape.Y; j++ {
-			result[i * a.shape.Y + j] = a.data[j]
+			result[i*a.shape.Y+j] = a.data[j]
 		}
 	}
 	return NewMat32f(WithShape(copies, a.shape.Y), result)
@@ -429,10 +429,10 @@ func expand1(a *Mat32f, copies int) *Mat32f {
 		log.Fatalf("incompatible matrix size for Expand operation on Y axis -> %dx%d", a.shape.X, a.shape.Y)
 	}
 
-	result := make([]float32, a.shape.X * a.shape.Y * copies)
+	result := make([]float32, a.shape.X*a.shape.Y*copies)
 	for i := 0; i < a.shape.X; i++ {
 		for j := 0; j < copies; j++ {
-			result[i * copies + j] = a.data[i]
+			result[i*copies+j] = a.data[i]
 		}
 	}
 	return NewMat32f(WithShape(a.shape.X, copies), result)
@@ -448,7 +448,7 @@ func Equals32f(a, b *Mat32f) bool {
 	}
 
 	for i := 0; i < len(a.data); i++ {
-		if a.data[i] != b.data[i] {
+		if math.Abs(float64(a.data[i]-b.data[i])) > 1e-6 {
 			return false
 		}
 	}
@@ -457,14 +457,14 @@ func Equals32f(a, b *Mat32f) bool {
 }
 
 func Softmax(a *Mat32f) *Mat32f {
-	result := make([]float32, a.shape.X * a.shape.Y)
+	result := make([]float32, a.shape.X*a.shape.Y)
 	for i := 0; i < a.shape.X; i++ {
 		sum := 0.0
 		for j := 0; j < a.shape.Y; j++ {
-			sum += math.Exp(float64(a.data[i * a.shape.Y + j]))
+			sum += math.Exp(float64(a.data[i*a.shape.Y+j]))
 		}
 		for j := 0; j < a.shape.Y; j++ {
-			index := i * a.shape.Y + j
+			index := i*a.shape.Y + j
 			result[index] = float32(math.Exp(float64(a.data[index])) / sum)
 		}
 	}

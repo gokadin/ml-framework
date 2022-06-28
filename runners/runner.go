@@ -130,7 +130,20 @@ func (r *runner) Fit(dataset *datasets.Dataset) {
 	r.metric.events.trainingFinished <- true
 }
 
-func (r *runner) Run(dataset *datasets.Dataset) {
+func (r *runner) Run(x *tensor.Tensor) {
+	graph := tensor.NewGraph()
+	r.Initialize()
+
+	y := r.model.BuildNoGrad(x)
+
+	graph.Forward(y)
+
+	graph.Close()
+
+	r.logger.Info(fmt.Sprintf("Ran: %d iterations", x.Shape().X))
+}
+
+func (r *runner) Validate(dataset *datasets.Dataset) {
 	graph := tensor.NewGraph()
 	r.Initialize()
 

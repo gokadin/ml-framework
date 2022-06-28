@@ -2,11 +2,12 @@ package tensor
 
 //#include <softmax-cross-entropy.h>
 import "C"
+import "fmt"
 
 const operationSoftmaxCrossEntropy = "opSoftmaxCrossEntropy"
 
 type opCrossEntropy struct {
-	a *Tensor
+	a      *Tensor
 	target *Tensor
 }
 
@@ -38,6 +39,9 @@ func (o *opCrossEntropy) backward(tensor *Tensor) {
 }
 
 func SoftmaxCrossEntropy(pred, target *Tensor) *Tensor {
+	if pred.Shape().Y < 3 {
+		panic(fmt.Sprintf("softmax-cross-entropy requires at least 3 values"))
+	}
 	o := &opCrossEntropy{pred, target}
 	result := OfShape(o.forwardShape().ToArray()...)
 	result.op = o

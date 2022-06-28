@@ -19,6 +19,7 @@ compile:
 	nvcc ${TENSOR_DIR}/softmax.cu -o softmax.dll --shared -DCUDADLL_EXPORTS -lcudart
 	nvcc ${TENSOR_DIR}/linear.cu ${TENSOR_DIR}/softmax-cross-entropy.cu ${TENSOR_DIR}/matmul.cu ${TENSOR_DIR}/sum.cu -o linear.dll --shared -DCUDADLL_EXPORTS -lcudart
 	nvcc ${TENSOR_DIR}/softmax-cross-entropy.cu ${TENSOR_DIR}/sum.cu -o softmaxcrossentropy.dll --shared -DCUDADLL_EXPORTS -lcudart
+	nvcc ${TENSOR_DIR}/binary-cross-entropy.cu ${TENSOR_DIR}/sum.cu -o binarycrossentropy.dll --shared -DCUDADLL_EXPORTS -lcudart
 
 #	nvcc --ptxas-options=-v --compiler-options '-fPIC' -arch=${ARCH} -code=${CODE} -o ${TENSOR_DIR}/libadd.so --shared ${TENSOR_DIR}/add.cu
 #	nvcc --ptxas-options=-v --compiler-options '-fPIC' -arch=${ARCH} -code=${CODE} -o ${TENSOR_DIR}/libmul.so --shared ${TENSOR_DIR}/mul.cu

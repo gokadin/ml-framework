@@ -8,6 +8,8 @@ import (
 const (
 	LossMeanSquared         = "LossMeanSquared"
 	LossSoftmaxCrossEntropy = "LossSoftmaxCrossEntropy"
+	LossBinaryCrossEntropy  = "LossBinaryCrossEntropy"
+	LossPassThrough         = "LossPassThrough"
 )
 
 type Criterion interface {
@@ -19,6 +21,10 @@ func NewCriterion(loss string) Criterion {
 	case LossMeanSquared:
 		return newMeanSquaredCriterion()
 	case LossSoftmaxCrossEntropy:
+		return newCrossEntropyCriterion()
+	case LossBinaryCrossEntropy:
+		return newBinaryCrossEntropyCriterion()
+	case LossPassThrough:
 		return newCrossEntropyCriterion()
 	}
 
@@ -44,4 +50,42 @@ func newCrossEntropyCriterion() *crossEntropyCriterion {
 
 func (cec *crossEntropyCriterion) Forward(pred, target *tensor.Tensor) *tensor.Tensor {
 	return tensor.SoftmaxCrossEntropy(pred, target)
+}
+
+type binaryCrossEntropyCriterion struct{}
+
+func newBinaryCrossEntropyCriterion() *binaryCrossEntropyCriterion {
+	return &binaryCrossEntropyCriterion{}
+}
+
+func (bce *binaryCrossEntropyCriterion) Forward(pred, target *tensor.Tensor) *tensor.Tensor {
+	return tensor.BinaryCrossEntropy(pred, target)
+	return tensor.MulScalar(tensor.Mean(
+		tensor.Add(
+			tensor.Mul(pred, tensor.Log(target)),
+			tensor.Mul(
+				tensor.SubFromScalar(pred, 1),
+				tensor.Log(tensor.SubFromScalar(target, 1)),
+			),
+		)), -1)
+}
+
+type wasserteinCriticCriterion struct{}
+
+func newWasserteinCriticCriterion() *wasserteinCriticCriterion {
+	return &wasserteinCriticCriterion{}
+}
+
+func (wc *wasserteinCriticCriterion) Forward(criticOutputReal, criticOutputFake *tensor.Tensor) *tensor.Tensor {
+	return tensor.Sub(criticOutputReal, criticOutputFake)
+}
+
+type wasserteinGeneratorCriterion struct{}
+
+func newWasserteinGeneratorCriterion() *wasserteinGeneratorCriterion {
+	return &wasserteinGeneratorCriterion{}
+}
+
+func (wg *wasserteinGeneratorCriterion) Forward(criticOutputFake *tensor.Tensor) *tensor.Tensor {
+	return criticOutputFake
 }

@@ -10,8 +10,8 @@ func (s *set) Data() *mat.Mat32f {
 	return s.data
 }
 
-func (s *set) Normalize(min, max float32) *set {
-	normalize(s.data, min, max)
+func (s *set) Normalize(initialMin, initialMax, min, max float32) *set {
+	normalize(s.data, initialMin, initialMax, min, max)
 
 	return s
 }

@@ -22,5 +22,5 @@ func Test_mnist(t *testing.T) {
 	})
 
 	runner.Fit(dataset)
-	runner.Run(dataset)
+	runner.Validate(dataset)
 }

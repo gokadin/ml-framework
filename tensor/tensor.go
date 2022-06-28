@@ -63,6 +63,12 @@ func OfShape(shape ...int) *Tensor {
 	return t
 }
 
+func FromMat32(m *mat.Mat32f) *Tensor {
+	t := OfShape(m.Shape().X, m.Shape().Y)
+	t.SetData(m.Data())
+	return t
+}
+
 func Ones(shape ...int) *Tensor {
 	t := OfShape(shape...)
 	t.SetData(mat.Ones32f(shape[0] * shape[1]))

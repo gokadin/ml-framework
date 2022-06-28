@@ -21,7 +21,7 @@ func RunMnist() {
 	})
 
 	runner.Fit(dataset)
-	runner.Run(dataset)
+	runner.Validate(dataset)
 
 	//runner.GetModel().Save("mnist")
 }
@@ -31,5 +31,5 @@ func RunSaved() {
 
 	runner := runners.BuildFromModel(models.Restore("mnist"))
 
-	runner.Run(dataset)
+	runner.Validate(dataset)
 }
