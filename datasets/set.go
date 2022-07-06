@@ -3,10 +3,10 @@ package datasets
 import "ml-framework/mat"
 
 type set struct {
-	data *mat.Mat32f
+	data *mat.M32f
 }
 
-func (s *set) Data() *mat.Mat32f {
+func (s *set) Data() *mat.M32f {
 	return s.data
 }
 

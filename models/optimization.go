@@ -68,14 +68,14 @@ func (do defaultOptimizer) Close() {
 type momentumOptimizer struct {
 	learningRate float32
 	momentum     float32
-	velocityMap  map[int]*mat.Mat32f
+	velocityMap  map[int]*mat.M32f
 }
 
 func newMomentumOptimizer(overrides []float32) *momentumOptimizer {
 	o := &momentumOptimizer{
 		learningRate: defaultLearningRate,
 		momentum:     defaultMomentum,
-		velocityMap:  make(map[int]*mat.Mat32f),
+		velocityMap:  make(map[int]*mat.M32f),
 	}
 	if len(overrides) >= 1 {
 		o.learningRate = overrides[0]

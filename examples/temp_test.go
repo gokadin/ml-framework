@@ -9,7 +9,7 @@ import (
 )
 
 func Test_temp(t *testing.T) {
-	a := tensor.FromMat32(mat.NewMat32f(mat.WithShape(4, 6), []float32{
+	a := tensor.FromMat32(mat.FromSlice32f(mat.WithShape(4, 6), []float32{
 		2, 3, 1, 2, 3, 0,
 		1, 1, 2, 2, 0, 5,
 		2, 0, 5, 0, 1, 0,

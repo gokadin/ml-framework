@@ -32,7 +32,7 @@ func (d *Dataset) SetName(name string) {
 	d.name = name
 }
 
-func (d *Dataset) AddData(name string, mat *mat.Mat32f) *set {
+func (d *Dataset) AddData(name string, mat *mat.M32f) *set {
 	d.sets[name] = &set{mat}
 	return d.sets[name]
 }
@@ -90,7 +90,7 @@ func (d *Dataset) ResetBatchCounter() {
 	d.batchCounter = 0
 }
 
-func (d *Dataset) NextBatch() (*mat.Mat32f, *mat.Mat32f) {
+func (d *Dataset) NextBatch() (*mat.M32f, *mat.M32f) {
 	if d.batchCounter == 0 && d.shouldShuffle {
 		d.shuffleData()
 	}

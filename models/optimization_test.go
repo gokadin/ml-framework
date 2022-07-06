@@ -30,8 +30,8 @@ func Test_defaultOptimizer_correctlyOverridesLearningRate(t *testing.T) {
 
 func Test_defaultOptimizer_update(t *testing.T) {
 	o := newDefaultOptimizer([]float32{})
-	t1 := tensor.Constant(mat.NewMat32f(mat.WithShape(1, 2), []float32{1, 2}))
-	t2 := tensor.Constant(mat.NewMat32f(mat.WithShape(1, 2), []float32{1, 2}))
+	t1 := tensor.Constant(mat.FromSlice32f(mat.WithShape(1, 2), []float32{1, 2}))
+	t2 := tensor.Constant(mat.FromSlice32f(mat.WithShape(1, 2), []float32{1, 2}))
 	t3 := tensor.Add(t1, t2)
 	graph := tensor.NewGraph()
 	graph.Forward(t3)
@@ -58,7 +58,7 @@ func Test_momentumOptimizer_initializesWithDefaultMomentum(t *testing.T) {
 func Test_momentumOptimizer_initializesAnEmptyVelocityMap(t *testing.T) {
 	o := newMomentumOptimizer([]float32{})
 
-	assert.Equal(t, make(map[string]*mat.Mat32f), o.velocityMap)
+	assert.Equal(t, make(map[string]*mat.M32f), o.velocityMap)
 }
 
 func Test_momentumOptimizer_correctlyOverridesDefaultLearningRate(t *testing.T) {
@@ -100,13 +100,13 @@ func Test_adamOptimizer_initializesWithADefaultEpsStable(t *testing.T) {
 func Test_adamOptimizer_initializesAnEmptyVelocityMap(t *testing.T) {
 	o := newAdamOptimizer([]float32{})
 
-	assert.Equal(t, make(map[string]*mat.Mat32f), o.velocityMap)
+	assert.Equal(t, make(map[string]*mat.M32f), o.velocityMap)
 }
 
 func Test_adamOptimizer_initializesAnEmptyMeanMap(t *testing.T) {
 	o := newAdamOptimizer([]float32{})
 
-	assert.Equal(t, make(map[string]*mat.Mat32f), o.meanMap)
+	assert.Equal(t, make(map[string]*mat.M32f), o.meanMap)
 }
 
 func Test_adamOptimizer_correctlyOverridesDefaultLearningRate(t *testing.T) {

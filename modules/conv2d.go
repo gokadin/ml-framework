@@ -32,7 +32,7 @@ func Conv2d(filterCount int, kernelSize, stride mat.ShapeN) *Conv2dModule {
 func (d *Conv2dModule) Build(input *tensor.Tensor) *tensor.Tensor {
 	if !d.IsInitialized {
 		for i := 0; i < d.FilterCount; i++ {
-			d.filters = tensor.FromMat32(mat.NewMat32f(mat.WithShape(d.KernelSize.D[0], d.KernelSize.D[1]), []float32{
+			d.filters = tensor.FromMat32(mat.FromSlice32f(mat.WithShape(d.KernelSize.D[0], d.KernelSize.D[1]), []float32{
 				1, 1, 1,
 				1, 1, 1,
 				1, 1, 1,

@@ -63,7 +63,7 @@ func OfShape(shape ...int) *Tensor {
 	return t
 }
 
-func FromMat32(m *mat.Mat32f) *Tensor {
+func FromMat32(m *mat.M32f) *Tensor {
 	t := OfShape(m.Shape().X, m.Shape().Y)
 	t.SetData(m.Data())
 	return t
@@ -192,12 +192,12 @@ func (t *Tensor) ToFloat64() []float64 {
 	return result
 }
 
-func (t *Tensor) ToMat32f() *mat.Mat32f {
+func (t *Tensor) ToMat32f() *mat.M32f {
 	result := make([]float32, t._mat_shape.size)
 	for i := 0; i < len(result); i++ {
 		result[i] = float32(t._data[i])
 	}
-	return mat.NewMat32f(mat.WithShape(t.Shape().X, t.Shape().Y), result)
+	return mat.FromSlice32f(mat.WithShape(t.Shape().X, t.Shape().Y), result)
 }
 
 func (t *Tensor) GradientToFloat32() []float32 {
@@ -208,12 +208,12 @@ func (t *Tensor) GradientToFloat32() []float32 {
 	return result
 }
 
-func (t *Tensor) GradientToMat32() *mat.Mat32f {
+func (t *Tensor) GradientToMat32() *mat.M32f {
 	result := make([]float32, t.Shape().Size())
 	for i := 0; i < len(result); i++ {
 		result[i] = float32(t._grad[i])
 	}
-	return mat.NewMat32f(mat.WithShape(int(t._grad_shape.x), int(t._grad_shape.y)), result)
+	return mat.FromSlice32f(mat.WithShape(int(t._grad_shape.x), int(t._grad_shape.y)), result)
 }
 
 func (t *Tensor) Reduce(grad []float32) {

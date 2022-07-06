@@ -5,7 +5,7 @@ import (
 	"ml-framework/mat"
 )
 
-func bytesToMat(bytes []byte, numOfSamples, headerOffset int) *mat.Mat32f {
+func bytesToMat(bytes []byte, numOfSamples, headerOffset int) *mat.M32f {
 	if (len(bytes)-headerOffset)%numOfSamples != 0 {
 		log.Fatal("Could not transform raw data into usable Dataset")
 	}
@@ -18,10 +18,10 @@ func bytesToMat(bytes []byte, numOfSamples, headerOffset int) *mat.Mat32f {
 		}
 	}
 
-	return mat.NewMat32f(mat.WithShape(numOfSamples, sampleLength), data)
+	return mat.FromSlice32f(mat.WithShape(numOfSamples, sampleLength), data)
 }
 
-func oneHotEncode(m *mat.Mat32f, depth int) *mat.Mat32f {
+func oneHotEncode(m *mat.M32f, depth int) *mat.M32f {
 	if m.Shape().X == 0 || m.Shape().Y != 1 {
 		log.Fatal("cannot one hot encode Dataset with more than one value per output")
 	}
@@ -40,7 +40,7 @@ func oneHotEncode(m *mat.Mat32f, depth int) *mat.Mat32f {
 	return result
 }
 
-func normalize(mat *mat.Mat32f, initialMin, initialMax, min, max float32) {
+func normalize(mat *mat.M32f, initialMin, initialMax, min, max float32) {
 	mat.Apply(func(value float32) float32 {
 		return (max-min)*(value-initialMin)/(initialMax-initialMin) + min
 	})

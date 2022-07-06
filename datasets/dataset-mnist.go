@@ -36,7 +36,7 @@ func loadMNIST() *Dataset {
 	return dataset
 }
 
-func getData() (*mat.Mat32f, *mat.Mat32f, *mat.Mat32f, *mat.Mat32f) {
+func getData() (*mat.M32f, *mat.M32f, *mat.M32f, *mat.M32f) {
 	trainingImagesBytes := unzip(downloadFile(baseUrl, trainingSetImagesFilename))
 	trainingLabelsBytes := unzip(downloadFile(baseUrl, trainingSetLabelsFilename))
 	validationImagesBytes := unzip(downloadFile(baseUrl, validationSetImagesFilename))
