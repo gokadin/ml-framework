@@ -82,7 +82,7 @@ func Zeros(shape ...int) *Tensor {
 }
 
 func From(initializer string, shape ...int) *Tensor {
-	return initializeParameter(initializer, shape...)
+	return FromMat32(mat.Initialize(initializer, mat.Dim(shape...)))
 }
 
 func (t *Tensor) initializeNativeTensor(shape []int) {

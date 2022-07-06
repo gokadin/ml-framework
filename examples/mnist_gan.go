@@ -31,7 +31,7 @@ func train() {
 	epochs := 3
 	dataset := datasets.From("mnist").SetBatchSize(batchSize)
 
-	generator := generatorModel()
+	//generator := generatorModel()
 	//discriminator := discriminatorModel()
 
 	//*******
@@ -41,9 +41,9 @@ func train() {
 
 	graph := tensor.NewGraph()
 	batchX := tensor.OfShape(dataset.BatchSize(), dataset.Get(datasets.TrainingSetX).Data().Shape().Y).SetName("batch x")
-	z := tensor.From(tensor.InitNormalized, batchSize, 100)
+	//z := tensor.From(tensor.InitNormalized, batchSize, 100)
 	//batchY := tensor.OfShape(dataset.BatchSize(), dataset.Get(datasets.TrainingSetY).Data().Shape().Y).SetName("batch y")
-	generatorPred := generator.Build(z).SetName("z")
+	//generatorPred := generator.Build(z).SetName("z")
 	//real := tensor.Ones(batchSize, 1)
 	//fake := tensor.Ones(batchSize, 0)
 
@@ -52,7 +52,7 @@ func train() {
 			batchDataX, _ := dataset.NextBatch()
 			batchX.SetData(batchDataX.Data())
 
-			graph.Forward(generatorPred)
+			//graph.Forward(generatorPred)
 		}
 	}
 
