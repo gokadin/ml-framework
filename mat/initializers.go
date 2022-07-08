@@ -31,7 +31,7 @@ func initializeParameterRandom(dim ShapeN) *M32f {
 	for i := range data {
 		data[i] = rand.Float32()
 	}
-	return FromSlice32f(WithShape(dim.D[0], dim.D[1]), data)
+	return FromSlice32f(Dim(dim.D[0], dim.D[1]), data)
 }
 
 func initializeParameterNormalized(dim ShapeN) *M32f {
@@ -39,7 +39,7 @@ func initializeParameterNormalized(dim ShapeN) *M32f {
 	for i := range data {
 		data[i] = rand.Float32() / float32(math.Sqrt(float64(dim.D[0])))
 	}
-	return FromSlice32f(WithShape(dim.D[0], dim.D[1]), data)
+	return FromSlice32f(Dim(dim.D[0], dim.D[1]), data)
 }
 
 func initializeParameterXavier(dim ShapeN) *M32f {
@@ -48,5 +48,5 @@ func initializeParameterXavier(dim ShapeN) *M32f {
 	for i := range data {
 		data[i] = -limit + rand.Float32()*(limit+limit)
 	}
-	return FromSlice32f(WithShape(dim.D[0], dim.D[1]), data)
+	return FromSlice32f(Dim(dim.D[0], dim.D[1]), data)
 }
