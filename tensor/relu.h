@@ -32,7 +32,7 @@ int relu_backward(TENSOR *tensor, TENSOR *a)
 
 int cpu_relu_forward(TENSOR *target, TENSOR *a)
 {
-    for (int i = 0; i < target->mat_shape->size; i++)
+    for (int i = 0; i < target->mat_size; i++)
     {
         if (a->data[i] > 0)
         {
@@ -49,7 +49,7 @@ int cpu_relu_forward(TENSOR *target, TENSOR *a)
 
 int cpu_relu_backward(TENSOR *tensor, TENSOR *a)
 {
-    for (int i = 0; i < tensor->grad_shape->size; i++)
+    for (int i = 0; i < tensor->grad_size; i++)
     {
         if (tensor->data[i] > 0)
         {

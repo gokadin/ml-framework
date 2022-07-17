@@ -39,7 +39,7 @@ func newMeanSquaredCriterion() *meanSquaredCriterion {
 }
 
 func (msc *meanSquaredCriterion) Forward(pred, target *tensor.Tensor) *tensor.Tensor {
-	return tensor.DivScalar(tensor.Sum(tensor.Pow(tensor.Sub(pred, target), 2), 0), float32(pred.Shape().X))
+	return tensor.DivScalar(tensor.Sum(tensor.Pow(tensor.Sub(pred, target), 2), 0), float32(pred.Shape().D[0]))
 }
 
 type crossEntropyCriterion struct{}

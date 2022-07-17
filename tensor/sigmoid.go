@@ -19,12 +19,12 @@ func (o *opSigmoid) dependencies() []*Tensor {
 	return []*Tensor{o.a}
 }
 
-func (o *opSigmoid) forwardShape() Shape {
+func (o *opSigmoid) forwardShape() mat.Shape {
 	return o.a.Shape()
 }
 
-func (o *opSigmoid) backwardShapes(tensorShape Shape) []Shape {
-	return []Shape{tensorShape}
+func (o *opSigmoid) backwardShapes(tensorShape mat.Shape) []mat.Shape {
+	return []mat.Shape{tensorShape}
 }
 
 func (o *opSigmoid) forward(tensor *Tensor) {
@@ -39,7 +39,7 @@ func (o *opSigmoid) backward(tensor *Tensor) {
 
 func Sigmoid(a *Tensor) *Tensor {
 	o := &opSigmoid{a}
-	result := OfShape(o.forwardShape().ToArray()...)
+	result := OfShape(o.forwardShape().D...)
 	result.op = o
 	return result
 }

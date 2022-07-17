@@ -89,7 +89,7 @@ func newMomentumOptimizer(overrides []float32) *momentumOptimizer {
 func (mo momentumOptimizer) Update(parameters ...*tensor.Tensor) {
 	for _, parameter := range parameters {
 		if _, ok := mo.velocityMap[parameter.Id()]; !ok {
-			mo.velocityMap[parameter.Id()] = mat.NewMat32fZeros(mat.WithShape(parameter.Shape().X, parameter.Shape().Y))
+			mo.velocityMap[parameter.Id()] = mat.NewMat32fZeros(mat.Dim(parameter.Shape().D[0], parameter.Shape().D[1]))
 		}
 
 		mo.velocityMap[parameter.Id()] = mat.Add(mat.MulScalar(mo.velocityMap[parameter.Id()], mo.momentum), mat.MulScalar(parameter.GradientToMat32(), mo.learningRate))
@@ -162,8 +162,8 @@ func (ao *adamOptimizer) Close() {
 }
 
 func adamUpdate(parameter *tensor.Tensor, in, out, kill chan bool, beta1, beta2, epsStable, learningRate float32) {
-	mean := mat.NewMat32fZeros(mat.WithShape(parameter.Shape().X, parameter.Shape().Y))
-	velocity := mat.NewMat32fZeros(mat.WithShape(parameter.Shape().X, parameter.Shape().Y))
+	mean := mat.NewMat32fZeros(mat.Dim(parameter.Shape().D[0], parameter.Shape().D[1]))
+	velocity := mat.NewMat32fZeros(mat.Dim(parameter.Shape().D[0], parameter.Shape().D[1]))
 	var count float64 = 0
 
 	for {

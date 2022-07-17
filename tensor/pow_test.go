@@ -15,18 +15,18 @@ type powTestCases struct {
 
 func buildPowTestCases() []powTestCases {
 	return []powTestCases{
-		{"1x1 ^1 GPU", From(InitRandom, 1, 1), 1, true},
-		{"1x1 ^1 CPU", From(InitRandom, 1, 1), 1, false},
-		{"2x2 ^1 GPU", From(InitRandom, 2, 2), 1, true},
-		{"2x2 ^1 CPU", From(InitRandom, 2, 2), 1, false},
-		{"1x1 ^2 GPU", From(InitRandom, 1, 1), 2, true},
-		{"1x1 ^2 CPU", From(InitRandom, 1, 1), 2, false},
-		{"2x2 ^2 GPU", From(InitRandom, 2, 2), 2, true},
-		{"2x2 ^2 CPU", From(InitRandom, 2, 2), 2, false},
-		{"1x1 ^3 GPU", From(InitRandom, 1, 1), 3, true},
-		{"1x1 ^3 CPU", From(InitRandom, 1, 1), 3, false},
-		{"2x2 ^3 GPU", From(InitRandom, 2, 2), 3, true},
-		{"2x2 ^3 CPU", From(InitRandom, 2, 2), 3, false},
+		{"1x1 ^1 GPU", From(mat.InitRandom, 1, 1), 1, true},
+		{"1x1 ^1 CPU", From(mat.InitRandom, 1, 1), 1, false},
+		{"2x2 ^1 GPU", From(mat.InitRandom, 2, 2), 1, true},
+		{"2x2 ^1 CPU", From(mat.InitRandom, 2, 2), 1, false},
+		{"1x1 ^2 GPU", From(mat.InitRandom, 1, 1), 2, true},
+		{"1x1 ^2 CPU", From(mat.InitRandom, 1, 1), 2, false},
+		{"2x2 ^2 GPU", From(mat.InitRandom, 2, 2), 2, true},
+		{"2x2 ^2 CPU", From(mat.InitRandom, 2, 2), 2, false},
+		{"1x1 ^3 GPU", From(mat.InitRandom, 1, 1), 3, true},
+		{"1x1 ^3 CPU", From(mat.InitRandom, 1, 1), 3, false},
+		{"2x2 ^3 GPU", From(mat.InitRandom, 2, 2), 3, true},
+		{"2x2 ^3 CPU", From(mat.InitRandom, 2, 2), 3, false},
 	}
 }
 

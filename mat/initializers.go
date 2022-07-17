@@ -12,7 +12,7 @@ const (
 	InitXavier     = "InitXavier"
 )
 
-func Initialize(initializerType string, dim ShapeN) *M32f {
+func Initialize(initializerType string, dim Shape) *M32f {
 	switch initializerType {
 	case InitRandom:
 		return initializeParameterRandom(dim)
@@ -26,27 +26,27 @@ func Initialize(initializerType string, dim ShapeN) *M32f {
 	return nil
 }
 
-func initializeParameterRandom(dim ShapeN) *M32f {
+func initializeParameterRandom(dim Shape) *M32f {
 	data := make([]float32, dim.Size())
 	for i := range data {
 		data[i] = rand.Float32()
 	}
-	return FromSlice32f(Dim(dim.D[0], dim.D[1]), data)
+	return FromSlice32f(dim, data)
 }
 
-func initializeParameterNormalized(dim ShapeN) *M32f {
+func initializeParameterNormalized(dim Shape) *M32f {
 	data := make([]float32, dim.Size())
 	for i := range data {
-		data[i] = rand.Float32() / float32(math.Sqrt(float64(dim.D[0])))
+		data[i] = rand.Float32() / float32(math.Sqrt(float64(dim.D[0]))) // fix this
 	}
-	return FromSlice32f(Dim(dim.D[0], dim.D[1]), data)
+	return FromSlice32f(dim, data)
 }
 
-func initializeParameterXavier(dim ShapeN) *M32f {
+func initializeParameterXavier(dim Shape) *M32f {
 	limit := float32(math.Sqrt(6.0 / float64(dim.Size())))
 	data := make([]float32, dim.Size())
 	for i := range data {
 		data[i] = -limit + rand.Float32()*(limit+limit)
 	}
-	return FromSlice32f(Dim(dim.D[0], dim.D[1]), data)
+	return FromSlice32f(dim, data)
 }

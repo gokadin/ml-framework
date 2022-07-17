@@ -19,12 +19,12 @@ func (o *opDivScalar) dependencies() []*Tensor {
 	return []*Tensor{o.a}
 }
 
-func (o *opDivScalar) forwardShape() Shape {
+func (o *opDivScalar) forwardShape() mat.Shape {
 	return o.a.Shape()
 }
 
-func (o *opDivScalar) backwardShapes(tensorShape Shape) []Shape {
-	return []Shape{tensorShape}
+func (o *opDivScalar) backwardShapes(tensorShape mat.Shape) []mat.Shape {
+	return []mat.Shape{tensorShape}
 }
 
 func (o *opDivScalar) forward(tensor *Tensor) {
@@ -38,7 +38,7 @@ func (o *opDivScalar) backward(tensor *Tensor) {
 
 func DivScalar(a *Tensor, scalar float32) *Tensor {
 	o := &opDivScalar{a, scalar}
-	result := OfShape(o.forwardShape().ToArray()...)
+	result := OfShape(o.forwardShape().D...)
 	result.op = o
 	return result
 }

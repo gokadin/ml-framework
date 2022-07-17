@@ -25,28 +25,28 @@ func (o *opExpand) dependencies() []*Tensor {
 	return []*Tensor{o.a}
 }
 
-func (o *opExpand) forwardShape() Shape {
-	if o.axis == 0 && o.a.Shape().X != 1 {
+func (o *opExpand) forwardShape() mat.Shape {
+	if o.axis == 0 && o.a.Shape().D[0] != 1 {
 		handleIncompatibleShapes("expand 0", o.a.Shape())
 	}
 
-	if o.axis == 1 && o.a.Shape().Y != 1 {
+	if o.axis == 1 && o.a.Shape().D[1] != 1 {
 		handleIncompatibleShapes("expand 1", o.a.Shape())
 	}
 
 	if o.axis == 0 {
-		return Shape{o.copies, o.a.Shape().Y}
+		return mat.Dim(o.copies, o.a.Shape().D[1])
 	}
 
-	return Shape{o.a.Shape().X, o.copies}
+	return mat.Dim(o.a.Shape().D[0], o.copies)
 }
 
-func (o *opExpand) backwardShapes(shape Shape) []Shape {
+func (o *opExpand) backwardShapes(shape mat.Shape) []mat.Shape {
 	if o.axis == 0 {
-		return []Shape{{1, shape.Y}}
+		return []mat.Shape{mat.Dim(1, shape.D[1])}
 	}
 
-	return []Shape{{shape.X, 1}}
+	return []mat.Shape{mat.Dim(shape.D[0], 1)}
 }
 
 func (o *opExpand) forward(tensor *Tensor) {
@@ -67,7 +67,7 @@ func Expand(a *Tensor, axis, copies int) *Tensor {
 	}
 
 	o := &opExpand{a, axis, copies}
-	result := OfShape(o.forwardShape().ToArray()...)
+	result := OfShape(o.forwardShape().D...)
 	result.op = o
 	return result
 }

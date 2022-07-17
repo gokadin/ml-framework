@@ -2,7 +2,10 @@ package tensor
 
 //#include <softmax-cross-entropy.h>
 import "C"
-import "fmt"
+import (
+	"fmt"
+	"ml-framework/mat"
+)
 
 const operationSoftmaxCrossEntropy = "opSoftmaxCrossEntropy"
 
@@ -19,12 +22,12 @@ func (o *opCrossEntropy) dependencies() []*Tensor {
 	return []*Tensor{o.a}
 }
 
-func (o *opCrossEntropy) forwardShape() Shape {
-	return Shape{1, 1}
+func (o *opCrossEntropy) forwardShape() mat.Shape {
+	return mat.Dim(1, 1)
 }
 
-func (o *opCrossEntropy) backwardShapes(tensorShape Shape) []Shape {
-	return []Shape{o.a.Shape()}
+func (o *opCrossEntropy) backwardShapes(tensorShape mat.Shape) []mat.Shape {
+	return []mat.Shape{o.a.Shape()}
 }
 
 func (o *opCrossEntropy) forward(tensor *Tensor) {
@@ -39,11 +42,11 @@ func (o *opCrossEntropy) backward(tensor *Tensor) {
 }
 
 func SoftmaxCrossEntropy(pred, target *Tensor) *Tensor {
-	if pred.Shape().Y < 3 {
+	if pred.Shape().D[1] < 3 {
 		panic(fmt.Sprintf("softmax-cross-entropy requires at least 3 values"))
 	}
 	o := &opCrossEntropy{pred, target}
-	result := OfShape(o.forwardShape().ToArray()...)
+	result := OfShape(o.forwardShape().D...)
 	result.op = o
 	return result
 }

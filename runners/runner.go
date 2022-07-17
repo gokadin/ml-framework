@@ -79,8 +79,8 @@ func (r *runner) Initialize() {
 func (r *runner) Fit(dataset *datasets.Dataset) {
 	r.Initialize()
 	graph := tensor.NewGraph()
-	batchX := tensor.OfShape(dataset.BatchSize(), dataset.Get(datasets.TrainingSetX).Data().Shape().Y).SetName("batch x")
-	batchY := tensor.OfShape(dataset.BatchSize(), dataset.Get(datasets.TrainingSetY).Data().Shape().Y).SetName("batch y")
+	batchX := tensor.OfShape(dataset.BatchSize(), dataset.Get(datasets.TrainingSetX).Data().Shape().D[1]).SetName("batch x")
+	batchY := tensor.OfShape(dataset.BatchSize(), dataset.Get(datasets.TrainingSetY).Data().Shape().D[1]).SetName("batch y")
 	pred := r.model.Build(batchX).SetName("prediction")
 	loss := r.criterion.Forward(pred, batchY).SetName("loss")
 
@@ -140,16 +140,16 @@ func (r *runner) Run(x *tensor.Tensor) {
 
 	graph.Close()
 
-	r.logger.Info(fmt.Sprintf("Ran: %d iterations", x.Shape().X))
+	r.logger.Info(fmt.Sprintf("Ran: %d iterations", x.Shape().D[0]))
 }
 
 func (r *runner) Validate(dataset *datasets.Dataset) {
 	graph := tensor.NewGraph()
 	r.Initialize()
 
-	x := tensor.OfShape(dataset.Get(datasets.ValidationSetX).Data().Shape().X, dataset.Get(datasets.ValidationSetX).Data().Shape().Y).
+	x := tensor.OfShape(dataset.Get(datasets.ValidationSetX).Data().Shape().D[0], dataset.Get(datasets.ValidationSetX).Data().Shape().D[1]).
 		SetData(dataset.Get(datasets.ValidationSetX).Data().Data())
-	target := tensor.OfShape(dataset.Get(datasets.ValidationSetY).Data().Shape().X, dataset.Get(datasets.ValidationSetY).Data().Shape().Y).
+	target := tensor.OfShape(dataset.Get(datasets.ValidationSetY).Data().Shape().D[0], dataset.Get(datasets.ValidationSetY).Data().Shape().D[1]).
 		SetData(dataset.Get(datasets.ValidationSetY).Data().Data())
 
 	y := r.model.BuildNoGrad(x)
@@ -166,7 +166,7 @@ func (r *runner) RunSingle(dataset *datasets.Dataset) {
 	graph := tensor.NewGraph()
 	r.Initialize()
 
-	x := tensor.OfShape(dataset.Get(datasets.ValidationSetX).Data().Shape().X, dataset.Get(datasets.ValidationSetX).Data().Shape().Y).
+	x := tensor.OfShape(dataset.Get(datasets.ValidationSetX).Data().Shape().D[0], dataset.Get(datasets.ValidationSetX).Data().Shape().D[1]).
 		SetData(dataset.Get(datasets.ValidationSetX).Data().Data())
 
 	y := r.model.BuildNoGrad(x)

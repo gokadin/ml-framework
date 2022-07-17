@@ -19,12 +19,12 @@ func (o *opTanh) dependencies() []*Tensor {
 	return []*Tensor{o.a}
 }
 
-func (o *opTanh) forwardShape() Shape {
+func (o *opTanh) forwardShape() mat.Shape {
 	return o.a.Shape()
 }
 
-func (o *opTanh) backwardShapes(tensorShape Shape) []Shape {
-	return []Shape{tensorShape}
+func (o *opTanh) backwardShapes(tensorShape mat.Shape) []mat.Shape {
+	return []mat.Shape{tensorShape}
 }
 
 func (o *opTanh) forward(tensor *Tensor) {
@@ -34,14 +34,14 @@ func (o *opTanh) forward(tensor *Tensor) {
 }
 
 func (o *opTanh) backward(tensor *Tensor) {
-	tensor.SetData(mat.Apply(o.a.ToMat32f(), func(value float32) float32 {
+	o.a.SetGradient(mat.Mul(tensor.GradientToMat32(), mat.Apply(tensor.ToMat32f(), func(value float32) float32 {
 		return float32(1 - math.Pow(math.Tanh(float64(value)), 2))
-	}).Data())
+	})).Data())
 }
 
 func Tanh(a *Tensor) *Tensor {
 	o := &opTanh{a}
-	result := OfShape(o.forwardShape().ToArray()...)
+	result := OfShape(o.forwardShape().D...)
 	result.op = o
 	return result
 }

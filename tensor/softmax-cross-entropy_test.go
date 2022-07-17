@@ -15,12 +15,12 @@ type softmaxCrossEntropyTestCases struct {
 
 func buildSoftmaxCrossEntropyTestCases() []softmaxCrossEntropyTestCases {
 	return []softmaxCrossEntropyTestCases{
-		{"5x3 GPU", From(InitRandom, 5, 3), From(InitRandom, 5, 3), true},
-		{"5x3 CPU", From(InitRandom, 5, 3), From(InitRandom, 5, 3), false},
-		{"2x5 GPU", From(InitRandom, 2, 5), From(InitRandom, 2, 5), true},
-		{"2x5 CPU", From(InitRandom, 2, 5), From(InitRandom, 2, 5), false},
-		{"1000x10 GPU", From(InitRandom, 1000, 10), From(InitRandom, 1000, 10), true},
-		{"1000x10 CPU", From(InitRandom, 1000, 10), From(InitRandom, 1000, 10), false},
+		{"5x3 GPU", From(mat.InitRandom, 5, 3), From(mat.InitRandom, 5, 3), true},
+		{"5x3 CPU", From(mat.InitRandom, 5, 3), From(mat.InitRandom, 5, 3), false},
+		{"2x5 GPU", From(mat.InitRandom, 2, 5), From(mat.InitRandom, 2, 5), true},
+		{"2x5 CPU", From(mat.InitRandom, 2, 5), From(mat.InitRandom, 2, 5), false},
+		{"1000x10 GPU", From(mat.InitRandom, 1000, 10), From(mat.InitRandom, 1000, 10), true},
+		{"1000x10 CPU", From(mat.InitRandom, 1000, 10), From(mat.InitRandom, 1000, 10), false},
 	}
 }
 
@@ -30,7 +30,7 @@ func Test_softmaxCrossEntropy_forward(t *testing.T) {
 			t.Log(test.name)
 
 			aSoftmaxMat := mat.Softmax(test.a.ToMat32f())
-			expected := mat.DivScalar(mat.Sum(mat.Neg(mat.Log(mat.Sum(mat.Mul(test.b.ToMat32f(), aSoftmaxMat), 1))), 0), float32(test.a.Shape().X)).Data()
+			expected := mat.DivScalar(mat.Sum(mat.Neg(mat.Sum(mat.Mul(test.b.ToMat32f(), mat.Log(aSoftmaxMat)), 1)), 0), float32(test.a.Shape().D[0])).Data()
 			c := SoftmaxCrossEntropy(test.a, test.b)
 			c.RunOnGpu(test.runOnGpu)
 
@@ -51,7 +51,7 @@ func Test_softmaxCrossEntropy_backward(t *testing.T) {
 			c.RunOnGpu(test.runOnGpu)
 			c.forward()
 			c.SetGradient(mat.Random32f(c.Shape().Size()))
-			expandedGrad := mat.Expand(mat.Expand(c.GradientToMat32(), 1, test.a.Shape().Y), 0, test.a.Shape().X)
+			expandedGrad := mat.Expand(mat.Expand(c.GradientToMat32(), 1, test.a.Shape().D[1]), 0, test.a.Shape().D[0])
 			expectedGrad := mat.Mul(expandedGrad, mat.Sub(test.a.ToMat32f(), test.b.ToMat32f())).Data()
 
 			c.backward()

@@ -19,12 +19,12 @@ func (o *opPow) dependencies() []*Tensor {
 	return []*Tensor{o.a}
 }
 
-func (o *opPow) forwardShape() Shape {
+func (o *opPow) forwardShape() mat.Shape {
 	return o.a.Shape()
 }
 
-func (o *opPow) backwardShapes(tensorShape Shape) []Shape {
-	return []Shape{tensorShape}
+func (o *opPow) backwardShapes(tensorShape mat.Shape) []mat.Shape {
+	return []mat.Shape{tensorShape}
 }
 
 func (o *opPow) forward(tensor *Tensor) {
@@ -41,7 +41,7 @@ func (o *opPow) backward(tensor *Tensor) {
 
 func Pow(a *Tensor, power float32) *Tensor {
 	o := &opPow{a, power}
-	result := OfShape(o.forwardShape().ToArray()...)
+	result := OfShape(o.forwardShape().D...)
 	result.op = o
 	return result
 }

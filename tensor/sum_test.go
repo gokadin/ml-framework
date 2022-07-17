@@ -68,7 +68,7 @@ func Test_sum0_backward(t *testing.T) {
 			c.RunOnGpu(test.runOnGpu)
 			c.forward()
 			c.SetGradient(mat.Ones32f(c.Shape().Size()))
-			expectedGrad := mat.Expand(c.GradientToMat32(), 0, test.a.Shape().X).Data()
+			expectedGrad := mat.Expand(c.GradientToMat32(), 0, test.a.Shape().D[0]).Data()
 
 			c.backward()
 
@@ -86,7 +86,7 @@ func Test_sum1_backward(t *testing.T) {
 			c.RunOnGpu(test.runOnGpu)
 			c.forward()
 			c.SetGradient(mat.Ones32f(c.Shape().Size()))
-			expectedGrad := mat.Expand(c.GradientToMat32(), 1, test.a.Shape().Y).Data()
+			expectedGrad := mat.Expand(c.GradientToMat32(), 1, test.a.Shape().D[1]).Data()
 
 			c.backward()
 

@@ -27,16 +27,16 @@ int softmax_backward(TENSOR *tensor, TENSOR *a)
 
 int cpu_softmax_forward(TENSOR *target, TENSOR *a)
 {
-    for (int i = 0; i < a->mat_shape->x; i++)
+    for (int i = 0; i < a->mat_shape[0]; i++)
     {
         double sum = 0;
-        for (int j = 0; j < a->mat_shape->y; j++)
+        for (int j = 0; j < a->mat_shape[1]; j++)
         {
-            sum += exp(a->data[i * a->mat_shape->y + j]);
+            sum += exp(a->data[i * a->mat_shape[1] + j]);
         }
-        for (int j = 0; j < a->mat_shape->y; j++)
+        for (int j = 0; j < a->mat_shape[1]; j++)
         {
-            int index = i * a->mat_shape->y + j;
+            int index = i * a->mat_shape[1] + j;
             target->data[index] = exp(a->data[index]) / sum;
         }
     }

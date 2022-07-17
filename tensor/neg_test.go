@@ -66,6 +66,6 @@ func Test_neg_forward_reshape(t *testing.T) {
 
 	c.forward()
 
-	assert.Equal(t, a.Shape().ToArray(), c.Shape().ToArray())
+	assert.True(t, a.Shape().Equals(c.Shape()))
 	assert.Equal(t, expected, c.ToFloat32())
 }

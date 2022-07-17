@@ -23,7 +23,7 @@ func Linear(unitCount int) *LinearModule {
 
 func (d *LinearModule) Build(input *tensor.Tensor) *tensor.Tensor {
 	if !d.IsInitialized {
-		d.Weights = tensor.FromMat32(mat.Initialize(mat.InitXavier, mat.Dim(input.Shape().Y, d.UnitCount))).
+		d.Weights = tensor.FromMat32(mat.Initialize(mat.InitXavier, mat.Dim(input.Shape().D[1], d.UnitCount))).
 			SetName(fmt.Sprintf("LinearModule layer (%d) weights", d.UnitCount))
 		d.Bias = tensor.Zeros(1, d.UnitCount).SetName(fmt.Sprintf("LinearModule layer (%d) biases", d.UnitCount))
 		d.IsInitialized = true

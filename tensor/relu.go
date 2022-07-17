@@ -2,6 +2,7 @@ package tensor
 
 //#include <relu.h>
 import "C"
+import "ml-framework/mat"
 
 const operationRelu = "opRelu"
 
@@ -17,12 +18,12 @@ func (o *opRelu) dependencies() []*Tensor {
 	return []*Tensor{o.a}
 }
 
-func (o *opRelu) forwardShape() Shape {
+func (o *opRelu) forwardShape() mat.Shape {
 	return o.a.Shape()
 }
 
-func (o *opRelu) backwardShapes(tensorShape Shape) []Shape {
-	return []Shape{tensorShape}
+func (o *opRelu) backwardShapes(tensorShape mat.Shape) []mat.Shape {
+	return []mat.Shape{tensorShape}
 }
 
 func (o *opRelu) forward(tensor *Tensor) {
@@ -35,7 +36,7 @@ func (o *opRelu) backward(tensor *Tensor) {
 
 func Relu(a *Tensor) *Tensor {
 	o := &opRelu{a}
-	result := OfShape(o.forwardShape().ToArray()...)
+	result := OfShape(o.forwardShape().D...)
 	result.op = o
 	return result
 }

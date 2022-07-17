@@ -69,22 +69,22 @@ extern "C" {
     __declspec(dllexport) void gpu_matmul_forward(const TENSOR *target, const TENSOR *a, TENSOR *b)
     {
         float* gpu_a;
-        size_t gpu_a_size = a->mat_shape->size * sizeof(float);
+        size_t gpu_a_size = a->mat_size * sizeof(float);
         checkCudaErr(cudaMalloc((void**)&gpu_a, gpu_a_size));
         checkCudaErr(cudaMemcpy(gpu_a, &a->data[0], gpu_a_size, cudaMemcpyHostToDevice));
 
         float* gpu_b;
-        size_t gpu_b_size = b->mat_shape->size * sizeof(float);
+        size_t gpu_b_size = b->mat_size * sizeof(float);
         checkCudaErr(cudaMalloc((void**)&gpu_b, gpu_b_size));
         checkCudaErr(cudaMemcpy(gpu_b, &b->data[0], gpu_b_size, cudaMemcpyHostToDevice));
 
         float* gpu_target;
-        size_t gpu_target_size = target->mat_shape->size * sizeof(float);
+        size_t gpu_target_size = target->mat_size * sizeof(float);
         checkCudaErr(cudaMalloc(&gpu_target, gpu_target_size));
 
         dim3 blockSize(BLOCK_SIZE, BLOCK_SIZE);
-        dim3 gridSize((b->mat_shape->y + BLOCK_SIZE - 1) / BLOCK_SIZE, (a->mat_shape->x + BLOCK_SIZE - 1) / BLOCK_SIZE);
-        matmul<<<gridSize, blockSize>>>(gpu_a, gpu_b, gpu_target, a->mat_shape->x, a->mat_shape->y, b->mat_shape->y);
+        dim3 gridSize((b->mat_shape[1] + BLOCK_SIZE - 1) / BLOCK_SIZE, (a->mat_shape[0] + BLOCK_SIZE - 1) / BLOCK_SIZE);
+        matmul<<<gridSize, blockSize>>>(gpu_a, gpu_b, gpu_target, a->mat_shape[0], a->mat_shape[1], b->mat_shape[1]);
         checkCudaKernelErr("matmul", blockSize, gridSize);
 
         checkCudaErr(cudaMemcpy(&target->data[0], gpu_target, gpu_target_size, cudaMemcpyDeviceToHost));
@@ -97,12 +97,12 @@ extern "C" {
     __declspec(dllexport) void gpu_matmul_backward(const TENSOR *tensor, const TENSOR *a, TENSOR *b)
     {
         float* gpu_tensor_grad;
-        size_t gpu_tensor_grad_size = tensor->grad_shape->size * sizeof(float);
+        size_t gpu_tensor_grad_size = tensor->grad_size * sizeof(float);
         checkCudaErr(cudaMalloc((void**)&gpu_tensor_grad, gpu_tensor_grad_size));
         checkCudaErr(cudaMemcpy(gpu_tensor_grad, &tensor->grad[0], gpu_tensor_grad_size, cudaMemcpyHostToDevice));
 
         float* gpu_a;
-        size_t a_size = a->mat_shape->size * sizeof(float);
+        size_t a_size = a->mat_size * sizeof(float);
         checkCudaErr(cudaMalloc((void**)&gpu_a, a_size));
         checkCudaErr(cudaMemcpy(gpu_a, &a->data[0], a_size, cudaMemcpyHostToDevice));
 
@@ -110,7 +110,7 @@ extern "C" {
         checkCudaErr(cudaMalloc(&gpu_a_grad, a_size));
 
         float* gpu_b;
-        size_t b_size = b->mat_shape->size * sizeof(float);
+        size_t b_size = b->mat_size * sizeof(float);
         checkCudaErr(cudaMalloc((void**)&gpu_b, b_size));
         checkCudaErr(cudaMemcpy(gpu_b, &b->data[0], b_size, cudaMemcpyHostToDevice));
 
@@ -124,17 +124,17 @@ extern "C" {
         // A GRAD
 
         dim3 blockSize(BLOCK_SIZE, BLOCK_SIZE);
-        dim3 gridSize((b->mat_shape->x + BLOCK_SIZE - 1) / BLOCK_SIZE, (tensor->grad_shape->x + BLOCK_SIZE - 1) / BLOCK_SIZE);
-        matmul_a_grad<<<gridSize, blockSize, 0, streamA>>>(gpu_tensor_grad, gpu_b, gpu_a_grad, tensor->grad_shape->x, tensor->grad_shape->y, b->mat_shape->x);
+        dim3 gridSize((b->mat_shape[0] + BLOCK_SIZE - 1) / BLOCK_SIZE, (tensor->grad_shape[0] + BLOCK_SIZE - 1) / BLOCK_SIZE);
+        matmul_a_grad<<<gridSize, blockSize, 0, streamA>>>(gpu_tensor_grad, gpu_b, gpu_a_grad, tensor->grad_shape[0], tensor->grad_shape[1], b->mat_shape[0]);
         checkCudaKernelErr("matmul_a_grad", blockSize, gridSize);
 
         checkCudaErr(cudaMemcpy(&a->grad[0], gpu_a_grad, a_size, cudaMemcpyDeviceToHost));
 
         // B GRAD
 
-        gridSize.x = (a->mat_shape->y + BLOCK_SIZE - 1) / BLOCK_SIZE;
-        gridSize.y = (tensor->grad_shape->y + BLOCK_SIZE - 1) / BLOCK_SIZE;
-        matmul_b_grad<<<gridSize, blockSize, 0, streamB>>>(gpu_tensor_grad, gpu_a, gpu_b_grad, tensor->grad_shape->y, tensor->grad_shape->x, a->mat_shape->y);
+        gridSize.x = (a->mat_shape[1] + BLOCK_SIZE - 1) / BLOCK_SIZE;
+        gridSize.y = (tensor->grad_shape[1] + BLOCK_SIZE - 1) / BLOCK_SIZE;
+        matmul_b_grad<<<gridSize, blockSize, 0, streamB>>>(gpu_tensor_grad, gpu_a, gpu_b_grad, tensor->grad_shape[1], tensor->grad_shape[0], a->mat_shape[1]);
         checkCudaKernelErr("matmul_b_grad", blockSize, gridSize);
 
         checkCudaErr(cudaMemcpy(&b->grad[0], gpu_b_grad, b_size, cudaMemcpyDeviceToHost));

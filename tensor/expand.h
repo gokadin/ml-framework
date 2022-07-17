@@ -23,9 +23,9 @@ int cpu_expand_forward(TENSOR *target, TENSOR *a, int axis, int copies)
     {
         for (int i = 0; i < copies; i++)
         {
-            for (int j = 0; j < a->mat_shape->y; j++)
+            for (int j = 0; j < a->mat_shape[1]; j++)
             {
-                target->data[i * a->mat_shape->y + j] = a->data[j];
+                target->data[i * a->mat_shape[1] + j] = a->data[j];
             }
         }
 
@@ -34,7 +34,7 @@ int cpu_expand_forward(TENSOR *target, TENSOR *a, int axis, int copies)
 
     if (axis == 1)
     {
-        for (int i = 0; i < a->mat_shape->x; i++)
+        for (int i = 0; i < a->mat_shape[0]; i++)
         {
             for (int j = 0; j < copies; j++)
             {

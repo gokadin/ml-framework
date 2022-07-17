@@ -7,11 +7,11 @@ import (
 )
 
 type M32f struct {
-	shape ShapeN
+	shape Shape
 	data  []float32
 }
 
-func FromSlice32f(shape ShapeN, data []float32) *M32f {
+func FromSlice32f(shape Shape, data []float32) *M32f {
 	return &M32f{shape, data}
 }
 
@@ -39,11 +39,11 @@ func initialValues32f(size int, initialValue float32) []float32 {
 	return result
 }
 
-func NewMat32fZeros(shape ShapeN) *M32f {
+func NewMat32fZeros(shape Shape) *M32f {
 	return newMat32fWithInitialValue(shape, 0)
 }
 
-func newMat32fWithInitialValue(shape ShapeN, initialValue float32) *M32f {
+func newMat32fWithInitialValue(shape Shape, initialValue float32) *M32f {
 	m := &M32f{shape: shape}
 	m.data = make([]float32, shape.Size())
 	for i := 0; i < len(m.data); i++ {
@@ -52,11 +52,11 @@ func newMat32fWithInitialValue(shape ShapeN, initialValue float32) *M32f {
 	return m
 }
 
-func (m *M32f) Shape() ShapeN {
+func (m *M32f) Shape() Shape {
 	return m.shape
 }
 
-func (m *M32f) Reshape(shape ShapeN) {
+func (m *M32f) Reshape(shape Shape) {
 	m.shape = shape
 }
 
@@ -130,7 +130,7 @@ func Apply(a *M32f, mapping func(float32) float32) *M32f {
 		[[33]]
 	]
 */
-func (m *M32f) Slice(begin, size ShapeN) *M32f {
+func (m *M32f) Slice(begin, size Shape) *M32f {
 	if begin.Count() != size.Count() {
 		panic("shape dimension count must match in order to perform a slice")
 	}
@@ -340,42 +340,40 @@ func Neg(a *M32f) *M32f {
 }
 
 func (m *M32f) Transpose() {
-	//for i := 0; i < m.shape.X; i++ {
-	//	for j := 0; j < m.shape.Y; j++ {
-	//		m.data[j*m.shape.Y+i] = m.data[i*m.shape.X+j]
-	//	}
-	//}
-	//temp := m.shape.X
-	//m.shape.X = m.shape.Y
-	//m.shape.Y = temp
+	for i := 0; i < m.shape.D[0]; i++ {
+		for j := 0; j < m.shape.D[1]; j++ {
+			m.data[j*m.shape.D[1]+i] = m.data[i*m.shape.D[0]+j]
+		}
+	}
+	temp := m.shape.D[0]
+	m.shape.D[0] = m.shape.D[1]
+	m.shape.D[1] = temp
 }
 
 func Transpose(a *M32f) *M32f {
-	//result := make([]float32, a.shape.Size())
-	//for i := 0; i < a.shape.X; i++ {
-	//	for j := 0; j < a.shape.Y; j++ {
-	//		result[j*a.shape.X+i] = a.data[i*a.shape.Y+j]
-	//	}
-	//}
-	//return FromSlice32f(WithShape(a.shape.Y, a.shape.X), result)
-	return nil
+	result := make([]float32, a.shape.Size())
+	for i := 0; i < a.shape.D[0]; i++ {
+		for j := 0; j < a.shape.D[1]; j++ {
+			result[j*a.shape.D[0]+i] = a.data[i*a.shape.D[1]+j]
+		}
+	}
+	return FromSlice32f(Dim(a.shape.D[1], a.shape.D[0]), result)
 }
 
 func MatMul(a, b *M32f) *M32f {
-	//if a.shape.X == 0 || a.shape.Y == 0 || b.shape.X == 0 || b.shape.Y == 0 || a.shape.Y != b.shape.X {
-	//	log.Fatalf("cannot multiply matrices of incompatible sizes -> %dx%d and %dx%d", a.shape.X, a.shape.Y, b.shape.X, b.shape.Y)
-	//}
-	//
-	//result := make([]float32, a.shape.X*b.shape.Y)
-	//for i := 0; i < a.shape.X; i++ {
-	//	for j := 0; j < b.shape.Y; j++ {
-	//		for k := 0; k < b.shape.X; k++ {
-	//			result[i*b.shape.Y+j] += a.data[i*b.shape.X+k] * b.data[k*b.shape.Y+j]
-	//		}
-	//	}
-	//}
-	//return FromSlice32f(WithShape(a.shape.X, b.shape.Y), result)
-	return nil
+	if a.shape.D[0] == 0 || a.shape.D[1] == 0 || b.shape.D[0] == 0 || b.shape.D[1] == 0 || a.shape.D[1] != b.shape.D[0] {
+		log.Fatalf("cannot multiply matrices of incompatible sizes -> %dx%d and %dx%d", a.shape.D[0], a.shape.D[1], b.shape.D[0], b.shape.D[1])
+	}
+
+	result := make([]float32, a.shape.D[0]*b.shape.D[1])
+	for i := 0; i < a.shape.D[0]; i++ {
+		for j := 0; j < b.shape.D[1]; j++ {
+			for k := 0; k < b.shape.D[0]; k++ {
+				result[i*b.shape.D[1]+j] += a.data[i*b.shape.D[0]+k] * b.data[k*b.shape.D[1]+j]
+			}
+		}
+	}
+	return FromSlice32f(Dim(a.shape.D[0], b.shape.D[1]), result)
 }
 
 func Sum(a *M32f, axis int) *M32f {
@@ -394,28 +392,26 @@ func Sum(a *M32f, axis int) *M32f {
 Shape of (A,B) becomes (1,B)
 */
 func sum0(a *M32f) *M32f {
-	//result := make([]float32, a.shape.Y)
-	//for i := 0; i < a.shape.X; i++ {
-	//	for j := 0; j < a.shape.Y; j++ {
-	//		result[j] += a.data[i*a.shape.Y+j]
-	//	}
-	//}
-	//return FromSlice32f(WithShape(1, a.shape.Y), result)
-	return nil
+	result := make([]float32, a.shape.D[1])
+	for i := 0; i < a.shape.D[0]; i++ {
+		for j := 0; j < a.shape.D[1]; j++ {
+			result[j] += a.data[i*a.shape.D[1]+j]
+		}
+	}
+	return FromSlice32f(Dim(1, a.shape.D[1]), result)
 }
 
 /**
 Shape of (A,B) becomes (A,1)
 */
 func sum1(a *M32f) *M32f {
-	//result := make([]float32, a.shape.X)
-	//for i := 0; i < a.shape.X; i++ {
-	//	for j := 0; j < a.shape.Y; j++ {
-	//		result[i] += a.data[i*a.shape.Y+j]
-	//	}
-	//}
-	//return FromSlice32f(WithShape(a.shape.X, 1), result)
-	return nil
+	result := make([]float32, a.shape.D[0])
+	for i := 0; i < a.shape.D[0]; i++ {
+		for j := 0; j < a.shape.D[1]; j++ {
+			result[i] += a.data[i*a.shape.D[1]+j]
+		}
+	}
+	return FromSlice32f(Dim(a.shape.D[0], 1), result)
 }
 
 func Expand(a *M32f, axis, copies int) *M32f {
@@ -434,36 +430,34 @@ func Expand(a *M32f, axis, copies int) *M32f {
 Shape of (A,B) becomes (A*copies,B)
 */
 func expand0(a *M32f, copies int) *M32f {
-	//if a.shape.X != 1 {
-	//	log.Fatalf("incompatible matrix size for Expand operation on X axis -> %dx%d", a.shape.X, a.shape.Y)
-	//}
-	//
-	//result := make([]float32, copies*a.shape.Y)
-	//for i := 0; i < copies; i++ {
-	//	for j := 0; j < a.shape.Y; j++ {
-	//		result[i*a.shape.Y+j] = a.data[j]
-	//	}
-	//}
-	//return FromSlice32f(WithShape(copies, a.shape.Y), result)
-	return nil
+	if a.shape.D[0] != 1 || a.shape.Count() > 2 {
+		log.Fatalf("incompatible matrix size for Expand operation on X axis -> %dx%d", a.shape.D[0], a.shape.D[1])
+	}
+
+	result := make([]float32, copies*a.shape.D[1])
+	for i := 0; i < copies; i++ {
+		for j := 0; j < a.shape.D[1]; j++ {
+			result[i*a.shape.D[1]+j] = a.data[j]
+		}
+	}
+	return FromSlice32f(Dim(copies, a.shape.D[1]), result)
 }
 
 /**
 Shape of (A,B) becomes (A,B*copies)
 */
 func expand1(a *M32f, copies int) *M32f {
-	//if a.shape.X == 0 || a.shape.Y != 1 {
-	//	log.Fatalf("incompatible matrix size for Expand operation on Y axis -> %dx%d", a.shape.X, a.shape.Y)
-	//}
-	//
-	//result := make([]float32, a.shape.X*a.shape.Y*copies)
-	//for i := 0; i < a.shape.X; i++ {
-	//	for j := 0; j < copies; j++ {
-	//		result[i*copies+j] = a.data[i]
-	//	}
-	//}
-	//return FromSlice32f(WithShape(a.shape.X, copies), result)
-	return nil
+	if a.shape.D[0] == 0 || a.shape.D[1] != 1 || a.shape.Count() > 2 {
+		log.Fatalf("incompatible matrix size for Expand operation on Y axis -> %dx%d", a.shape.D[0], a.shape.D[1])
+	}
+
+	result := make([]float32, a.shape.D[0]*a.shape.D[1]*copies)
+	for i := 0; i < a.shape.D[0]; i++ {
+		for j := 0; j < copies; j++ {
+			result[i*copies+j] = a.data[i]
+		}
+	}
+	return FromSlice32f(Dim(a.shape.D[0], copies), result)
 }
 
 func (m *M32f) Equals32f(other *M32f) bool {
@@ -485,17 +479,16 @@ func Equals32f(a, b *M32f) bool {
 }
 
 func Softmax(a *M32f) *M32f {
-	//result := make([]float32, a.shape.Size())
-	//for i := 0; i < a.shape.X; i++ {
-	//	sum := 0.0
-	//	for j := 0; j < a.shape.Y; j++ {
-	//		sum += math.Exp(float64(a.data[i*a.shape.Y+j]))
-	//	}
-	//	for j := 0; j < a.shape.Y; j++ {
-	//		index := i*a.shape.Y + j
-	//		result[index] = float32(math.Exp(float64(a.data[index])) / sum)
-	//	}
-	//}
-	//return FromSlice32f(a.shape, result)
-	return nil
+	result := make([]float32, a.shape.Size())
+	for i := 0; i < a.shape.D[0]; i++ {
+		sum := 0.0
+		for j := 0; j < a.shape.D[1]; j++ {
+			sum += math.Exp(float64(a.data[i*a.shape.D[1]+j]))
+		}
+		for j := 0; j < a.shape.D[1]; j++ {
+			index := i*a.shape.D[1] + j
+			result[index] = float32(math.Exp(float64(a.data[index])) / sum)
+		}
+	}
+	return FromSlice32f(a.shape, result)
 }

@@ -18,16 +18,16 @@ func bytesToMat(bytes []byte, numOfSamples, headerOffset int) *mat.M32f {
 		}
 	}
 
-	return mat.FromSlice32f(mat.WithShape(numOfSamples, sampleLength), data)
+	return mat.FromSlice32f(mat.Dim(numOfSamples, sampleLength), data)
 }
 
 func oneHotEncode(m *mat.M32f, depth int) *mat.M32f {
-	if m.Shape().X == 0 || m.Shape().Y != 1 {
+	if m.Shape().D[0] == 0 || m.Shape().D[1] != 1 {
 		log.Fatal("cannot one hot encode Dataset with more than one value per output")
 	}
 
 	result := mat.Expand(m, 1, depth)
-	for i := 0; i < result.Shape().X; i++ {
+	for i := 0; i < result.Shape().D[0]; i++ {
 		value := int(result.At(i * depth))
 		for j := 0; j < depth; j++ {
 			if value == j {

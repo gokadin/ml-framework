@@ -3,6 +3,7 @@ package tensor
 //#cgo LDFLAGS: -L${SRCDIR} -Wl,-rpath,${SRCDIR}  -lmul
 //#include <mul.h>
 import "C"
+import "ml-framework/mat"
 
 const operationMul = "opMul"
 
@@ -18,12 +19,12 @@ func (o *opMul) dependencies() []*Tensor {
 	return []*Tensor{o.a, o.b}
 }
 
-func (o *opMul) forwardShape() Shape {
+func (o *opMul) forwardShape() mat.Shape {
 	return o.a.Shape()
 }
 
-func (o *opMul) backwardShapes(tensorShape Shape) []Shape {
-	return []Shape{tensorShape, tensorShape}
+func (o *opMul) backwardShapes(tensorShape mat.Shape) []mat.Shape {
+	return []mat.Shape{tensorShape, tensorShape}
 }
 
 func (o *opMul) forward(tensor *Tensor) {
@@ -36,7 +37,7 @@ func (o *opMul) backward(tensor *Tensor) {
 
 func Mul(a, b *Tensor) *Tensor {
 	o := &opMul{a, b}
-	result := OfShape(o.forwardShape().ToArray()...)
+	result := OfShape(o.forwardShape().D...)
 	result.op = o
 	return result
 }

@@ -70,7 +70,7 @@ func (d *Dataset) BatchSize() int {
 }
 
 func (d *Dataset) NumBatches() int {
-	return d.sets[TrainingSetX].data.Shape().X / d.BatchSize()
+	return d.sets[TrainingSetX].data.Shape().D[0] / d.BatchSize()
 }
 
 func (d *Dataset) SetBatchSize(batchSize int) *Dataset {
@@ -96,14 +96,16 @@ func (d *Dataset) NextBatch() (*mat.M32f, *mat.M32f) {
 	}
 
 	fromIndex := d.batchCounter * d.batchSize
+	_ = fromIndex // remove
 	toIndex := (d.batchCounter + 1) * d.batchSize
-	if toIndex > d.sets[TrainingSetX].data.Shape().X {
-		toIndex = d.sets[TrainingSetX].data.Shape().X
+	if toIndex > d.sets[TrainingSetX].data.Shape().D[0] {
+		toIndex = d.sets[TrainingSetX].data.Shape().D[0]
 	}
 
 	d.batchCounter++
 
-	return d.sets[TrainingSetX].data.Slice(fromIndex, toIndex), d.sets[TrainingSetY].data.Slice(fromIndex, toIndex)
+	return d.sets[TrainingSetX].data.Slice(mat.Dim(), mat.Dim()), d.sets[TrainingSetY].data.Slice(mat.Dim(), mat.Dim()) // fix
+	//return d.sets[TrainingSetX].data.Slice(fromIndex, toIndex), d.sets[TrainingSetY].data.Slice(fromIndex, toIndex)
 }
 
 func (d *Dataset) BatchCounter() int {
@@ -113,7 +115,7 @@ func (d *Dataset) BatchCounter() int {
 func (d *Dataset) shuffleData() {
 	matX := d.sets[TrainingSetX].data.Data()
 	matY := d.sets[TrainingSetY].data.Data()
-	rand.Shuffle(d.sets[TrainingSetX].data.Shape().X*d.sets[TrainingSetX].data.Shape().Y, func(i, j int) {
+	rand.Shuffle(d.sets[TrainingSetX].data.Shape().D[0]*d.sets[TrainingSetX].data.Shape().D[1], func(i, j int) {
 		matX[i], matX[j] = matX[j], matX[i]
 		matY[i], matY[j] = matY[i], matY[i]
 	})

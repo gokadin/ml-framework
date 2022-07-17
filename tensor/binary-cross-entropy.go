@@ -2,6 +2,7 @@ package tensor
 
 //#include <binary-cross-entropy.h>
 import "C"
+import "ml-framework/mat"
 
 const operationBinaryCrossEntropy = "opBinaryCrossEntropy"
 
@@ -18,12 +19,12 @@ func (o *opBinaryCrossEntropy) dependencies() []*Tensor {
 	return []*Tensor{o.a}
 }
 
-func (o *opBinaryCrossEntropy) forwardShape() Shape {
-	return Shape{1, 1}
+func (o *opBinaryCrossEntropy) forwardShape() mat.Shape {
+	return mat.Dim(1, 1)
 }
 
-func (o *opBinaryCrossEntropy) backwardShapes(tensorShape Shape) []Shape {
-	return []Shape{o.a.Shape()}
+func (o *opBinaryCrossEntropy) backwardShapes(tensorShape mat.Shape) []mat.Shape {
+	return []mat.Shape{o.a.Shape()}
 }
 
 func (o *opBinaryCrossEntropy) forward(tensor *Tensor) {
@@ -39,7 +40,7 @@ func (o *opBinaryCrossEntropy) backward(tensor *Tensor) {
 
 func BinaryCrossEntropy(pred, target *Tensor) *Tensor {
 	o := &opBinaryCrossEntropy{pred, target}
-	result := OfShape(o.forwardShape().ToArray()...)
+	result := OfShape(o.forwardShape().D...)
 	result.op = o
 	return result
 }

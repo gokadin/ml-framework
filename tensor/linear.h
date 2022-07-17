@@ -34,11 +34,11 @@ int linear_backward(TENSOR *tensor, TENSOR *a, TENSOR *x, TENSOR *b)
 int cpu_linear_forward(TENSOR *tensor, TENSOR *a, TENSOR *x, TENSOR *b)
 {
     cpu_matmul_forward(tensor, a, x);
-    for (int i = 0; i < tensor->mat_shape->x; i++)
+    for (int i = 0; i < tensor->mat_shape[0]; i++)
     {
-        for (int j = 0; j < tensor->mat_shape->y; j++)
+        for (int j = 0; j < tensor->mat_shape[1]; j++)
         {
-            tensor->data[i * tensor->mat_shape->y + j] += b->data[j];
+            tensor->data[i * tensor->mat_shape[1] + j] += b->data[j];
         }
     }
 
@@ -53,12 +53,12 @@ int cpu_linear_backward(TENSOR *tensor, TENSOR *a, TENSOR *x, TENSOR *b)
         return code;
     }
 
-    for (int i = 0; i < tensor->grad_shape->y; i++)
+    for (int i = 0; i < tensor->grad_shape[1]; i++)
     {
         float sum = 0;
-        for (int j = 0; j < tensor->grad_shape->x; j++)
+        for (int j = 0; j < tensor->grad_shape[0]; j++)
         {
-            sum += tensor->grad[j * tensor->grad_shape->y + i];
+            sum += tensor->grad[j * tensor->grad_shape[1] + i];
         }
         b->grad[i] = sum;
     }

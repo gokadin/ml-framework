@@ -18,12 +18,12 @@ func (o *opLeakyRelu) dependencies() []*Tensor {
 	return []*Tensor{o.a}
 }
 
-func (o *opLeakyRelu) forwardShape() Shape {
+func (o *opLeakyRelu) forwardShape() mat.Shape {
 	return o.a.Shape()
 }
 
-func (o *opLeakyRelu) backwardShapes(tensorShape Shape) []Shape {
-	return []Shape{tensorShape}
+func (o *opLeakyRelu) backwardShapes(tensorShape mat.Shape) []mat.Shape {
+	return []mat.Shape{tensorShape}
 }
 
 func (o *opLeakyRelu) forward(tensor *Tensor) {
@@ -47,7 +47,7 @@ func (o *opLeakyRelu) backward(tensor *Tensor) {
 
 func LeakyRelu(a *Tensor) *Tensor {
 	o := &opLeakyRelu{a}
-	result := OfShape(o.forwardShape().ToArray()...)
+	result := OfShape(o.forwardShape().D...)
 	result.op = o
 	return result
 }

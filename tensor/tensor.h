@@ -4,13 +4,14 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdbool.h>
-#include "shape.h"
 
 typedef struct TENSOR {
     float *data;
     float *grad;
-    SHAPE *mat_shape;
-    SHAPE *grad_shape;
+    int *mat_shape;
+    int mat_size;
+    int *grad_shape;
+    int grad_size;
     bool run_on_gpu;
     int id;
 } TENSOR;

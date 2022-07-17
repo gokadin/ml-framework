@@ -22,13 +22,13 @@ int matmul_backward(TENSOR *target, TENSOR *a, TENSOR *b)
 
 int cpu_matmul_forward(TENSOR *target, TENSOR *a, TENSOR *b)
 {
-    for (int i = 0; i < a->mat_shape->x; i++)
+    for (int i = 0; i < a->mat_shape[0]; i++)
     {
-        for (int j = 0; j < b->mat_shape->y; j++)
+        for (int j = 0; j < b->mat_shape[1]; j++)
         {
-            for (int k = 0; k < b->mat_shape->x; k++)
+            for (int k = 0; k < b->mat_shape[0]; k++)
             {
-                target->data[i * b->mat_shape->y + j] += a->data[i * b->mat_shape->x + k] * b->data[k * b->mat_shape->y + j];
+                target->data[i * b->mat_shape[1] + j] += a->data[i * b->mat_shape[0] + k] * b->data[k * b->mat_shape[1] + j];
             }
         }
     }

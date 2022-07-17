@@ -18,12 +18,12 @@ func (o *opLog) dependencies() []*Tensor {
 	return []*Tensor{o.a}
 }
 
-func (o *opLog) forwardShape() Shape {
+func (o *opLog) forwardShape() mat.Shape {
 	return o.a.Shape()
 }
 
-func (o *opLog) backwardShapes(tensorShape Shape) []Shape {
-	return []Shape{tensorShape}
+func (o *opLog) backwardShapes(tensorShape mat.Shape) []mat.Shape {
+	return []mat.Shape{tensorShape}
 }
 
 func (o *opLog) forward(tensor *Tensor) {
@@ -36,7 +36,7 @@ func (o *opLog) backward(tensor *Tensor) {
 
 func Log(a *Tensor) *Tensor {
 	o := &opLog{a}
-	result := OfShape(o.forwardShape().ToArray()...)
+	result := OfShape(o.forwardShape().D...)
 	result.op = o
 	return result
 }

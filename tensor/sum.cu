@@ -37,7 +37,7 @@ extern "C" {
 
     __declspec(dllexport) void gpu_sum_forward(TENSOR *a, int axis, TENSOR *target) {
         float* gpu_a;
-        size_t a_size = a->mat_shape->size * sizeof(float);
+        size_t a_size = a->mat_size * sizeof(float);
         checkCudaErr(cudaMalloc((void**)&gpu_a, a_size));
         checkCudaErr(cudaMemcpy(gpu_a, &a->data[0], a_size, cudaMemcpyHostToDevice));
 
@@ -45,20 +45,20 @@ extern "C" {
         size_t size_target;
 
         if (axis == 0) {
-            size_target = a->mat_shape->y * sizeof(float);
+            size_target = a->mat_shape[1] * sizeof(float);
             checkCudaErr(cudaMalloc((void**)&gpu_target, size_target));
 
             dim3 blockSize(BLOCK_SIZE);
-            dim3 gridSize((a->mat_shape->y + BLOCK_SIZE - 1) / BLOCK_SIZE);
-            sum0<<<gridSize, blockSize>>>(gpu_a, gpu_target, a->mat_shape->y, a->mat_shape->x);
+            dim3 gridSize((a->mat_shape[1] + BLOCK_SIZE - 1) / BLOCK_SIZE);
+            sum0<<<gridSize, blockSize>>>(gpu_a, gpu_target, a->mat_shape[1], a->mat_shape[0]);
             checkCudaKernelErr("sum0", blockSize, gridSize);
         } else if (axis == 1) {
-            size_target = a->mat_shape->x * sizeof(float);
+            size_target = a->mat_shape[0] * sizeof(float);
             checkCudaErr(cudaMalloc((void**)&gpu_target, size_target));
 
             dim3 blockSize(BLOCK_SIZE);
-            dim3 gridSize((a->mat_shape->x + BLOCK_SIZE - 1) / BLOCK_SIZE);
-            sum1<<<gridSize, blockSize>>>(gpu_a, gpu_target, a->mat_shape->y, a->mat_shape->x);
+            dim3 gridSize((a->mat_shape[0] + BLOCK_SIZE - 1) / BLOCK_SIZE);
+            sum1<<<gridSize, blockSize>>>(gpu_a, gpu_target, a->mat_shape[1], a->mat_shape[0]);
             checkCudaKernelErr("sum1", blockSize, gridSize);
         }
 

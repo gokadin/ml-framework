@@ -2,22 +2,23 @@ package tensor
 
 import (
 	"fmt"
+	"ml-framework/mat"
 	"strings"
 )
 
 type op interface {
 	name() string
 	dependencies() []*Tensor
-	forwardShape() Shape
-	backwardShapes(tensorShape Shape) []Shape
+	forwardShape() mat.Shape
+	backwardShapes(tensorShape mat.Shape) []mat.Shape
 	forward(tensor *Tensor)
 	backward(tensor *Tensor)
 }
 
-func handleIncompatibleShapes(opName string, shapes ...Shape) {
+func handleIncompatibleShapes(opName string, shapes ...mat.Shape) {
 	shapesStrings := make([]string, len(shapes))
 	for i := 0; i < len(shapes); i++ {
-		shapesStrings[i] = fmt.Sprintf("%dx%d", shapes[i].X, shapes[i].Y)
+		shapesStrings[i] = fmt.Sprintln(shapes[i].D)
 		strings.Join(shapesStrings, " - ")
 	}
 

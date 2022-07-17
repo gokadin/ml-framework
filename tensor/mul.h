@@ -32,7 +32,7 @@ int mul_backward(TENSOR *tensor, TENSOR *a, TENSOR *b)
 
 int cpu_mul_forward(TENSOR *tensor, TENSOR *a, TENSOR *b)
 {
-    for (int i = 0; i < tensor->mat_shape->size; i++)
+    for (int i = 0; i < tensor->mat_size; i++)
     {
         tensor->data[i] = a->data[i] * b->data[i];
     }
@@ -42,7 +42,7 @@ int cpu_mul_forward(TENSOR *tensor, TENSOR *a, TENSOR *b)
 
 int cpu_mul_backward(TENSOR *tensor, TENSOR *a, TENSOR *b)
 {
-    for (int i = 0; i < tensor->grad_shape->size; i++)
+    for (int i = 0; i < tensor->grad_size; i++)
     {
         a->grad[i] = tensor->grad[i] * b->data[i];
         b->grad[i] = tensor->grad[i] * a->data[i];

@@ -13,7 +13,7 @@ const operationSum = "opSum"
 type opSum struct {
 	a             *Tensor
 	axis          int
-	originalShape Shape
+	originalShape mat.Shape
 }
 
 func (o *opSum) name() string {
@@ -24,20 +24,20 @@ func (o *opSum) dependencies() []*Tensor {
 	return []*Tensor{o.a}
 }
 
-func (o *opSum) forwardShape() Shape {
+func (o *opSum) forwardShape() mat.Shape {
 	if o.axis == 0 {
-		return Shape{1, o.a.Shape().Y}
+		return mat.Dim(1, o.a.Shape().D[1])
 	}
 
-	return Shape{o.a.Shape().X, 1}
+	return mat.Dim(o.a.Shape().D[0], 1)
 }
 
-func (o *opSum) backwardShapes(shape Shape) []Shape {
+func (o *opSum) backwardShapes(shape mat.Shape) []mat.Shape {
 	if o.axis == 0 {
-		return []Shape{{o.originalShape.X, shape.Y}}
+		return []mat.Shape{mat.Dim(o.originalShape.D[0], shape.D[1])}
 	}
 
-	return []Shape{{shape.X, shape.Y * o.originalShape.Y}}
+	return []mat.Shape{mat.Dim(shape.D[0], shape.D[1]*o.originalShape.D[1])}
 }
 
 func (o *opSum) forward(tensor *Tensor) {
@@ -46,9 +46,9 @@ func (o *opSum) forward(tensor *Tensor) {
 
 func (o *opSum) backward(tensor *Tensor) {
 	if o.axis == 0 {
-		o.a.SetGradient(mat.Expand(tensor.GradientToMat32(), 0, o.originalShape.X).Data())
+		o.a.SetGradient(mat.Expand(tensor.GradientToMat32(), 0, o.originalShape.D[0]).Data())
 	} else if o.axis == 1 {
-		o.a.SetGradient(mat.Expand(tensor.GradientToMat32(), 1, o.originalShape.Y).Data())
+		o.a.SetGradient(mat.Expand(tensor.GradientToMat32(), 1, o.originalShape.D[1]).Data())
 	}
 }
 
@@ -58,7 +58,7 @@ func Sum(a *Tensor, axis int) *Tensor {
 	}
 
 	o := &opSum{a, axis, a.Shape()}
-	result := OfShape(o.forwardShape().ToArray()...)
+	result := OfShape(o.forwardShape().D...)
 	result.op = o
 	return result
 }

@@ -1,6 +1,7 @@
 package examples
 
 import (
+	"fmt"
 	"ml-framework/datasets"
 	"ml-framework/models"
 	"ml-framework/modules"
@@ -8,7 +9,9 @@ import (
 )
 
 func RunMnistGan() {
-	train()
+	//train()
+	t := tensor.Ones(2, 3, 3)
+	fmt.Println(t.ToFloat32())
 }
 
 func generatorModel() *models.Model {
@@ -40,7 +43,7 @@ func train() {
 	//optimizer := models.NewOptimizer(models.OptimizerAdam)
 
 	graph := tensor.NewGraph()
-	batchX := tensor.OfShape(dataset.BatchSize(), dataset.Get(datasets.TrainingSetX).Data().Shape().Y).SetName("batch x")
+	batchX := tensor.OfShape(dataset.BatchSize(), dataset.Get(datasets.TrainingSetX).Data().Shape().D[1]).SetName("batch x")
 	//z := tensor.From(tensor.InitNormalized, batchSize, 100)
 	//batchY := tensor.OfShape(dataset.BatchSize(), dataset.Get(datasets.TrainingSetY).Data().Shape().Y).SetName("batch y")
 	//generatorPred := generator.Build(z).SetName("z")

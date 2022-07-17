@@ -19,12 +19,12 @@ func buildMulTestCases() []mulTestCase {
 		{"1x1 CPU", OfShape(1, 1).SetData([]float32{1}), OfShape(1, 1).SetData([]float32{2}), false},
 		{"2x2 GPU", OfShape(2, 2).SetData([]float32{1, 2, 3, 4}), OfShape(2, 2).SetData([]float32{5, 6, 7, 8}), true},
 		{"2x2 CPU", OfShape(2, 2).SetData([]float32{1, 2, 3, 4}), OfShape(2, 2).SetData([]float32{5, 6, 7, 8}), false},
-		{"64x64 GPU", From(InitRandom, 64, 64), From(InitRandom, 64, 64), true},
-		{"64x64 CPU", From(InitRandom, 64, 64), From(InitRandom, 64, 64), false},
-		{"50x50 GPU", From(InitRandom, 50, 50), From(InitRandom, 50, 50), true},
-		{"50x50 CPU", From(InitRandom, 50, 50), From(InitRandom, 50, 50), false},
-		{"1100x12 GPU", From(InitRandom, 1100, 12), From(InitRandom, 1100, 12), true},
-		{"1100x12 CPU", From(InitRandom, 1100, 12), From(InitRandom, 1100, 12), false},
+		{"64x64 GPU", From(mat.InitRandom, 64, 64), From(mat.InitRandom, 64, 64), true},
+		{"64x64 CPU", From(mat.InitRandom, 64, 64), From(mat.InitRandom, 64, 64), false},
+		{"50x50 GPU", From(mat.InitRandom, 50, 50), From(mat.InitRandom, 50, 50), true},
+		{"50x50 CPU", From(mat.InitRandom, 50, 50), From(mat.InitRandom, 50, 50), false},
+		{"1100x12 GPU", From(mat.InitRandom, 1100, 12), From(mat.InitRandom, 1100, 12), true},
+		{"1100x12 CPU", From(mat.InitRandom, 1100, 12), From(mat.InitRandom, 1100, 12), false},
 	}
 }
 

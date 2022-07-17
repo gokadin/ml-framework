@@ -1,5 +1,7 @@
 package tensor
 
+import "ml-framework/mat"
+
 const operationMean = "opMean"
 
 type opMean struct {
@@ -14,12 +16,12 @@ func (o *opMean) dependencies() []*Tensor {
 	return []*Tensor{o.a}
 }
 
-func (o *opMean) forwardShape() Shape {
+func (o *opMean) forwardShape() mat.Shape {
 	return o.a.Shape()
 }
 
-func (o *opMean) backwardShapes(tensorShape Shape) []Shape {
-	return []Shape{tensorShape, tensorShape}
+func (o *opMean) backwardShapes(tensorShape mat.Shape) []mat.Shape {
+	return []mat.Shape{tensorShape, tensorShape}
 }
 
 func (o *opMean) forward(tensor *Tensor) {
@@ -32,7 +34,7 @@ func (o *opMean) backward(tensor *Tensor) {
 
 func Mean(a *Tensor) *Tensor {
 	o := &opMean{a}
-	result := OfShape(o.forwardShape().ToArray()...)
+	result := OfShape(o.forwardShape().D...)
 	result.op = o
 	return result
 }

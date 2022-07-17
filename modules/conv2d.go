@@ -1,20 +1,21 @@
 package modules
 
 import (
+	"fmt"
 	"ml-framework/mat"
 	"ml-framework/tensor"
 )
 
 type Conv2dModule struct {
-	Type          string     `json:"type"`
-	FilterCount   int        `json:"filterCount"`
-	KernelSize    mat.ShapeN `json:"kernelSize"`
-	Stride        mat.ShapeN `json:"stride"`
-	IsInitialized bool       `json:"is_initialized"`
+	Type          string    `json:"type"`
+	FilterCount   int       `json:"filterCount"`
+	KernelSize    mat.Shape `json:"kernelSize"`
+	Stride        mat.Shape `json:"stride"`
+	IsInitialized bool      `json:"is_initialized"`
 	filters       *tensor.Tensor
 }
 
-func Conv2d(filterCount int, kernelSize, stride mat.ShapeN) *Conv2dModule {
+func Conv2d(filterCount int, kernelSize, stride mat.Shape) *Conv2dModule {
 	if kernelSize.Count() == 1 {
 		kernelSize = mat.Dim(kernelSize.D[0], kernelSize.D[0])
 	}
@@ -31,21 +32,22 @@ func Conv2d(filterCount int, kernelSize, stride mat.ShapeN) *Conv2dModule {
 
 func (d *Conv2dModule) Build(input *tensor.Tensor) *tensor.Tensor {
 	if !d.IsInitialized {
-		for i := 0; i < d.FilterCount; i++ {
-			d.filters = tensor.FromMat32(mat.FromSlice32f(mat.WithShape(d.KernelSize.D[0], d.KernelSize.D[1]), []float32{
-				1, 1, 1,
-				1, 1, 1,
-				1, 1, 1,
-			}))
-		}
-		//d.filters = tensor.FromMat32(mat.Initialize(mat.InitNormalized, d.KernelSize))
-
-		//d.Weights = tensor.From(tensor.InitXavier, input.Shape().Y, d.UnitCount).SetName(fmt.Sprintf("Conv2dModule layer (%d) weights", d.UnitCount))
-		//d.Bias = tensor.Zeros(1, d.UnitCount).SetName(fmt.Sprintf("Conv2dModule layer (%d) biases", d.UnitCount))
+		d.filters = tensor.From(mat.InitNormalized, d.conv2DFilterShape().D...).
+			SetName(fmt.Sprintf("Conv2dModule layer (%d) filters", d.FilterCount))
 		d.IsInitialized = true
 	}
 
 	return tensor.Conv2d(input, d.filters, d.FilterCount, d.KernelSize, d.Stride)
+}
+
+func (d *Conv2dModule) OverrideFilters(tensor *tensor.Tensor) {
+	if !tensor.Shape().Equals(d.conv2DFilterShape()) {
+		panic(fmt.Sprintf("cannot override filters with invalid shape: %s, requires: %s\n", tensor.Shape().Print(),
+			d.conv2DFilterShape().Print()))
+	}
+
+	d.filters = tensor
+	d.IsInitialized = true
 }
 
 func (d *Conv2dModule) GetParameters() []*tensor.Tensor {
@@ -60,4 +62,8 @@ func (d *Conv2dModule) Copy() Module {
 
 func (d *Conv2dModule) GetType() string {
 	return d.Type
+}
+
+func (d *Conv2dModule) conv2DFilterShape() mat.Shape {
+	return d.KernelSize.Copy().Expand(d.FilterCount)
 }
