@@ -95,17 +95,10 @@ func (d *Dataset) NextBatch() (*mat.M32f, *mat.M32f) {
 		d.shuffleData()
 	}
 
-	fromIndex := d.batchCounter * d.batchSize
-	_ = fromIndex // remove
-	toIndex := (d.batchCounter + 1) * d.batchSize
-	if toIndex > d.sets[TrainingSetX].data.Shape().D[0] {
-		toIndex = d.sets[TrainingSetX].data.Shape().D[0]
-	}
-
 	d.batchCounter++
 
-	return d.sets[TrainingSetX].data.Slice(mat.Dim(), mat.Dim()), d.sets[TrainingSetY].data.Slice(mat.Dim(), mat.Dim()) // fix
-	//return d.sets[TrainingSetX].data.Slice(fromIndex, toIndex), d.sets[TrainingSetY].data.Slice(fromIndex, toIndex)
+	return d.sets[TrainingSetX].data.Slice(mat.Dim((d.batchCounter-1)*d.batchSize), mat.Dim(d.batchSize)),
+		d.sets[TrainingSetY].data.Slice(mat.Dim((d.batchCounter-1)*d.batchSize), mat.Dim(d.batchSize))
 }
 
 func (d *Dataset) BatchCounter() int {

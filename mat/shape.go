@@ -12,8 +12,8 @@ type Shape struct {
 
 func Dim(dimensions ...int) Shape {
 	for _, d := range dimensions {
-		if d <= 0 {
-			panic("cannot have a negative or size zero dimension")
+		if d < 0 {
+			panic("cannot have a negative dimension")
 		}
 	}
 	return Shape{dimensions}

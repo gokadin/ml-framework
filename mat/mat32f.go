@@ -1,6 +1,7 @@
 package mat
 
 import (
+	"fmt"
 	"log"
 	"math"
 	"math/rand"
@@ -135,12 +136,50 @@ func (m *M32f) Slice(begin, size Shape) *M32f {
 		panic("shape dimension count must match in order to perform a slice")
 	}
 
-	for i := 0; i < size.Count(); i++ {
-		size.D[i] -= 1
+	if begin.Count() == 0 {
+		panic("shapes cannot be of zero dimension")
 	}
 
-	sliced := m.data[m.shape.IndexOf(begin.D...):m.shape.IndexOf(AddShapes(begin, size).D...)]
+	if begin.Count() > 10 {
+		panic("dimensions over 10 are not supported")
+	}
+
+	if begin.Count() > m.shape.Count() {
+		panic("cannot specify more dimensions than available to slice")
+	}
+
+	for i := 0; i < begin.Count(); i++ {
+		if begin.D[i] >= m.shape.D[i] {
+			panic(fmt.Sprintf("beginning slice index is higher than the slice's dimension, begin: %s, slice shape: %s",
+				begin.Print(), m.shape.Print()))
+		}
+
+		if begin.D[i]+size.D[i] > m.shape.D[i] {
+			size.D[i] = m.shape.D[i] - begin.D[i]
+		}
+	}
+
+	sliced := m.sliceRecursive(begin, size, 0, make([]int, begin.Count()))
+
 	return FromSlice32f(size, sliced)
+}
+
+func (m *M32f) sliceRecursive(begin, size Shape, dimension int, currentIndices []int) []float32 {
+	if dimension == begin.Count()-1 {
+		currentIndices[dimension] = begin.D[dimension]
+		startIndex := m.shape.IndexOf(currentIndices...)
+		currentIndices[dimension] += size.D[dimension]
+		endIndex := m.shape.IndexOf(currentIndices...)
+		return m.data[startIndex:endIndex]
+	}
+
+	sliced := make([]float32, 0)
+	for i := begin.D[dimension]; i < begin.D[dimension]+size.D[dimension]; i++ {
+		currentIndices[dimension] = i
+		sliced = append(sliced, m.sliceRecursive(begin, size, dimension+1, currentIndices)...)
+	}
+
+	return sliced
 }
 
 func (m *M32f) Add(other *M32f) {

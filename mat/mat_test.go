@@ -11,7 +11,7 @@ func Test_mat_sliceOneDim(t *testing.T) {
 	result := mat.Slice(Dim(1), Dim(3))
 
 	expected := FromSlice32f(Dim(3), []float32{2, 3, 4})
-	assert.True(t, expected.Equals32f(result), result.Data())
+	assert.Equal(t, expected.Data(), result.Data())
 }
 
 func Test_mat_sliceTwoDims(t *testing.T) {
@@ -27,7 +27,23 @@ func Test_mat_sliceTwoDims(t *testing.T) {
 		21, 22, 23,
 		31, 32, 33,
 	})
-	assert.True(t, expected.Equals32f(result), result.Data())
+	assert.Equal(t, expected.Data(), result.Data())
+}
+
+func Test_mat_sliceTwoDimsWhenOverNumberOfElements(t *testing.T) {
+	mat := FromSlice32f(Dim(3, 5), []float32{
+		10, 11, 12, 13, 14,
+		20, 21, 22, 23, 24,
+		30, 31, 32, 33, 34,
+	})
+
+	result := mat.Slice(Dim(1, 1), Dim(10, 3))
+
+	expected := FromSlice32f(Dim(3), []float32{
+		21, 22, 23,
+		31, 32, 33,
+	})
+	assert.Equal(t, expected.Data(), result.Data())
 }
 
 func Test_mat_sliceThreeDims(t *testing.T) {
@@ -54,7 +70,59 @@ func Test_mat_sliceThreeDims(t *testing.T) {
 		321, 322, 323,
 		331, 332, 333,
 	})
-	assert.True(t, expected.Equals32f(result), result.Data())
+	assert.Equal(t, expected.Data(), result.Data())
+}
+
+func Test_mat_sliceThreeDimsWithMissingDimension(t *testing.T) {
+	mat := FromSlice32f(Dim(3, 3, 5), []float32{
+		110, 111, 112, 113, 114,
+		120, 121, 122, 123, 124,
+		130, 131, 132, 133, 134,
+
+		210, 211, 212, 213, 214,
+		220, 221, 222, 223, 224,
+		230, 231, 232, 233, 234,
+
+		310, 311, 312, 313, 314,
+		320, 321, 322, 323, 324,
+		330, 331, 332, 333, 334,
+	})
+
+	result := mat.Slice(Dim(1, 1), Dim(2, 2))
+
+	expected := FromSlice32f(Dim(3), []float32{
+		220, 221, 222, 223, 224,
+		230, 231, 232, 233, 234,
+
+		320, 321, 322, 323, 324,
+		330, 331, 332, 333, 334,
+	})
+	assert.Equal(t, expected.Data(), result.Data())
+}
+
+func Test_mat_sliceThreeDimsWithTwoMissingDimensions(t *testing.T) {
+	mat := FromSlice32f(Dim(3, 3, 5), []float32{
+		110, 111, 112, 113, 114,
+		120, 121, 122, 123, 124,
+		130, 131, 132, 133, 134,
+
+		210, 211, 212, 213, 214,
+		220, 221, 222, 223, 224,
+		230, 231, 232, 233, 234,
+
+		310, 311, 312, 313, 314,
+		320, 321, 322, 323, 324,
+		330, 331, 332, 333, 334,
+	})
+
+	result := mat.Slice(Dim(1), Dim(1))
+
+	expected := FromSlice32f(Dim(3), []float32{
+		210, 211, 212, 213, 214,
+		220, 221, 222, 223, 224,
+		230, 231, 232, 233, 234,
+	})
+	assert.Equal(t, expected.Data(), result.Data())
 }
 
 //func Test_mat_slice_multiDimension(t *testing.T) {
