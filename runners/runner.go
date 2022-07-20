@@ -79,8 +79,8 @@ func (r *runner) Initialize() {
 func (r *runner) Fit(dataset *datasets.Dataset) {
 	r.Initialize()
 	graph := tensor.NewGraph()
-	batchX := tensor.OfShape(dataset.BatchSize(), dataset.Get(datasets.TrainingSetX).Data().Shape().D[1]).SetName("batch x")
-	batchY := tensor.OfShape(dataset.BatchSize(), dataset.Get(datasets.TrainingSetY).Data().Shape().D[1]).SetName("batch y")
+	batchX := tensor.OfShape(dataset.Set(datasets.TrainingSetX).BatchShape().D...).SetName("batch x")
+	batchY := tensor.OfShape(dataset.Set(datasets.TrainingSetY).BatchShape().D...).SetName("batch y")
 	pred := r.model.Build(batchX).SetName("prediction")
 	loss := r.criterion.Forward(pred, batchY).SetName("loss")
 
@@ -90,12 +90,11 @@ func (r *runner) Fit(dataset *datasets.Dataset) {
 		r.metric.events.epochStarted <- epoch
 
 		var epochLoss float32
-		for dataset.HasNextBatch() {
-			r.metric.events.batchStarted <- dataset.BatchCounter()
+		for dataset.Set(datasets.TrainingSetX).HasNextBatch() {
+			r.metric.events.batchStarted <- dataset.Set(datasets.TrainingSetX).BatchCounter()
 
-			batchDataX, batchDataY := dataset.NextBatch()
-			batchX.SetData(batchDataX.Data())
-			batchY.SetData(batchDataY.Data())
+			batchX.SetData(dataset.Set(datasets.TrainingSetX).NextBatch().Data())
+			batchY.SetData(dataset.Set(datasets.TrainingSetY).NextBatch().Data())
 
 			r.metric.events.forwardStarted <- true
 			graph.Forward(loss)
@@ -115,7 +114,7 @@ func (r *runner) Fit(dataset *datasets.Dataset) {
 			r.metric.events.batchFinished <- true
 		}
 
-		epochLoss /= float32(dataset.NumBatches())
+		epochLoss /= float32(dataset.Set(datasets.TrainingSetX).NumBatches())
 
 		r.metric.events.epochFinished <- epochLoss
 
@@ -147,10 +146,8 @@ func (r *runner) Validate(dataset *datasets.Dataset) {
 	graph := tensor.NewGraph()
 	r.Initialize()
 
-	x := tensor.OfShape(dataset.Get(datasets.ValidationSetX).Data().Shape().D[0], dataset.Get(datasets.ValidationSetX).Data().Shape().D[1]).
-		SetData(dataset.Get(datasets.ValidationSetX).Data().Data())
-	target := tensor.OfShape(dataset.Get(datasets.ValidationSetY).Data().Shape().D[0], dataset.Get(datasets.ValidationSetY).Data().Shape().D[1]).
-		SetData(dataset.Get(datasets.ValidationSetY).Data().Data())
+	x := tensor.FromMat32(dataset.Set(datasets.ValidationSetX).Data())
+	target := tensor.FromMat32(dataset.Set(datasets.ValidationSetY).Data())
 
 	y := r.model.BuildNoGrad(x)
 	loss := r.criterion.Forward(y, target)
@@ -166,8 +163,7 @@ func (r *runner) RunSingle(dataset *datasets.Dataset) {
 	graph := tensor.NewGraph()
 	r.Initialize()
 
-	x := tensor.OfShape(dataset.Get(datasets.ValidationSetX).Data().Shape().D[0], dataset.Get(datasets.ValidationSetX).Data().Shape().D[1]).
-		SetData(dataset.Get(datasets.ValidationSetX).Data().Data())
+	x := tensor.FromMat32(dataset.Set(datasets.ValidationSetX).Data())
 
 	y := r.model.BuildNoGrad(x)
 

@@ -29,10 +29,10 @@ func loadMNIST() *Dataset {
 
 	dataset := NewDataset()
 	dataset.SetName(mnistName)
-	dataset.AddData(TrainingSetX, trainX)
-	dataset.AddData(TrainingSetY, trainY)
-	dataset.AddData(ValidationSetX, valX)
-	dataset.AddData(ValidationSetY, valY)
+	dataset.Set(TrainingSetX).SetData(trainX)
+	dataset.Set(TrainingSetY).SetData(trainY)
+	dataset.Set(ValidationSetX).SetData(valX)
+	dataset.Set(ValidationSetY).SetData(valY)
 	return dataset
 }
 

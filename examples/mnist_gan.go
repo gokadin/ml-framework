@@ -43,7 +43,7 @@ func train() {
 	//optimizer := models.NewOptimizer(models.OptimizerAdam)
 
 	graph := tensor.NewGraph()
-	batchX := tensor.OfShape(dataset.BatchSize(), dataset.Get(datasets.TrainingSetX).Data().Shape().D[1]).SetName("batch x")
+	batchX := tensor.OfShape(dataset.Set(datasets.TrainingSetX).BatchShape().D...).SetName("batch x")
 	//z := tensor.From(tensor.InitNormalized, batchSize, 100)
 	//batchY := tensor.OfShape(dataset.BatchSize(), dataset.Get(datasets.TrainingSetY).Data().Shape().Y).SetName("batch y")
 	//generatorPred := generator.Build(z).SetName("z")
@@ -51,8 +51,8 @@ func train() {
 	//fake := tensor.Ones(batchSize, 0)
 
 	for epoch := 1; epoch != epochs+1; epoch++ {
-		for dataset.HasNextBatch() {
-			batchDataX, _ := dataset.NextBatch()
+		for dataset.Set(datasets.TrainingSetX).HasNextBatch() {
+			batchDataX := dataset.Set(datasets.TrainingSetX).NextBatch()
 			batchX.SetData(batchDataX.Data())
 
 			//graph.Forward(generatorPred)
